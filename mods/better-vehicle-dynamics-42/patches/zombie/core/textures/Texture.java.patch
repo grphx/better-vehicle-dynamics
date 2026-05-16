@@ -1,0 +1,22 @@
+diff --git a/zombie/core/textures/Texture.java b/zombie/core/textures/Texture.java
+index cb8b39e..b8f2830 100644
+--- a/zombie/core/textures/Texture.java
++++ b/zombie/core/textures/Texture.java
+@@ -469,6 +469,17 @@ public class Texture extends Asset implements IDestroyable, ITexture, Serializab
+       s_sharedTextureTable.put(fileName, texture);
+    }
+ 
++   /**
++    * BVD helper: registers a named texture into the shared table so that Lua-side
++    * skidmark code can look it up via getSharedTexture without going through the
++    * normal file-load path.
++    */
++   public static void BVD_registerSharedTexture(String name, Texture texture) {
++      if (name != null && texture != null) {
++         s_sharedTextureTable.put(name, texture);
++      }
++   }
++
+    private static Texture getSharedTextureInternal(String name, int flags) {
+       if (GameServer.server && !ServerGUI.isCreated()) {
+          return null;

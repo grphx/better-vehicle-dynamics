@@ -1,0 +1,35 @@
+diff --git a/zombie/iso/IsoFloorBloodSplat.java b/zombie/iso/IsoFloorBloodSplat.java
+index c04b985..1834675 100644
+--- a/zombie/iso/IsoFloorBloodSplat.java
++++ b/zombie/iso/IsoFloorBloodSplat.java
+@@ -9,6 +9,16 @@ import zombie.iso.sprite.IsoSprite;
+ public class IsoFloorBloodSplat {
+    public static final float FADE_HOURS = 72.0F;
+    public static HashMap<String, IsoSprite> spriteMap = new HashMap<>();
++   // BVD tyre-mark decal type slots — appended after the vanilla blood types.
++   public static final int BVD_TIREMARK_TYPE_V  = 21;
++   public static final int BVD_TIREMARK_TYPE_H  = 22;
++   public static final int BVD_TIREMARK_TYPE_D1 = 23;
++   public static final int BVD_TIREMARK_TYPE_D2 = 24;
++   // Inclusive range used by the fade override in IsoChunkMap.
++   public static final int BVD_TIREMARK_TYPE_MIN = 21;
++   public static final int BVD_TIREMARK_TYPE_MAX = 24;
++   // Tyre marks vanish much faster than blood — half an hour by default.
++   public static final float BVD_TIREMARK_FADE_HOURS = 0.5F;
+    public static final String[] FLOOR_BLOOD_TYPES = new String[]{
+       "blood_floor_small_01",
+       "blood_floor_small_02",
+@@ -30,7 +40,12 @@ public class IsoFloorBloodSplat {
+       "blood_floor_large_02",
+       "blood_floor_large_03",
+       "blood_floor_large_04",
+-      "blood_floor_large_05"
++      "blood_floor_large_05",
++      // BVD skidmark assets: vertical, horizontal, and two diagonals.
++      "bvd_tiremark_v",
++      "bvd_tiremark_h",
++      "bvd_tiremark_d1",
++      "bvd_tiremark_d2"
+    };
+    public float x;
+    public float y;

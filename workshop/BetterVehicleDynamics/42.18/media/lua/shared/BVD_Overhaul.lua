@@ -144,6 +144,16 @@ end
 pcall(patchTrunkContainers)
 Events.OnGameStart.Add(function() pcall(patchTrunkContainers) end)
 
+-- Spec-generation token. PZ recreates the Lua state per world load, so the
+-- `or 0` baseline is fresh each session; bumping on every world load yields a
+-- value the Java side has not loaded specs for yet, which forces a one-time
+-- per-world-load rebuild of the drivetrain reference maps (the Java compares
+-- this int against its own last-loaded generation). Tiny, BVD-namespaced.
+BetterVehicleDynamicsMod = BetterVehicleDynamicsMod or {}
+Events.OnGameStart.Add(function()
+	BetterVehicleDynamicsMod.specGen = (BetterVehicleDynamicsMod.specGen or 0) + 1
+end)
+
 -- HP / Weight overhaul: apply our reference values at world start.
 -- engineForce in PZ scales roughly 10x horsepower for similar feel to
 -- vanilla balance (Step Van vanilla engineForce ~1070 ≈ 107hp×10).

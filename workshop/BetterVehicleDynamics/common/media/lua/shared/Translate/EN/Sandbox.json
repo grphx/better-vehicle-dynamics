@@ -1,0 +1,94 @@
+{
+    "Sandbox_BetterVehicleDynamics": "Better Vehicle Dynamics",
+
+    "Sandbox_BVD_Mode": "Tuning preset",
+    "Sandbox_BVD_Mode_tooltip": "Custom keeps every slider below as you set it. The other presets snap drivetrain, grip and shove values to a curated profile when the world loads.",
+    "Sandbox_BVD_Mode_option1": "Custom",
+    "Sandbox_BVD_Mode_option2": "Relaxed",
+    "Sandbox_BVD_Mode_option3": "Grounded",
+    "Sandbox_BVD_Mode_option4": "Punishing",
+
+    "Sandbox_BVD_DriverHUD": "Driver readout",
+    "Sandbox_BVD_DriverHUD_tooltip": "Shows a compact corner panel with speed, engine RPM, laden weight and ignition state.",
+
+    "Sandbox_BVD_SkidMarks": "Tyre marks",
+    "Sandbox_BVD_SkidMarks_tooltip": "Leaves a ground decal when a tyre breaks loose under power or hard braking.",
+
+    "Sandbox_BVD_EnginePower": "Engine output",
+    "Sandbox_BVD_EnginePower_tooltip": "Scales how much pulling force every engine makes. Below 1 feels gutless; above 1 makes hills and ramming trivial.",
+
+    "Sandbox_BVD_LowSpeedGrunt": "Crawl-speed shove",
+    "Sandbox_BVD_LowSpeedGrunt_tooltip": "Extra pulling force available at very low wheel speed — the force used to push wrecks and shove through crowds. Lower it for a weaker, more cautious low-end.",
+
+    "Sandbox_BVD_ReverseTopSpeed": "Reverse speed cap (km/h)",
+    "Sandbox_BVD_ReverseTopSpeed_tooltip": "Hard ceiling on reverse speed.",
+
+    "Sandbox_BVD_GripLevel": "Tyre grip",
+    "Sandbox_BVD_GripLevel_tooltip": "Overall traction budget. Lower means the car steps out and spins up more readily.",
+
+    "Sandbox_BVD_WetGrip": "Grip in rain",
+    "Sandbox_BVD_WetGrip_tooltip": "Fraction of normal grip while it is raining.",
+
+    "Sandbox_BVD_SnowGrip": "Grip on snow",
+    "Sandbox_BVD_SnowGrip_tooltip": "Fraction of normal grip on snow-covered ground.",
+
+    "Sandbox_BVD_OffroadGrip": "Grip off-road",
+    "Sandbox_BVD_OffroadGrip_tooltip": "Grip factor on dirt, grass and gravel versus sealed road.",
+
+    "Sandbox_BVD_Drag": "Air drag",
+    "Sandbox_BVD_Drag_tooltip": "Aerodynamic resistance scaling. Higher caps top speed sooner and bleeds momentum faster.",
+
+    "Sandbox_BVD_RollResistance": "Rolling drag (road)",
+    "Sandbox_BVD_RollResistance_tooltip": "Resistance from tyres on sealed surfaces. Affects coasting and steady-state speed.",
+
+    "Sandbox_BVD_RollResistanceOffroad": "Rolling drag (off-road)",
+    "Sandbox_BVD_RollResistanceOffroad_tooltip": "Extra rolling resistance when off sealed road.",
+
+    "Sandbox_BVD_RealismHPWeight": "Reference power & weight",
+    "Sandbox_BVD_RealismHPWeight_tooltip": "Replaces engine force and mass for the covered vanilla vehicles with Better Vehicle Dynamics' own researched reference figures (see BVD_VehicleData.lua; modded vehicles can register their own via the public API).",
+
+    "Sandbox_BVD_TrunkScaling": "Cargo capacity rescale",
+    "Sandbox_BVD_TrunkScaling_tooltip": "Scales each vehicle's storage by a per-body-type factor instead of overwriting it. Auto-disabled when 'isoContainers' is present.",
+
+    "Sandbox_BVD_TrunkCar": "Cargo factor: cars",
+    "Sandbox_BVD_TrunkCar_tooltip": "Multiplier on this body type's reference storage. 1.0 keeps the reference value.",
+
+    "Sandbox_BVD_TrunkVan": "Cargo factor: vans",
+    "Sandbox_BVD_TrunkVan_tooltip": "Multiplier on this body type's reference storage. 1.0 keeps the reference value.",
+
+    "Sandbox_BVD_TrunkTruck": "Cargo factor: pickups",
+    "Sandbox_BVD_TrunkTruck_tooltip": "Multiplier on this body type's reference storage. 1.0 keeps the reference value.",
+
+    "Sandbox_BVD_TrunkTrailer": "Cargo factor: trailers",
+    "Sandbox_BVD_TrunkTrailer_tooltip": "Multiplier on this body type's reference storage. 1.0 keeps the reference value.",
+
+    "Sandbox_BVD_ThrottleStart": "Start on throttle",
+    "Sandbox_BVD_ThrottleStart_tooltip": "When off, the engine must be started deliberately (start key or the engine icon) rather than by pressing accelerate.",
+
+    "Sandbox_BVD_KeylessTow": "Tow without keys",
+    "Sandbox_BVD_KeylessTow_tooltip": "When off, easy-tow needs keys in the ignition or the parking brake released.",
+
+    "Sandbox_BVD_ShoveFoliage": "Foliage shove",
+    "Sandbox_BVD_ShoveFoliage_tooltip": "Force the body transfers into bushes and small plants on contact.",
+
+    "Sandbox_BVD_ShoveZombies": "Zombie shove",
+    "Sandbox_BVD_ShoveZombies_tooltip": "Force imparted to living zombies struck by the vehicle.",
+
+    "Sandbox_BVD_ShoveCorpses": "Corpse shove",
+    "Sandbox_BVD_ShoveCorpses_tooltip": "Force imparted to bodies and gibs on the ground.",
+
+    "Sandbox_BVD_Drift": "Drift mode",
+    "Sandbox_BVD_Drift_tooltip": "Hold the drift key while cornering at speed to break the rear loose for an arcade-style slide. Bind the key in Mod Options.",
+
+    "Sandbox_BVD_DriftGrip": "Drift slip",
+    "Sandbox_BVD_DriftGrip_tooltip": "Tyre grip kept while drifting. Lower is looser and harder to hold.",
+
+    "Sandbox_BVD_DriftMinSpeed": "Drift activation speed (km/h)",
+    "Sandbox_BVD_DriftMinSpeed_tooltip": "Below this speed the drift key is ignored, so parking doesn't slide.",
+
+    "Sandbox_BVD_DriftSteer": "Drift steering gain",
+    "Sandbox_BVD_DriftSteer_tooltip": "How much sharper the front wheels respond while a drift is held.",
+
+    "Sandbox_BVD_DriftRotation": "Drift rotation force",
+    "Sandbox_BVD_DriftRotation_tooltip": "Strength of the rotation pushed into the car while drifting + steering. Raise if it slides wide, lower if it spins out."
+}

@@ -20,14 +20,18 @@ local TYPE_V, TYPE_H, TYPE_D1, TYPE_D2 = 21, 22, 23, 24
 -- S leave the *same* line), we fold the angle into [0, 180) before
 -- bucketing into the four 45 deg wide bins.
 --
--- HEADING_OFFSET_DEG and SWAP_D1_D2 are the two "I can't be 100% sure of
--- PZ's iso/world handedness from Lua" escape hatches. The v<->h decision
--- (parallel vs perpendicular to travel) is correct by construction -- it
--- falls straight out of the texture convention above and the fact that
--- heading and decal placement both use the SAME getX()/getY() frame. If
--- the user reports the diagonals are mirrored, flip SWAP_D1_D2. If every
--- orientation is rotated 90 deg, set HEADING_OFFSET_DEG = 90 (this should
--- NOT be needed -- only the diagonals carry handedness ambiguity).
+-- The full angle->type table is derived from the texture convention above
+-- plus PZ's world frame (X = east, Y = south) and atan2(dy, dx):
+--   E/W  -> fold   0 deg -> TYPE_H   (line parallel to X)
+--   N/S  -> fold  90 deg -> TYPE_V   (line parallel to Y)
+--   SE/NW-> fold  45 deg -> TYPE_D1  ("\" NW<->SE)
+--   NE/SW-> fold 135 deg -> TYPE_D2  ("/" SW<->NE)
+-- So with the defaults below (offset 0, no swap) every orientation is
+-- correct by construction. HEADING_OFFSET_DEG and SWAP_D1_D2 remain as
+-- escape hatches in case PZ's iso/world handedness differs in practice:
+-- if the user reports the diagonals come out mirrored, flip SWAP_D1_D2;
+-- if EVERY orientation is rotated 90 deg, set HEADING_OFFSET_DEG = 90
+-- (should NOT be needed -- the cardinal v<->h decision is unambiguous).
 local HEADING_OFFSET_DEG = 0      -- added to heading before bucketing
 local SWAP_D1_D2         = false  -- flip if "\" / "/" come out mirrored
 
@@ -50,7 +54,7 @@ local function vehicleHeadingDeg(v)
     local id = v.getId and v:getId() or tostring(v)
     local x, y = v:getX(), v:getY()
     local prev = lastPos[id]
-    lastPos[id] = { x = x, y = y }
+    lastPos[id] = { x = x, y = y, ts = (getTimestampMs and getTimestampMs() or 0) }
     if prev then
         local dx, dy = x - prev.x, y - prev.y
         if (dx * dx + dy * dy) > 0.0004 then   -- ~0.02 tile of motion
@@ -78,14 +82,17 @@ local function vehicleHeadingDeg(v)
     -- 3. Coarse 8-way enum -- never errors, just imprecise.
     if v.getDir then
         local n = tostring(v:getDir())
+        -- Degrees chosen to match atan2(dy, dx) in PZ's frame
+        -- (X = east, Y = south, north = -Y) so this last-resort path
+        -- folds/buckets identically to the two primary paths.
         if     n == "N"  then return 90
         elseif n == "S"  then return 270
         elseif n == "E"  then return 0
         elseif n == "W"  then return 180
-        elseif n == "NE" then return 45
-        elseif n == "NW" then return 135
-        elseif n == "SE" then return 315
-        elseif n == "SW" then return 225
+        elseif n == "NE" then return 315
+        elseif n == "NW" then return 225
+        elseif n == "SE" then return 45
+        elseif n == "SW" then return 135
         end
     end
     return nil
@@ -104,6 +111,9 @@ local function preloadTextures()
             Texture.BVD_registerSharedTexture(name, t)
         end
     end
+    -- Re-probe the forward-vector path each world load: a stale false
+    -- from one odd vehicle must not permanently disable it.
+    probedForward = nil
     print("[BVD.Skidmarks] 4 orientation sprites registered")
 end
 
@@ -125,14 +135,14 @@ local function typeForVehicle(v)
     -- Bucket to the nearest of the 4 line orientations (45 deg bins,
     -- centred on 0 / 45 / 90 / 135 with +-22.5 deg half-width):
     --   ~0   deg : travel along world-X  -> line parallel to X -> TYPE_H
-    --   ~45  deg : travel "/" (SW<->NE)  -> TYPE_D2
+    --   ~45  deg : travel "\" (NW<->SE)  -> TYPE_D1
     --   ~90  deg : travel along world-Y  -> line parallel to Y -> TYPE_V
-    --   ~135 deg : travel "\" (NW<->SE)  -> TYPE_D1
+    --   ~135 deg : travel "/" (SW<->NE)  -> TYPE_D2
     local t
     if     a < 22.5  then t = TYPE_H
-    elseif a < 67.5  then t = (SWAP_D1_D2 and TYPE_D1 or TYPE_D2)
+    elseif a < 67.5  then t = (SWAP_D1_D2 and TYPE_D2 or TYPE_D1)
     elseif a < 112.5 then t = TYPE_V
-    elseif a < 157.5 then t = (SWAP_D1_D2 and TYPE_D2 or TYPE_D1)
+    elseif a < 157.5 then t = (SWAP_D1_D2 and TYPE_D1 or TYPE_D2)
     else                  t = TYPE_H   -- wraps back toward 180==0
     end
 
@@ -159,6 +169,11 @@ local function dropMark(v, sq)
     if (now % 8000) < 50 then
         for k, t in pairs(recentTiles) do
             if (now - t) > DEDUPE_MS * 4 then recentTiles[k] = nil end
+        end
+        -- Drop heading state for vehicles untouched for a while so the
+        -- table can't accrete stale per-id entries on long sessions.
+        for k, p in pairs(lastPos) do
+            if p.ts and (now - p.ts) > 60000 then lastPos[k] = nil end
         end
     end
 

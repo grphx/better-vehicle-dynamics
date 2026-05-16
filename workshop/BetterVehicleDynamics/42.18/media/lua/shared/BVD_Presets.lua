@@ -39,6 +39,7 @@ local PRESET_VALUES = {
         TrunkTruck       = 1.5,
         TrunkTrailer     = 1.5,
     },
+    -- Realistic/Hardcore intentionally leave RealismHPWeight to the player's toggle (no forced value).
     Realistic = {
         EnginePower      = 1.0,
         GripLevel        = 1.0,

@@ -26,7 +26,7 @@ local appliedSnapshot = {}
 --   check    = function(): bool — should this pack apply?  Default: always true.
 --   data     = table | string  — inline table or `require`-path to a data module
 --                                that returns a table of {fullType = entry}.
---                                Entry shape: {horsePower=N, weight=N, cargo=N, engineSound="Engine{1..4}"}
+--                                Entry shape: { hp = <number>, mass_kg = <number>, cargo = <number> }
 --                                Any missing field is just skipped by the overhaul.
 --   source   = string — informational tag for logs ("bundled" / "external" / etc.)
 --   priority = number — higher applied last; later writes override earlier on conflict
@@ -120,7 +120,7 @@ end
 
 --- Return the snapshot of {pack_name = {fullType = data}} from the most
 -- recent applyAll. Used by the spawner panel to group rows by pack.
-function BVD.Packs.appliedSnapshot()
+function BVD.Packs.getAppliedSnapshot()
     return appliedSnapshot
 end
 

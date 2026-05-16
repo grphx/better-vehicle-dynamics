@@ -87,7 +87,7 @@ local trunkHookHitOnce = false
 local function patchTrunkContainers()
 	if trunkPatched then return end
 	if isModLoaded("isoContainers") then
-		print("[BVD] TrunkOverhaul: skipped install — isoContainers loaded.")
+		print("[BVD] TrunkScaling: skipped install — isoContainers loaded.")
 		return
 	end
 	if not ItemContainer then return end
@@ -108,7 +108,7 @@ local function patchTrunkContainers()
 					if not trunkHookHitOnce then
 						trunkHookHitOnce = true
 						print(string.format(
-							"[BVD] TrunkOverhaul hit: vehicle=%s container=%s bucket=%s base=%.0f mult=%.2f -> %.0f",
+							"[BVD] TrunkScaling hit: vehicle=%s container=%s bucket=%s base=%.0f mult=%.2f -> %.0f",
 							tostring(self:getParent():getScript():getFullType()),
 							tostring(self:getType()),
 							tostring(bucket),
@@ -138,7 +138,7 @@ local function patchTrunkContainers()
 	end
 
 	trunkPatched = true
-	print("[BVD] TrunkOverhaul: container hook installed.")
+	print("[BVD] TrunkScaling: container hook installed.")
 end
 
 pcall(patchTrunkContainers)

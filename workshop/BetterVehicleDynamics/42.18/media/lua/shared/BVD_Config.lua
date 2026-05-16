@@ -18,17 +18,18 @@
 -- directly; they are NOT rewired through BVD.cfg(). That would change the
 -- execution model and risk parity. cfg() is a utility, not a plumbing change.
 --
--- GRIPLEVEL COLLAPSE (VPR PARITY NOTE)
--- -------------------------------------
--- VPR exposed two separate knobs: OverallTraction (preset values 1.5/1.0/0.75
--- across Casual/Realistic/Hardcore) and AccelerationTraction (1.3/1.0/0.8).
--- BVD collapses both into the single GripLevel key. The OverallTraction value
--- is used as GripLevel because overall feel (cornering traction budget) is the
--- dominant driver of driving character; the per-acceleration sub-knob is folded
--- in. The GripLevel sandbox default of 1.0 matches VPR's OverallTraction Custom
--- default, preserving out-of-the-box feel parity. This is the intentional and
--- reviewed parity choice; do NOT split GripLevel back into two knobs without a
--- design review.
+-- GRIPLEVEL COLLAPSE (PREDECESSOR PARITY NOTE)
+-- --------------------------------------------
+-- The predecessor mod's original two-knob model exposed two separate traction
+-- knobs: an overall-traction value (preset values 1.5/1.0/0.75 across
+-- Casual/Realistic/Hardcore) and an acceleration-traction value (1.3/1.0/0.8).
+-- BVD intentionally collapses both into the single GripLevel key. The
+-- overall-traction value is used as GripLevel because the overall cornering
+-- traction budget dominates driving feel; the acceleration sub-knob is folded
+-- in. The GripLevel sandbox default of 1.0 matches the predecessor's
+-- overall-traction "Custom" default, preserving out-of-the-box feel parity.
+-- This is the intentional and reviewed parity choice; do NOT re-split
+-- GripLevel back into two knobs without a design review.
 
 BVD = BVD or {}
 
@@ -69,8 +70,9 @@ function BVD.cfg()
         ReverseTopSpeed = num("ReverseTopSpeed", 25),
 
         -- Grip
-        -- GripLevel is the collapse of VPR's OverallTraction + AccelerationTraction
-        -- into a single knob (see parity note in header). Default 1.0 == VPR Custom.
+        -- GripLevel is the collapse of the predecessor's overall-traction +
+        -- acceleration-traction knobs into one (see parity note in header).
+        -- Default 1.0 == the predecessor's overall-traction "Custom" default.
         GripLevel       = num("GripLevel",       1.0),
         WetGrip         = num("WetGrip",         0.7),
         SnowGrip        = num("SnowGrip",        0.45),

@@ -12,6 +12,6 @@ while IFS= read -r -d '' f; do
   if [ "$f" != "CREDITS.md" ]; then
     if grep -nIE "$SOFT" -- "$f" 2>/dev/null; then echo "  ^ disclaimer-only phrase outside CREDITS.md in $f"; fail=1; fi
   fi
-done < <(git ls-files -z)
+done < <(git ls-files -z | grep -zv '^tools/grepgate\.sh$')
 if [ "$fail" -ne 0 ]; then echo "GREP GATE FAIL"; exit 1; fi
 echo "GREP GATE PASS ($(git ls-files | wc -l) tracked files)"

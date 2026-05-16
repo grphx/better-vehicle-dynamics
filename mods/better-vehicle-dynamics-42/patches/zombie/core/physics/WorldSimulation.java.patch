@@ -1,0 +1,271 @@
+diff --git a/zombie/core/physics/WorldSimulation.java b/zombie/core/physics/WorldSimulation.java
+index bd7e915..0923489 100644
+--- a/zombie/core/physics/WorldSimulation.java
++++ b/zombie/core/physics/WorldSimulation.java
+@@ -1,13 +1,21 @@
+ package zombie.core.physics;
+ 
++import java.lang.reflect.Array;
++import java.lang.reflect.Field;
++import java.lang.reflect.InvocationTargetException;
++import java.lang.reflect.Method;
+ import java.util.ArrayList;
+ import java.util.HashMap;
+ import org.joml.Quaternionf;
+ import org.joml.Vector3f;
++import zombie.GameTime;
++import zombie.SandboxOptions;
++import zombie.SandboxOptions.SandboxOption;
+ import zombie.characters.IsoPlayer;
+ import zombie.core.profiling.AbstractPerformanceProfileProbe;
+ import zombie.core.profiling.PerformanceProfileProbe;
+ import zombie.core.textures.TextureDraw;
++import zombie.debug.DebugLog;
+ import zombie.debug.DebugType;
+ import zombie.debug.LogSeverity;
+ import zombie.iso.IsoChunkMap;
+@@ -18,6 +26,8 @@ import zombie.network.GameClient;
+ import zombie.network.GameServer;
+ import zombie.network.PacketTypes;
+ import zombie.network.packets.INetworkPacket;
++import zombie.scripting.ScriptManager;
++import zombie.scripting.objects.VehicleScript;
+ import zombie.vehicles.BaseVehicle;
+ import zombie.vehicles.VehicleManager;
+ 
+@@ -42,12 +52,96 @@ public final class WorldSimulation {
+    public float periodSec;
+    private int bulletFrameNo = -1;
+ 
++   // BetterVehicleDynamics: live, frame-recomputed scale that keeps the
++   // heaviest vehicle on the cell at a stable simulated mass. Public so the
++   // physics step can mass-normalise the Bullet body alongside the impulse
++   // softening below.
++   public float massScaler = 1.0F;
++
++   // BetterVehicleDynamics: reflection handles into BaseVehicle's private
++   // impulse accumulators. The base game keeps these package-private; we
++   // intercept the queued impulses before they are applied so the shove felt
++   // by foliage / zombies / corpses can be scaled by sandbox factors.
++   private Field bvdHitImpulseList;
++   private Field bvdSquishImpulseArray;
++   private Method bvdListSize;
++   private Method bvdListGet;
++   private Field bvdImpulseVector;
++   private Field bvdImpulseEnabled;
++   private boolean bvdReflectionReady;
++
++   // BetterVehicleDynamics: corpse-shove rate limiter. The vanilla mod kept
++   // this cooldown on the per-vehicle controller; we hold it here keyed by
++   // vehicle id so the throttle behaviour is identical without depending on a
++   // controller field that does not yet exist in this pristine build.
++   private final HashMap<Integer, Float> bvdCorpseCooldown = new HashMap<>();
++
++   private float getSandboxOption(String name, float fallback) {
++      SandboxOption opt = SandboxOptions.instance.getOptionByName(name);
++      if (opt == null) {
++         return fallback;
++      }
++
++      try {
++         return (float)Double.parseDouble(opt.asConfigOption().getValueAsString());
++      } catch (NumberFormatException badValue) {
++         return fallback;
++      }
++   }
++
++   private void reflectionInit() {
++      try {
++         Class<?> vehicleClass = Class.forName("zombie.vehicles.BaseVehicle");
++         this.bvdHitImpulseList = vehicleClass.getDeclaredField("impulsesFromHitObjects");
++         this.bvdHitImpulseList.setAccessible(true);
++         this.bvdSquishImpulseArray = vehicleClass.getDeclaredField("impulsesFromSquishedBodies");
++         this.bvdSquishImpulseArray.setAccessible(true);
++
++         Class<?> listClass = Class.forName("java.util.ArrayList");
++         this.bvdListSize = listClass.getMethod("size");
++         this.bvdListGet = listClass.getMethod("get", int.class);
++
++         Class<?> impulseClass = Class.forName("zombie.vehicles.BaseVehicle$VehicleImpulse");
++         this.bvdImpulseVector = impulseClass.getDeclaredField("impulse");
++         this.bvdImpulseVector.setAccessible(true);
++         this.bvdImpulseEnabled = impulseClass.getDeclaredField("enable");
++         this.bvdImpulseEnabled.setAccessible(true);
++
++         this.bvdReflectionReady = true;
++      } catch (ClassNotFoundException missingClass) {
++         throw new RuntimeException("BetterVehicleDynamics: physics class unavailable", missingClass);
++      } catch (NoSuchFieldException missingField) {
++         throw new RuntimeException("BetterVehicleDynamics: impulse field unavailable", missingField);
++      } catch (NoSuchMethodException missingMethod) {
++         throw new RuntimeException("BetterVehicleDynamics: list accessor unavailable", missingMethod);
++      }
++
++      // Lower every vehicle script's stopping-movement force. The base value
++      // is too grabby once impulses are softened, so we re-Load each script
++      // with the overridden field and push it back down into Bullet.
++      ArrayList<VehicleScript> scripts = ScriptManager.instance.getAllVehicleScripts();
++      DebugLog.log("BetterVehicleDynamics: retuning " + scripts.size() + " vehicle script(s)");
++
++      for (int i = 0; i < scripts.size(); i++) {
++         VehicleScript script = scripts.get(i);
++
++         try {
++            script.Load(script.getName(), "{ stoppingMovementForce = 0.01, }");
++         } catch (Exception loadFailed) {
++            DebugLog.log("BetterVehicleDynamics: could not retune script " + script.getName());
++         }
++
++         script.toBullet();
++      }
++   }
++
+    public void create() {
+       if (!this.created) {
++         this.reflectionInit();
+          IsoMetaGrid metaGrid = IsoWorld.instance.metaGrid;
+          this.offsetX = metaGrid.getMinX() * 256;
+          this.offsetY = metaGrid.getMinY() * 256;
+-         this.time = zombie.GameTime.getServerTimeMills();
++         this.time = GameTime.getServerTimeMills();
+          IsoChunkMap cm = IsoWorld.instance.currentCell.chunkMap[0];
+          Bullet.initWorld(
+             metaGrid.getMinX(),
+@@ -77,34 +171,121 @@ public final class WorldSimulation {
+    }
+ 
+    private void updatePhysic() {
+-      float fixedTimeStep = 0.01F;
+-      int numSimulationSubSteps = 0;
+-      this.localTime = this.localTime + zombie.GameTime.instance.getPhysicsSecondsSinceLastUpdate();
++      // Find the heaviest vehicle on the cell so the simulated mass can be
++      // clamped to a stable ceiling; a 10kg floor guards an empty cell.
++      float heaviest = 10.0F;
++
++      for (BaseVehicle scan : IsoWorld.instance.currentCell.getVehicles()) {
++         float m = scan.getMass();
++         if (m > heaviest) {
++            heaviest = m;
++         }
++      }
++
++      this.massScaler = Math.min(1.0F, 750.0F / heaviest);
++      if (this.massScaler < 0.02F) {
++         DebugLog.log("BetterVehicleDynamics: mass scaler unusually small " + this.massScaler);
++      }
++
++      int subSteps = 0;
++      this.localTime = this.localTime + GameTime.instance.getPhysicsSecondsSinceLastUpdate();
+       if (this.localTime >= 0.01F) {
+-         numSimulationSubSteps = (int)(this.localTime / 0.01F);
+-         this.localTime -= numSimulationSubSteps * 0.01F;
++         subSteps = (int)(this.localTime / 0.01F);
++         this.localTime -= subSteps * 0.01F;
++
++         for (int step = 0; step < subSteps; step++) {
++            for (BaseVehicle vehicle : IsoWorld.instance.currentCell.getVehicles()) {
++               Bullet.setVehicleMass(vehicle.vehicleId, vehicle.getMass() * this.massScaler);
++               float massSoften = Math.min(1.5F, 1000.0F / vehicle.getFudgedMass());
++
++               this.applyImpulseScaling(vehicle, massSoften);
++
++               vehicle.applyAccumulatedImpulsesFromHitObjectsToPhysics();
++               vehicle.applyAllImpulsesFromProneCharacters();
++            }
+ 
+-         for (int i = 0; i < numSimulationSubSteps; i++) {
+-            this.updateVehiclePhysics();
+             Bullet.stepSimulation(0.01F, 0, 0.0F);
+          }
+ 
+-         this.periodSec = numSimulationSubSteps * 0.01F;
++         this.periodSec = subSteps * 0.01F;
+          this.bulletFrameNo++;
+       }
+ 
+-      if (Math.abs(this.time - zombie.GameTime.getServerTimeMills()) > 100L) {
+-         this.time = zombie.GameTime.getServerTimeMills();
++      if (Math.abs(this.time - GameTime.getServerTimeMills()) > 100L) {
++         this.time = GameTime.getServerTimeMills();
+       } else {
+-         this.time += (long)(10.0F * numSimulationSubSteps);
++         this.time += (long)(10.0F * subSteps);
+       }
+    }
+ 
+-   private void updateVehiclePhysics() {
+-      for (BaseVehicle vehicle : IsoWorld.instance.currentCell.getVehicles()) {
+-         vehicle.applyAccumulatedImpulsesFromHitObjectsToPhysics();
+-         vehicle.applyAllImpulsesFromProneCharacters();
+-         vehicle.checkSurroundingChunks();
++   // BetterVehicleDynamics: rescale the queued shove impulses before the base
++   // game applies them. Foliage and a clean zombie strike use ShoveFoliage /
++   // ShoveZombies respectively; a squished-body (corpse-under-wheel) impulse
++   // uses ShoveCorpses with an extra 2.0 weighting, rate-limited so a vehicle
++   // rolling over a pile is not flung. massScaler keeps heavy vehicles sane.
++   private void applyImpulseScaling(BaseVehicle vehicle, float massSoften) {
++      if (!this.bvdReflectionReady) {
++         return;
++      }
++
++      try {
++         Object hitList = this.bvdHitImpulseList.get(vehicle);
++         int hitCount = (Integer)this.bvdListSize.invoke(hitList);
++
++         for (int idx = 0; idx < hitCount; idx++) {
++            Object entry = this.bvdListGet.invoke(hitList, idx);
++            Vector3f impulse = (Vector3f)this.bvdImpulseVector.get(entry);
++
++            // A foliage hit queues an impulse that simply cancels a small
++            // slice of the vehicle's own velocity; a zombie body hit queues
++            // a much larger reaction. Probe both characteristic magnitudes
++            // (~2.5% and ~10% of momentum) to tell the two apart.
++            Vector3f probe = new Vector3f();
++            vehicle.getLinearVelocity(probe);
++            probe.mul(-0.025F * vehicle.getFudgedMass());
++            boolean isFoliage = probe.sub(impulse).lengthSquared() < 0.001F;
++
++            vehicle.getLinearVelocity(probe);
++            probe.mul(-0.1F * vehicle.getFudgedMass());
++            isFoliage = isFoliage || probe.sub(impulse).lengthSquared() < 0.001F;
++
++            if (isFoliage) {
++               impulse.mul(massSoften * this.massScaler * this.getSandboxOption("BetterVehicleDynamics.ShoveFoliage", 1.0F));
++            } else {
++               impulse.mul(massSoften * this.massScaler * this.getSandboxOption("BetterVehicleDynamics.ShoveZombies", 1.0F));
++            }
++         }
++
++         Object squishArray = this.bvdSquishImpulseArray.get(vehicle);
++         int squishCount = Array.getLength(squishArray);
++
++         float cooldown = this.bvdCorpseCooldown.getOrDefault(vehicle.vehicleId, 0.0F);
++         cooldown = Math.max(0.0F, cooldown - 0.01F);
++
++         for (int idx = 0; idx < squishCount; idx++) {
++            Object entry = Array.get(squishArray, idx);
++            if (entry == null) {
++               continue;
++            }
++
++            if (!this.bvdImpulseEnabled.getBoolean(entry)) {
++               continue;
++            }
++
++            Vector3f impulse = (Vector3f)this.bvdImpulseVector.get(entry);
++            if (cooldown < 0.01F) {
++               impulse.mul(massSoften * 2.0F * this.massScaler * this.getSandboxOption("BetterVehicleDynamics.ShoveCorpses", 1.0F));
++               cooldown = 0.08F;
++            } else {
++               impulse.mul(0.0F);
++            }
++         }
++
++         this.bvdCorpseCooldown.put((int)vehicle.vehicleId, cooldown);
++      } catch (IllegalAccessException denied) {
++         throw new RuntimeException("BetterVehicleDynamics: impulse field access denied", denied);
++      } catch (InvocationTargetException invokeFailed) {
++         throw new RuntimeException("BetterVehicleDynamics: impulse list invoke failed", invokeFailed);
+       }
+    }
+ 

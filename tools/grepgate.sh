@@ -5,7 +5,7 @@ set -u
 set -o pipefail
 ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || { echo "not a git repo"; exit 2; }
 cd "$ROOT" || exit 2
-HARD='RCP_|VPR_|VehiclePhysicsReworked|Vehicle_Physics_Reworked|VehiclePhysicsReworkedMod|Indivual|Step Van:0\.95|Step Van:80|Valuline|1990'"'"'s torque converters'
+HARD='RCP_|\bVPR\b|VPR_|VehiclePhysicsReworked|Vehicle_Physics_Reworked|Vehicle Physics Reworked|VehiclePhysicsReworkedMod|Indivual|Step Van:0\.95|Step Van:80|Valuline|1990'"'"'s torque converters'
 SOFT='RealisticCarPhysics|Realistic Car Physics|Black Moons'
 fail=0
 while IFS= read -r -d '' f; do

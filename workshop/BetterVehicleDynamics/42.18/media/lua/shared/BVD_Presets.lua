@@ -17,7 +17,7 @@ BVD.PRESETS = {
 }
 
 -- Keys use the BVD sandbox taxonomy.
--- EnginePower: collapsed from VPR's three per-class torque modifiers (Sport/Standard/HeavyDuty).
+-- EnginePower: a single engine-output knob collapsed from the original three per-class torque modifiers (sport / standard / heavy-duty).
 --   All three were identical in every preset so a single EnginePower key covers the behaviour.
 -- GripLevel: collapsed from OverallTraction (primary) + AccelerationTraction (secondary).
 --   The overall (feel) value is used as GripLevel; the per-acceleration sub-knob is merged in.

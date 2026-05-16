@@ -20,7 +20,7 @@ from PIL import Image
 # Configuration
 # ---------------------------------------------------------------------------
 RNG_SEED   = 20240516          # fixed — reproducible art
-SIZE       = 64                # pixels per side (matches VPR 64x64 reference)
+SIZE       = 64                # pixels per side (64x64 decal sprite)
 CORE_ALPHA = 155               # central streak opacity (0-255)
 EDGE_FADE  = 0.18              # fraction of half-width used for soft feather
 TREAD_STRENGTH = 28            # peak extra alpha for tread ribs

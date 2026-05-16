@@ -5,8 +5,91 @@ local SKID_SPEED      = 30
 
 local TYPE_V, TYPE_H, TYPE_D1, TYPE_D2 = 21, 22, 23, 24
 
+-- ---------------------------------------------------------------------------
+-- Heading -> decal-orientation mapping.
+--
+-- The shipped decal textures (see tools/gen_tiremarks.py) define the line
+-- axis convention as follows -- a skid line is drawn PARALLEL to travel:
+--   _v  (TYPE_V)  : line runs along the world-Y axis  (travel ~N/S)
+--   _h  (TYPE_H)  : line runs along the world-X axis  (travel ~E/W)
+--   _d1 (TYPE_D1) : line runs "\"  (NW<->SE)
+--   _d2 (TYPE_D2) : line runs "/"  (SW<->NE)
+--
+-- A heading angle is measured here from the +X world axis, CCW, using
+-- atan2(dy, dx). Because a tyre line is undirected (driving N and driving
+-- S leave the *same* line), we fold the angle into [0, 180) before
+-- bucketing into the four 45 deg wide bins.
+--
+-- HEADING_OFFSET_DEG and SWAP_D1_D2 are the two "I can't be 100% sure of
+-- PZ's iso/world handedness from Lua" escape hatches. The v<->h decision
+-- (parallel vs perpendicular to travel) is correct by construction -- it
+-- falls straight out of the texture convention above and the fact that
+-- heading and decal placement both use the SAME getX()/getY() frame. If
+-- the user reports the diagonals are mirrored, flip SWAP_D1_D2. If every
+-- orientation is rotated 90 deg, set HEADING_OFFSET_DEG = 90 (this should
+-- NOT be needed -- only the diagonals carry handedness ambiguity).
+local HEADING_OFFSET_DEG = 0      -- added to heading before bucketing
+local SWAP_D1_D2         = false  -- flip if "\" / "/" come out mirrored
+
 local LAST_TICK_MS = 0
 local recentTiles  = {}
+
+-- Probe-and-cache (project Kahlua rule: Kahlua red-logs caught Java
+-- exceptions, so probe each uncertain Java method ONCE and remember the
+-- result instead of call-and-hope every tick).
+local probedForward = nil   -- true once getForwardVector is known usable
+local lastPos       = {}    -- per-vehicle last (x,y) for delta heading
+
+-- Returns a continuous heading in degrees (atan2 convention, from +X CCW)
+-- or nil if no source is reliably available this tick. Order of
+-- preference: position-delta (same coord frame as decal placement, so
+-- zero axis-convention risk) -> getForwardVector (physics ground plane is
+-- .x/.z) -> getDir() coarse enum (last resort, never errors).
+local function vehicleHeadingDeg(v)
+    -- 1. Position delta in the exact getX()/getY() frame the decal uses.
+    local id = v.getId and v:getId() or tostring(v)
+    local x, y = v:getX(), v:getY()
+    local prev = lastPos[id]
+    lastPos[id] = { x = x, y = y }
+    if prev then
+        local dx, dy = x - prev.x, y - prev.y
+        if (dx * dx + dy * dy) > 0.0004 then   -- ~0.02 tile of motion
+            return math.deg(math.atan2(dy, dx))
+        end
+    end
+
+    -- 2. getForwardVector(Vector3f): physics ground plane is .x / .z
+    --    (.y is the vertical/height axis in PZ's physics Vector3f).
+    if probedForward ~= false and v.getForwardVector and Vector3f then
+        local ok, hx, hz = pcall(function()
+            local fv = Vector3f.new(0, 0, 0)
+            v:getForwardVector(fv)
+            return fv:x(), fv:z()
+        end)
+        if ok and hx and hz and (hx * hx + hz * hz) > 1e-6 then
+            probedForward = true
+            -- world ground frame: X<->x, Y<->z
+            return math.deg(math.atan2(hz, hx))
+        elseif probedForward == nil then
+            probedForward = false   -- unusable here; stop trying
+        end
+    end
+
+    -- 3. Coarse 8-way enum -- never errors, just imprecise.
+    if v.getDir then
+        local n = tostring(v:getDir())
+        if     n == "N"  then return 90
+        elseif n == "S"  then return 270
+        elseif n == "E"  then return 0
+        elseif n == "W"  then return 180
+        elseif n == "NE" then return 45
+        elseif n == "NW" then return 135
+        elseif n == "SE" then return 315
+        elseif n == "SW" then return 225
+        end
+    end
+    return nil
+end
 
 local function preloadTextures()
     local files = {
@@ -26,17 +109,35 @@ end
 
 Events.OnGameBoot.Add(preloadTextures)
 
+-- Last-resort default when no heading is available: keep V (matches the
+-- previous code's fallback so behaviour is unchanged on total failure).
+local LAST_TYPE = TYPE_V
+
 local function typeForVehicle(v)
-    local d = nil
-    if v.getDir then d = v:getDir() end
-    if not d then return TYPE_V end
-    local n = tostring(d)
-    if     n == "N" or n == "S"   then return TYPE_V
-    elseif n == "E" or n == "W"   then return TYPE_H
-    elseif n == "NE" or n == "SW" then return TYPE_D1
-    elseif n == "NW" or n == "SE" then return TYPE_D2
+    local h = vehicleHeadingDeg(v)
+    if not h then return LAST_TYPE end
+
+    -- Fold into [0, 180): a skid line is undirected, so a heading and its
+    -- 180 deg opposite must map to the same orientation.
+    local a = (h + HEADING_OFFSET_DEG) % 180.0
+    if a < 0 then a = a + 180.0 end
+
+    -- Bucket to the nearest of the 4 line orientations (45 deg bins,
+    -- centred on 0 / 45 / 90 / 135 with +-22.5 deg half-width):
+    --   ~0   deg : travel along world-X  -> line parallel to X -> TYPE_H
+    --   ~45  deg : travel "/" (SW<->NE)  -> TYPE_D2
+    --   ~90  deg : travel along world-Y  -> line parallel to Y -> TYPE_V
+    --   ~135 deg : travel "\" (NW<->SE)  -> TYPE_D1
+    local t
+    if     a < 22.5  then t = TYPE_H
+    elseif a < 67.5  then t = (SWAP_D1_D2 and TYPE_D1 or TYPE_D2)
+    elseif a < 112.5 then t = TYPE_V
+    elseif a < 157.5 then t = (SWAP_D1_D2 and TYPE_D2 or TYPE_D1)
+    else                  t = TYPE_H   -- wraps back toward 180==0
     end
-    return TYPE_V
+
+    LAST_TYPE = t
+    return t
 end
 
 local function dropMark(v, sq)

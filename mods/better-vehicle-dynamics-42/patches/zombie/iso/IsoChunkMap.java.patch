@@ -1,19 +1,21 @@
 diff --git a/zombie/iso/IsoChunkMap.java b/zombie/iso/IsoChunkMap.java
-index d60a94c..705e971 100644
+index d60a94c..8961676 100644
 --- a/zombie/iso/IsoChunkMap.java
 +++ b/zombie/iso/IsoChunkMap.java
-@@ -1116,8 +1116,12 @@ public final class IsoChunkMap {
+@@ -1116,8 +1116,14 @@ public final class IsoChunkMap {
                          inf.g -= cc / 3.0F;
                          inf.b -= cc / 3.0F;
                          float deltaAge = worldAge - b.worldAge;
 -                        if (deltaAge >= 0.0F && deltaAge < 72.0F) {
 -                           float f = 1.0F - deltaAge / 72.0F;
-+                        // BVD tyre marks use a shorter fade window than blood decals.
-+                        float maxAge = (b.type >= zombie.iso.IsoFloorBloodSplat.BVD_TIREMARK_TYPE_MIN
-+                            && b.type <= zombie.iso.IsoFloorBloodSplat.BVD_TIREMARK_TYPE_MAX)
-+                            ? zombie.iso.IsoFloorBloodSplat.BVD_TIREMARK_FADE_HOURS : 72.0F;
-+                        if (deltaAge >= 0.0F && deltaAge < maxAge) {
-+                           float f = 1.0F - deltaAge / maxAge;
++                        // Default decal lifetime; skid/tyre decals expire sooner (BVD).
++                        float fadeWindow = 72.0F;
++                        if (b.type >= zombie.iso.IsoFloorBloodSplat.BVD_TIREMARK_TYPE_MIN
++                              && b.type <= zombie.iso.IsoFloorBloodSplat.BVD_TIREMARK_TYPE_MAX) {
++                           fadeWindow = zombie.iso.IsoFloorBloodSplat.BVD_TIREMARK_FADE_HOURS;
++                        }
++                        if (deltaAge >= 0.0F && deltaAge < fadeWindow) {
++                           float f = 1.0F - deltaAge / fadeWindow;
                             inf.r *= 0.2F + f * 0.8F;
                             inf.g *= 0.2F + f * 0.8F;
                             inf.b *= 0.2F + f * 0.8F;

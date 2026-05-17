@@ -22,8 +22,9 @@ was released under the Creative Commons Zero (CC0 1.0) public-domain
 dedication. Under CC0 the author has waived all rights to the extent
 allowed by law, so no attribution is legally required; it is credited
 here purely as good practice and out of respect for the original
-recordist. The processing (windowing, mono/44.1 kHz resample, peak
-normalisation, de-click fades, Vorbis encode) is performed by the
+recordist. The processing (steady-state windowing, mono/44.1 kHz
+resample, gentle compression, a mild high-shelf, an equal-power loop
+crossfade, loudness normalisation, Vorbis encode) is performed by the
 committed helper `tools/make_skid_sample.sh`.
 
 The off-road tyre-squeal clip (`media/sound/BVD_skid_offroad.ogg`) is

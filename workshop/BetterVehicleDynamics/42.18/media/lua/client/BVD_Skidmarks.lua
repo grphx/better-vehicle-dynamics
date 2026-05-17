@@ -52,9 +52,12 @@ local recentTiles  = {}
 --              false = probed, API unusable -> permanent silent no-op
 --              a function(square) = the cached caller that worked
 local SOUND_NAME       = "BVD_Skid"
-local SOUND_COOLDOWN_MS = 1200          -- slightly under the ~1.4 s clip so a
-                                        -- sustained slide re-triggers without
-                                        -- restacking every OnPlayerUpdate tick
+-- TIED TO THE CLIP: tools/make_skid_sample.sh emits a 1800 ms loop-seamless
+-- clip whose last 200 ms is an equal-power crossfade back into its head.
+-- Re-trigger exactly as that crossfade tail begins (1800 - 200 = 1600) so a
+-- sustained slide is one continuous squeal with no overlap and no gap. If the
+-- script's DUR/XF change, change this to (DUR-XF)*1000 - XF*1000 to match.
+local SOUND_COOLDOWN_MS = 1600
 local SOUND_STATE      = nil
 local lastSoundMs      = 0
 

@@ -162,12 +162,20 @@ def main():
     out_dir = os.path.normpath(out_dir)
     os.makedirs(out_dir, exist_ok=True)
 
-    # direction_deg=0 → streak runs along Y (vertical); 90 → along X (horizontal)
+    # direction_deg=0 → streak runs along Y (vertical); 90 → along X (horizontal).
+    #
+    # PZ blits floor decals as a SCREEN-aligned quad at the tile position --
+    # there is no per-pixel isometric transform, so the iso perspective must
+    # be baked into the artwork. The two diagonal sprites therefore use the
+    # engine's exact 2:1 tile angle, atan(0.5) ≈ 26.565° off the horizontal,
+    # NOT a naive 45°. This angle is dictated by the renderer (functional),
+    # while the rib/noise pixel detail below remains independently authored.
+    iso = math.degrees(math.atan(0.5))                 # ≈ 26.565
     specs = [
-        ("Item_bvd_tiremark_v.png",  0.0,   "vertical   (Y-axis skid)"),
-        ("Item_bvd_tiremark_h.png",  90.0,  "horizontal (X-axis skid)"),
-        ("Item_bvd_tiremark_d1.png", 45.0,  "diagonal ↘ (45°)"),
-        ("Item_bvd_tiremark_d2.png", -45.0, "diagonal ↗ (-45°, mirror of d1)"),
+        ("Item_bvd_tiremark_v.png",  0.0,        "vertical   (screen-Y skid)"),
+        ("Item_bvd_tiremark_h.png",  90.0,       "horizontal (screen-X skid)"),
+        ("Item_bvd_tiremark_d1.png", 90.0 - iso, "shallow iso diagonal"),
+        ("Item_bvd_tiremark_d2.png", 90.0 + iso, "shallow iso diagonal (mirror)"),
     ]
 
     for fname, angle, desc in specs:

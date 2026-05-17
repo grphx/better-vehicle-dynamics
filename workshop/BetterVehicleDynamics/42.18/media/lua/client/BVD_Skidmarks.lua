@@ -8,32 +8,33 @@ local TYPE_V, TYPE_H, TYPE_D1, TYPE_D2 = 21, 22, 23, 24
 -- ---------------------------------------------------------------------------
 -- Heading -> decal-orientation mapping.
 --
--- The shipped decal textures (see tools/gen_tiremarks.py) define the line
--- axis convention as follows -- a skid line is drawn PARALLEL to travel:
---   _v  (TYPE_V)  : line runs along the world-Y axis  (travel ~N/S)
---   _h  (TYPE_H)  : line runs along the world-X axis  (travel ~E/W)
---   _d1 (TYPE_D1) : line runs "\"  (NW<->SE)
---   _d2 (TYPE_D2) : line runs "/"  (SW<->NE)
+-- KEY FACT: PZ blits a floor decal as a SCREEN-aligned quad at the tile's
+-- screen position -- it does NOT iso-project the sprite per pixel. So the
+-- decal's on-screen line orientation is just its image orientation, and the
+-- four sprites are authored to the four distinct ON-SCREEN line angles:
+--   _h  (TYPE_H)  : screen-horizontal
+--   _v  (TYPE_V)  : screen-vertical
+--   _d1 (TYPE_D1) : shallow iso diagonal  ( +atan(0.5) ~= +26.565 deg )
+--   _d2 (TYPE_D2) : shallow iso diagonal  ( -atan(0.5), the mirror )
 --
--- A heading angle is measured here from the +X world axis, CCW, using
--- atan2(dy, dx). Because a tyre line is undirected (driving N and driving
--- S leave the *same* line), we fold the angle into [0, 180) before
--- bucketing into the four 45 deg wide bins.
+-- A vehicle's WORLD heading therefore has to be projected into screen space
+-- before we can pick the matching sprite. PZ's iso projection of a world
+-- delta (dx, dy) is, up to a uniform scale:
+--     sx = dx - dy
+--     sy = (dx + dy) * 0.5            (2:1 tile ratio)
+-- A skid line is undirected, so we fold the screen angle into [0, 180) and
+-- bucket to the nearest of the four authored screen angles
+-- {0 (H), 26.565 (D1), 90 (V), 153.435 (D2)} using their midpoints as bin
+-- edges. Consequences (these are the cases the old world-space code got
+-- wrong): driving straight along a world-cardinal road moves on screen at
+-- +-26.565 deg, so it now correctly picks a shallow diagonal sprite, not
+-- H/V; driving a world-diagonal moves screen-vertical/horizontal -> V/H.
 --
--- The full angle->type table is derived from the texture convention above
--- plus PZ's world frame (X = east, Y = south) and atan2(dy, dx):
---   E/W  -> fold   0 deg -> TYPE_H   (line parallel to X)
---   N/S  -> fold  90 deg -> TYPE_V   (line parallel to Y)
---   SE/NW-> fold  45 deg -> TYPE_D1  ("\" NW<->SE)
---   NE/SW-> fold 135 deg -> TYPE_D2  ("/" SW<->NE)
--- So with the defaults below (offset 0, no swap) every orientation is
--- correct by construction. HEADING_OFFSET_DEG and SWAP_D1_D2 remain as
--- escape hatches in case PZ's iso/world handedness differs in practice:
--- if the user reports the diagonals come out mirrored, flip SWAP_D1_D2;
--- if EVERY orientation is rotated 90 deg, set HEADING_OFFSET_DEG = 90
--- (should NOT be needed -- the cardinal v<->h decision is unambiguous).
-local HEADING_OFFSET_DEG = 0      -- added to heading before bucketing
-local SWAP_D1_D2         = false  -- flip if "\" / "/" come out mirrored
+-- HEADING_OFFSET_DEG and SWAP_D1_D2 stay as escape hatches: only the d1<->d2
+-- handedness and an overall mirror are convention-ambiguous from Lua; if the
+-- user reports the diagonals look mirrored, flip SWAP_D1_D2.
+local HEADING_OFFSET_DEG = 0      -- added to the SCREEN angle before bucketing
+local SWAP_D1_D2         = false  -- flip if the two diagonals come out mirrored
 
 local LAST_TICK_MS = 0
 local recentTiles  = {}
@@ -127,23 +128,25 @@ local function typeForVehicle(v)
     local h = vehicleHeadingDeg(v)
     if not h then return LAST_TYPE end
 
-    -- Fold into [0, 180): a skid line is undirected, so a heading and its
-    -- 180 deg opposite must map to the same orientation.
-    local a = (h + HEADING_OFFSET_DEG) % 180.0
+    -- World heading -> world unit vector -> PZ iso projection -> the
+    -- ON-SCREEN line angle the skid mark actually has (see header note).
+    local r  = math.rad(h)
+    local wx = math.cos(r)
+    local wy = math.sin(r)
+    local sx = wx - wy
+    local sy = (wx + wy) * 0.5
+    local a  = (math.deg(math.atan2(sy, sx)) + HEADING_OFFSET_DEG) % 180.0
     if a < 0 then a = a + 180.0 end
 
-    -- Bucket to the nearest of the 4 line orientations (45 deg bins,
-    -- centred on 0 / 45 / 90 / 135 with +-22.5 deg half-width):
-    --   ~0   deg : travel along world-X  -> line parallel to X -> TYPE_H
-    --   ~45  deg : travel "\" (NW<->SE)  -> TYPE_D1
-    --   ~90  deg : travel along world-Y  -> line parallel to Y -> TYPE_V
-    --   ~135 deg : travel "/" (SW<->NE)  -> TYPE_D2
+    -- Bucket to the nearest authored screen angle. Targets are
+    -- 0 (H), 26.565 (D1), 90 (V), 153.435 (D2); bin edges are the
+    -- midpoints between adjacent targets (13.28 / 58.28 / 121.72 / 166.72).
     local t
-    if     a < 22.5  then t = TYPE_H
-    elseif a < 67.5  then t = (SWAP_D1_D2 and TYPE_D2 or TYPE_D1)
-    elseif a < 112.5 then t = TYPE_V
-    elseif a < 157.5 then t = (SWAP_D1_D2 and TYPE_D1 or TYPE_D2)
-    else                  t = TYPE_H   -- wraps back toward 180==0
+    if     a < 13.283  then t = TYPE_H
+    elseif a < 58.283  then t = (SWAP_D1_D2 and TYPE_D2 or TYPE_D1)
+    elseif a < 121.717 then t = TYPE_V
+    elseif a < 166.717 then t = (SWAP_D1_D2 and TYPE_D1 or TYPE_D2)
+    else                    t = TYPE_H   -- wraps back toward 180==0
     end
 
     LAST_TYPE = t

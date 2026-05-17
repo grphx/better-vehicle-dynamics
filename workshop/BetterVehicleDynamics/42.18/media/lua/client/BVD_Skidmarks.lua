@@ -39,6 +39,101 @@ local SWAP_D1_D2         = false  -- flip if the two diagonals come out mirrored
 local LAST_TICK_MS = 0
 local recentTiles  = {}
 
+-- ---------------------------------------------------------------------------
+-- Custom skid-squeal layer (probe).
+--
+-- We deliberately do NOT drive this from the Necroid Java side: the
+-- emitter/playSoundImpl route was found unreliable for shipping a custom
+-- file-clip on this build. Instead we try the Lua world-sound route
+-- (getSoundManager():PlayWorldSound) here. This is an experiment -- if it
+-- proves silent in-game the whole layer no-ops and we revisit.
+--
+-- SOUND_STATE: nil  = not probed yet
+--              false = probed, API unusable -> permanent silent no-op
+--              a function(square) = the cached caller that worked
+local SOUND_NAME       = "BVD_Skid"
+local SOUND_COOLDOWN_MS = 1200          -- slightly under the ~1.4 s clip so a
+                                        -- sustained slide re-triggers without
+                                        -- restacking every OnPlayerUpdate tick
+local SOUND_STATE      = nil
+local lastSoundMs      = 0
+
+-- PlayWorldSound has several B42 overloads and Kahlua red-logs every caught
+-- Java exception, so we must NOT call-and-hope each tick. On first real use
+-- we probe a small set of plausible signatures ONCE, against a live square,
+-- keep the first that returns a usable (non-nil, non-zero) handle, and cache
+-- that exact caller. Everything is wrapped in pcall; a total miss caches
+-- `false` and we never touch the API again this session.
+--
+-- Signatures attempted (sm = getSoundManager(), sq = an IsoGridSquare):
+--   A) sm:PlayWorldSound(name, sq, volMod, maxRadius, pitch, music)
+--        floats; music=false. The common 6-arg world form.
+--   B) sm:PlayWorldSound(name, sq, false, 0.0, 1.0, false)
+--        same arity, the "flag/zeroed" variant some builds expect.
+-- volMod ~1.0, maxRadius small (ground sound, ~a dozen tiles), pitch 1.0.
+local SOUND_CANDIDATES = {
+    function(sm, sq)
+        return sm:PlayWorldSound(SOUND_NAME, sq, 1.0, 12.0, 1.0, false)
+    end,
+    function(sm, sq)
+        return sm:PlayWorldSound(SOUND_NAME, sq, false, 0.0, 1.0, false)
+    end,
+}
+
+local function soundUsable()
+    return type(SOUND_STATE) == "function"
+end
+
+-- A handle is "usable" if the call returned something truthy that is not
+-- the numeric 0 some overloads hand back on a no-op.
+local function handleOk(h)
+    if h == nil or h == false then return false end
+    if type(h) == "number" and h == 0 then return false end
+    return true
+end
+
+-- Resolve + cache the working caller. `sq` must be a real square so the
+-- probe actually exercises the engine path (a nil square would let a
+-- broken overload "succeed" trivially). Runs at most once per session;
+-- after it, SOUND_STATE is either a cached caller fn or `false`.
+local function probeSound(sq)
+    if SOUND_STATE ~= nil then return end          -- already decided
+    if not sq then return end                      -- wait for a real square
+    local okMgr, sm = pcall(getSoundManager)
+    if not okMgr or not sm or not sm.PlayWorldSound then
+        SOUND_STATE = false
+        print("[BVD.Skidmarks] world-sound API unavailable; custom skid muted")
+        return
+    end
+    for i = 1, #SOUND_CANDIDATES do
+        local cand = SOUND_CANDIDATES[i]
+        local ok, handle = pcall(cand, sm, sq)
+        if ok and handleOk(handle) then
+            SOUND_STATE = cand
+            print("[BVD.Skidmarks] custom skid sound active (PlayWorldSound sig #" .. i .. ")")
+            return
+        end
+    end
+    SOUND_STATE = false
+    print("[BVD.Skidmarks] PlayWorldSound produced no handle; custom skid muted")
+end
+
+-- Fire the cached caller if (and only if) the cooldown has elapsed. Kept
+-- pcall-wrapped: even a previously-good signature can throw on an odd
+-- square, and we never want skid audio to spam the log mid-drive.
+local function playSkidSound(v, player)
+    if not soundUsable() then return end
+    local now = getTimestampMs and getTimestampMs() or 0
+    if now - lastSoundMs < SOUND_COOLDOWN_MS then return end
+    local sq = (v.getCurrentSquare and v:getCurrentSquare())
+            or (player and player:getCurrentSquare())
+    if not sq then return end
+    local sm = getSoundManager()
+    if not sm then return end
+    local ok = pcall(SOUND_STATE, sm, sq)
+    if ok then lastSoundMs = now end
+end
+
 -- Probe-and-cache (project Kahlua rule: Kahlua red-logs caught Java
 -- exceptions, so probe each uncertain Java method ONCE and remember the
 -- result instead of call-and-hope every tick).
@@ -204,6 +299,18 @@ local function onPlayerUpdate(player)
 
     dropMark(v, v:getCurrentSquare())
     LAST_TICK_MS = now
+
+    -- Custom squeal layer. Same enable gate as the marks (no dedicated
+    -- sound sandbox option exists, so reuse SkidMarks); probe once on the
+    -- first real skidding square, then fire on cooldown while still
+    -- skidding. Accepted for this probe: this may briefly overlap the
+    -- vanilla Java skid loop during genuine wheel-slip -- layering/dedupe
+    -- is a follow-up only if PlayWorldSound is confirmed audible.
+    if SOUND_STATE == nil then
+        probeSound((v.getCurrentSquare and v:getCurrentSquare())
+                   or player:getCurrentSquare())
+    end
+    playSkidSound(v, player)
 end
 
 Events.OnPlayerUpdate.Add(onPlayerUpdate)

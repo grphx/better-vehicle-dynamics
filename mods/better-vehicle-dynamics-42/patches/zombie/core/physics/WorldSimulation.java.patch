@@ -1,5 +1,5 @@
 diff --git a/zombie/core/physics/WorldSimulation.java b/zombie/core/physics/WorldSimulation.java
-index bd7e915..98a3dc9 100644
+index bd7e915..945a51b 100644
 --- a/zombie/core/physics/WorldSimulation.java
 +++ b/zombie/core/physics/WorldSimulation.java
 @@ -1,13 +1,21 @@
@@ -144,7 +144,7 @@ index bd7e915..98a3dc9 100644
           IsoChunkMap cm = IsoWorld.instance.currentCell.chunkMap[0];
           Bullet.initWorld(
              metaGrid.getMinX(),
-@@ -77,34 +184,135 @@ public final class WorldSimulation {
+@@ -77,34 +184,207 @@ public final class WorldSimulation {
     }
  
     private void updatePhysic() {
@@ -293,6 +293,86 @@ index bd7e915..98a3dc9 100644
 +         throw new RuntimeException("BetterVehicleDynamics: impulse field access denied", denied);
 +      } catch (InvocationTargetException invokeFailed) {
 +         throw new RuntimeException("BetterVehicleDynamics: impulse list invoke failed", invokeFailed);
++      }
++   }
++
++   private static long bvdSkidPruneMs = 0L;
++
++   // World-tick skid-mark expiry: runs every ~2s regardless of whether a
++   // vehicle is active, so BVD tyre marks (types 21-24) older than the
++   // configured window vanish even while the player is on foot or away
++   // from cars. Walks every loaded chunk; chunks with no splats cost
++   // nothing. Rebuilds the BoundedQueue without the expired marks and
++   // invalidates the chunk texture so they clear visually. Blood is never
++   // touched. (CarController also prunes around an active vehicle for an
++   // immediate response while driving; double-work is a no-op.)
++   private void bvdPruneSkidMarksWorld() {
++      long nowMs = System.currentTimeMillis();
++      if (nowMs - bvdSkidPruneMs < 2000L) {
++         return;
++      }
++      bvdSkidPruneMs = nowMs;
++      if (IsoWorld.instance == null || IsoWorld.instance.currentCell == null) {
++         return;
++      }
++      IsoChunkMap cm = IsoWorld.instance.currentCell.chunkMap[0];
++      if (cm == null) {
++         return;
++      }
++      float worldAge = (float)GameTime.getInstance().getWorldAgeHours();
++      float win = zombie.iso.IsoFloorBloodSplat.BVD_TIREMARK_FADE_HOURS;
++      int gw = IsoChunkMap.chunkGridWidth;
++
++      for (int cmx = 0; cmx < gw; cmx++) {
++         for (int cmy = 0; cmy < gw; cmy++) {
++            zombie.iso.IsoChunk ch = cm.getChunk(cmx, cmy);
++            if (ch == null) {
++               continue;
++            }
++            int count = ch.floorBloodSplats.size();
++            if (count == 0) {
++               continue;
++            }
++
++            java.util.ArrayList<zombie.iso.IsoFloorBloodSplat> keep = null;
++            int removed = 0;
++            for (int i = 0; i < count; i++) {
++               zombie.iso.IsoFloorBloodSplat s = ch.floorBloodSplats.get(i);
++               boolean expire = s.type >= zombie.iso.IsoFloorBloodSplat.BVD_TIREMARK_TYPE_MIN
++                  && s.type <= zombie.iso.IsoFloorBloodSplat.BVD_TIREMARK_TYPE_MAX
++                  && worldAge - s.worldAge >= win;
++               if (expire) {
++                  if (keep == null) {
++                     keep = new java.util.ArrayList<>();
++                     for (int k = 0; k < i; k++) {
++                        keep.add(ch.floorBloodSplats.get(k));
++                     }
++                  }
++                  removed++;
++                  ch.floorBloodSplatsFade.remove(s);
++               } else if (keep != null) {
++                  keep.add(s);
++               }
++            }
++
++            if (removed > 0) {
++               ch.floorBloodSplats.clear();
++               for (int i = 0; i < keep.size(); i++) {
++                  ch.floorBloodSplats.add(keep.get(i));
++               }
++               ch.invalidateRenderChunkLevels(1L);
++               zombie.debug.DebugType.General.println(
++                  "[BVD-SKID] world-pruned " + removed + " expired tyre mark(s)");
++            }
++         }
        }
     }
  
+@@ -116,6 +396,7 @@ public final class WorldSimulation {
+ 
+    private void updateInternal() {
+       if (this.created) {
++         this.bvdPruneSkidMarksWorld();
+          this.updatePhysic();
+          if (GameClient.client) {
+             try {

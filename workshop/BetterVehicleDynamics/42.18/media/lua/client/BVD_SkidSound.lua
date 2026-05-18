@@ -98,8 +98,12 @@ local function skidIntensity(v)
     local drift  = BetterVehicleDynamicsMod
                    and BetterVehicleDynamicsMod.driftActive == true
 
-    -- Standing burnout: barely moving, throttle pinned -> tyres spin.
-    if speed < BURNOUT_KPH and gas and not brake then
+    -- Standing burnout: flooring the throttle while the car is HELD in
+    -- place (foot-brake line-lock or handbrake) so the tyres spin without
+    -- moving. Requiring the car to be held is what distinguishes a burnout
+    -- from ordinary accelerating away from a stop -- plain (gas, no brake)
+    -- at low speed must NOT make skid noise.
+    if speed < BURNOUT_KPH and gas and (brake or hand) then
         -- Stronger the closer to a dead stop (max scrub at 0 km/h).
         return clamp01(0.55 + 0.35 * (1.0 - speed / BURNOUT_KPH))
     end

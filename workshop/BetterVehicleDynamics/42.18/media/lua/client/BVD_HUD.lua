@@ -60,9 +60,6 @@ local C_OVER   = { 1.00, 0.55, 0.45 }
 -- ---------------------------------------------------------------------------
 local probed = {
     mass    = nil,
-    script  = nil,
-    sMass   = nil,
-    fullt   = nil,
     enginep = nil,
 }
 
@@ -306,19 +303,25 @@ end
 -- Invalidate the cached rows on the window's update tick so configuration
 -- or vehicle changes are picked up without per-frame rebuilds. The update
 -- method runs far less often than render and is the natural refresh point.
-local _origUpdate = ISVehicleMechanics.update
-function ISVehicleMechanics:update()
-    if _origUpdate then _origUpdate(self) end
-    -- Cheap: just drop the cache; the next render rebuilds once.
-    self._bvdRows = nil
-end
+-- Idempotent install: a sentinel on the class prevents a second wrap
+-- (e.g. on /reloadlua) from stacking and double-drawing the section.
+if not ISVehicleMechanics.__bvdInspectionWrapped then
+    local _origUpdate = ISVehicleMechanics.update
+    function ISVehicleMechanics:update()
+        if _origUpdate then _origUpdate(self) end
+        -- Cheap: just drop the cache; the next render rebuilds once.
+        self._bvdRows = nil
+    end
 
--- Wrap render: original first (never suppressed), then our pcall-isolated
--- section. A fault in drawSection can never reach the vanilla window.
-local _origRender = ISVehicleMechanics.render
-function ISVehicleMechanics:render()
-    if _origRender then _origRender(self) end
-    pcall(drawSection, self)
-end
+    -- Wrap render: original first (never suppressed), then our
+    -- pcall-isolated section. A fault in drawSection can never reach
+    -- the vanilla window.
+    local _origRender = ISVehicleMechanics.render
+    function ISVehicleMechanics:render()
+        if _origRender then _origRender(self) end
+        pcall(drawSection, self)
+    end
 
-print("[BVD] vehicle inspection section installed (mechanics window)")
+    ISVehicleMechanics.__bvdInspectionWrapped = true
+    print("[BVD] vehicle inspection section installed (mechanics window)")
+end

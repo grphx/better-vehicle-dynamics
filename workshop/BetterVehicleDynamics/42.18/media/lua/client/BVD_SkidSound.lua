@@ -27,8 +27,13 @@ local CLIP_MS = 2000
 
 -- Intensity gating.
 local START_AT      = 0.18   -- rise above this (and silent) -> start
-local STOP_AT       = 0.04   -- fall to/below this -> stop
+local STOP_AT       = 0.04   -- fall to/below this -> begin fade-out
 local MASTER_SCALE  = 0.95   -- overall ceiling applied to per-tick volume
+
+-- A real tyre slide trails off; it does not blink out. When the slide
+-- ends we keep the held instance playing and ramp its volume to zero
+-- over FADE_MS, then actually stop. Renewed sliding mid-fade cancels it.
+local FADE_MS       = 600
 
 -- Speeds that shape the intensity curve (km/h).
 local SLIDE_MIN_KPH = 14.0   -- below this, no meaningful slide noise
@@ -46,6 +51,10 @@ local soundId       = nil
 local heldVehicle   = nil
 local heldEmitter   = nil    -- for the world-emitter path: keep & reposition
 local nextRefireMs  = 0      -- world-sound fallback re-arm clock
+local lastVol       = 0      -- last per-tick volume actually applied
+local fading        = false  -- in the post-slide fade-out tail?
+local fadeFromVol   = 0      -- volume the fade ramps down FROM
+local fadeUntilMs   = 0      -- wall-clock end of the fade
 
 local function clamp01(x)
     if x < 0 then return 0 end
@@ -232,6 +241,8 @@ local function startSkid(v)
     soundId      = id
     heldVehicle  = v
     active       = true
+    fading       = false
+    lastVol      = 0
     nextRefireMs = nowMs() + CLIP_MS
     print("[BVD-SND] skid loop START")
     return true
@@ -263,6 +274,8 @@ local function stopSkid()
         end
     end)
     active       = false
+    fading       = false
+    lastVol      = 0
     soundId      = nil
     heldVehicle  = nil
     heldEmitter  = nil
@@ -301,10 +314,33 @@ local function onPlayerUpdate(player)
 
     if active then
         if intensity <= STOP_AT then
-            stopSkid()
+            -- Slide ended: trail off instead of a hard cut. Start the
+            -- fade on the first such tick, ramping from whatever volume
+            -- was last playing down to zero over FADE_MS, then stop.
+            if not fading then
+                fading      = true
+                fadeFromVol = (lastVol > 0) and lastVol
+                              or (clamp01(intensity) * MASTER_SCALE)
+                fadeUntilMs = nowMs() + FADE_MS
+            end
+            local remain = fadeUntilMs - nowMs()
+            if remain <= 0 then
+                stopSkid()
+                return
+            end
+            local vol = fadeFromVol * (remain / FADE_MS)
+            lastVol = vol
+            setEmitterVolume(v, soundId, vol)
+            repositionWorldEmitter(v)
+            -- Do NOT re-arm the manager fallback while fading: let the
+            -- current instance wind down rather than tile a fresh one.
             return
         end
+
+        -- Sliding (again): cancel any in-progress fade and ride normally.
+        fading = false
         local vol = clamp01(intensity) * MASTER_SCALE
+        lastVol = vol
         setEmitterVolume(v, soundId, vol)
         repositionWorldEmitter(v)
 

@@ -153,7 +153,7 @@ local function buildCfg()
         DriftRotation = num("DriftRotation", 2000),
 
         -- Load dynamics
-        TireGripModel      = boolTrue("TireGripModel"),      -- default true
+        TireGripModel       = boolTrue("TireGripModel"),       -- default true
         LoadAffectsHandling = boolTrue("LoadAffectsHandling"), -- default true
         LoadAffectsFuel     = boolTrue("LoadAffectsFuel"),     -- default true
     }

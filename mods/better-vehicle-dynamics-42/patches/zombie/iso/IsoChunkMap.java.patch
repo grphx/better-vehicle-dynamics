@@ -1,5 +1,5 @@
 diff --git a/zombie/iso/IsoChunkMap.java b/zombie/iso/IsoChunkMap.java
-index d60a94c..7418db0 100644
+index d60a94c..0e5e7ce 100644
 --- a/zombie/iso/IsoChunkMap.java
 +++ b/zombie/iso/IsoChunkMap.java
 @@ -58,6 +58,7 @@ public final class IsoChunkMap {
@@ -10,7 +10,7 @@ index d60a94c..7418db0 100644
     public int playerId;
     public boolean ignore;
     public int worldX = chunkMapSquareToChunkMapChunkXY(worldXa);
-@@ -1116,13 +1117,49 @@ public final class IsoChunkMap {
+@@ -1116,13 +1117,57 @@ public final class IsoChunkMap {
                          inf.g -= cc / 3.0F;
                          inf.b -= cc / 3.0F;
                          float deltaAge = worldAge - b.worldAge;
@@ -22,15 +22,22 @@ index d60a94c..7418db0 100644
 +                              && b.type <= zombie.iso.IsoFloorBloodSplat.BVD_TIREMARK_TYPE_MAX) {
 +                           fadeWindow = zombie.iso.IsoFloorBloodSplat.BVD_TIREMARK_FADE_HOURS;
 +                        }
-+                        if (b.type >= zombie.iso.IsoFloorBloodSplat.BVD_TIREMARK_TYPE_MIN
-+                              && b.type <= zombie.iso.IsoFloorBloodSplat.BVD_TIREMARK_TYPE_MAX) {
++                        {
++                           // UNCONDITIONAL throttled sample of EVERY splat
++                           // reaching this loop, via the engine log channel
++                           // (raw System.out is not captured in B42). Zero
++                           // of these => this patched render path never runs
++                           // for the marks. Otherwise it shows their real
++                           // type vs the BVD range and the age/window.
 +                           long nowMs = System.currentTimeMillis();
 +                           if (nowMs - bvdSkidDbgMs > 3000L) {
 +                              bvdSkidDbgMs = nowMs;
-+                              System.out.println("[BVD-SKID-DBG] type=" + b.type
++                              zombie.debug.DebugType.General.println(
++                                 "[BVD-SKID-DBG] splat type=" + b.type
 +                                 + " deltaAge=" + deltaAge + " win=" + fadeWindow
-+                                 + " worldAge=" + worldAge + " bAge=" + b.worldAge
-+                                 + " expired=" + (deltaAge >= fadeWindow));
++                                 + " bvdRange=" + (b.type >= zombie.iso.IsoFloorBloodSplat.BVD_TIREMARK_TYPE_MIN
++                                       && b.type <= zombie.iso.IsoFloorBloodSplat.BVD_TIREMARK_TYPE_MAX)
++                                 + " ftLen=" + zombie.iso.IsoFloorBloodSplat.FLOOR_BLOOD_TYPES.length);
 +                           }
 +                        }
 +                        if (deltaAge >= 0.0F && deltaAge < fadeWindow) {
@@ -55,7 +62,8 @@ index d60a94c..7418db0 100644
 +                                 }
 +                              }
 +                              b.chunk.floorBloodSplatsFade.remove(b);
-+                              System.out.println("[BVD-SKID-DBG] REMOVED type=" + b.type
++                              zombie.debug.DebugType.General.println(
++                                 "[BVD-SKID-DBG] REMOVED type=" + b.type
 +                                 + " deltaAge=" + deltaAge);
 +                              continue;
 +                           }

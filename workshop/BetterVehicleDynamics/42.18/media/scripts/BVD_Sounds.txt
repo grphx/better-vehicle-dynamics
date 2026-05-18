@@ -1,0 +1,11 @@
+module Base
+{
+    sound BVD_SkidLoop
+    {
+        category = Object,
+        loop = true,
+        is3D = true,
+        master = VehicleEngine,
+        clip { file = media/sound/BVD_skid_loop.ogg, distanceMin = 8, distanceMax = 35, volume = 1.0, }
+    }
+}

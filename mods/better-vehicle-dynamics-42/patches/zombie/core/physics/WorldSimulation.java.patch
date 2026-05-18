@@ -1,5 +1,5 @@
 diff --git a/zombie/core/physics/WorldSimulation.java b/zombie/core/physics/WorldSimulation.java
-index bd7e915..86405d8 100644
+index bd7e915..98a3dc9 100644
 --- a/zombie/core/physics/WorldSimulation.java
 +++ b/zombie/core/physics/WorldSimulation.java
 @@ -1,13 +1,21 @@
@@ -33,7 +33,7 @@ index bd7e915..86405d8 100644
  import zombie.vehicles.BaseVehicle;
  import zombie.vehicles.VehicleManager;
  
-@@ -42,12 +52,102 @@ public final class WorldSimulation {
+@@ -42,12 +52,109 @@ public final class WorldSimulation {
     public float periodSec;
     private int bulletFrameNo = -1;
  
@@ -54,6 +54,13 @@ index bd7e915..86405d8 100644
 +   private Field bvdImpulseVector;
 +   private Field bvdImpulseEnabled;
 +   private boolean bvdReflectionReady;
++
++   // P6.1: reused scratch for the foliage/zombie impulse probe. It is fully
++   // overwritten by getLinearVelocity() before every read, so reusing one
++   // instance is identical to the previous per-entry, per-substep allocation
++   // while removing that allocation from the physics path. Dedicated (not the
++   // shared tempVector3f*) so it cannot alias the transform/collide scratch.
++   private final Vector3f bvdImpulseProbe = new Vector3f();
 +
 +   // BetterVehicleDynamics: corpse-shove rate limiter. The vanilla mod kept
 +   // this cooldown on the per-vehicle controller; we hold it here keyed by
@@ -137,7 +144,7 @@ index bd7e915..86405d8 100644
           IsoChunkMap cm = IsoWorld.instance.currentCell.chunkMap[0];
           Bullet.initWorld(
              metaGrid.getMinX(),
-@@ -77,34 +177,135 @@ public final class WorldSimulation {
+@@ -77,34 +184,135 @@ public final class WorldSimulation {
     }
  
     private void updatePhysic() {
@@ -239,7 +246,7 @@ index bd7e915..86405d8 100644
 +            // slice of the vehicle's own velocity; a zombie body hit queues
 +            // a much larger reaction. Probe both characteristic magnitudes
 +            // (~2.5% and ~10% of momentum) to tell the two apart.
-+            Vector3f probe = new Vector3f();
++            Vector3f probe = this.bvdImpulseProbe;
 +            vehicle.getLinearVelocity(probe);
 +            probe.mul(-0.025F * vehicle.getFudgedMass());
 +            boolean isFoliage = probe.sub(impulse).lengthSquared() < 0.001F;

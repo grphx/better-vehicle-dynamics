@@ -1,8 +1,8 @@
 diff --git a/zombie/core/physics/CarController.java b/zombie/core/physics/CarController.java
-index e0cfcc2..73b0110 100644
+index e0cfcc2..71ce1e8 100644
 --- a/zombie/core/physics/CarController.java
 +++ b/zombie/core/physics/CarController.java
-@@ -1,104 +1,253 @@
+@@ -1,104 +1,335 @@
  package zombie.core.physics;
  
 +import java.util.ArrayList;
@@ -110,6 +110,51 @@ index e0cfcc2..73b0110 100644
 -
 -   public CarController(BaseVehicle vehicleObject) {
 -      this.vehicleObject = vehicleObject;
++
++   // Per-tick allocation hoists (P6.1 / M2). These are all read-only after
++   // setup, so a single shared instance is byte-identical to the previous
++   // per-call allocation while removing the GC churn from the physics path.
++   //
++   // gearLabels: a fixed enum-ref table, indexed by gear; never written.
++   private static final TransmissionNumber[] GEAR_LABELS = new TransmissionNumber[]{
++      TransmissionNumber.R,
++      TransmissionNumber.Speed1,
++      TransmissionNumber.Speed2,
++      TransmissionNumber.Speed3,
++      TransmissionNumber.Speed4,
++      TransmissionNumber.Speed5,
++      TransmissionNumber.Speed6,
++      TransmissionNumber.Speed7,
++      TransmissionNumber.Speed8
++   };
++   // Default gearbox specs by script gear-ratio count (3 / 4 / 5). The original
++   // allocated a fresh GearboxSpec each tick and set one of these three exact
++   // ratio tables; the spec is only read afterwards (or replaced wholesale by a
++   // part-pack map entry), so a shared immutable default is equivalent.
++   private static final CarController.GearboxSpec DEFAULT_GEARBOX_3 = makeGearbox(new float[]{2.6F, 2.6F, 1.6F, 1.0F}, 3);
++   private static final CarController.GearboxSpec DEFAULT_GEARBOX_4 = makeGearbox(new float[]{3.0F, 3.0F, 1.8F, 1.3F, 1.0F}, 4);
++   private static final CarController.GearboxSpec DEFAULT_GEARBOX_5 = makeGearbox(new float[]{3.2F, 3.2F, 2.0F, 1.5F, 1.15F, 0.9F}, 5);
++   private static final CarController.ConverterSpec DEFAULT_CONVERTER = makeConverter(2000.0F, 800.0F);
++
++   private static CarController.GearboxSpec makeGearbox(float[] ratios, int gearCount) {
++      CarController.GearboxSpec gs = new CarController.GearboxSpec();
++      gs.ratios = ratios;
++      gs.gearCount = gearCount;
++      return gs;
++   }
++
++   private static CarController.ConverterSpec makeConverter(float lockupRpm, float lockupRange) {
++      CarController.ConverterSpec cs = new CarController.ConverterSpec();
++      cs.lockupRpm = lockupRpm;
++      cs.lockupRange = lockupRange;
++      return cs;
++   }
++
++   // applyDrag's drag-direction vector: re-used in place instead of a fresh
++   // Vector3f per call (applyDrag runs once per substep).
++   private final Vector3f dragDir = new Vector3f();
++   // updateSkidding's rear-wheel spin delta pair: re-used in place.
++   private final float[] skidSpinDelta = new float[2];
 +   float drunkDelayCommandTimer = 0.0F;
 +   boolean wasBreaking = false;
 +   boolean wasGas = false;
@@ -170,6 +215,15 @@ index e0cfcc2..73b0110 100644
 +   private static HashMap<String, CarController.GearboxSpec> gearboxSpecs = new HashMap<>();
 +   private static HashMap<String, CarController.ConverterSpec> converterSpecs = new HashMap<>();
 +   private static HashMap<String, Float> baseWheelFriction = new HashMap<>();
++   // Last wheelFriction value actually pushed into each shared VehicleScript
++   // (keyed by script name, matching baseWheelFriction's scope). VehicleScript
++   // state is shared per script, so once a value has been Load()'d + toBullet()'d
++   // the script's effective friction already equals it; re-pushing a target
++   // within FRICTION_EPSILON is a no-op on the resulting physics. Skipping that
++   // redundant Load avoids a script reparse + Bullet round-trip every substep
++   // while the grip target is steady (the common cruising case).
++   private static final HashMap<String, Float> lastAppliedFriction = new HashMap<>();
++   private static final float FRICTION_EPSILON = 1.0E-4F;
 +   private static String lastDrivenScript = "";
 +   // Per-world-load spec-generation gate. With the BVD bridge present, the Lua
 +   // side bumps BetterVehicleDynamicsMod.specGen once per world load; we rebuild
@@ -192,8 +246,36 @@ index e0cfcc2..73b0110 100644
 +
 +   // --- Sandbox helpers ----------------------------------------------------
 +
-+   private float getSandboxOption(String key, float fallback) {
++   // Resolved SandboxOption handles, keyed by sandbox name. getOptionByName is
++   // a linear scan over every registered option and was called several times
++   // per physics substep; the handle itself is stable for a world session, so
++   // we resolve it once and reuse it. The current value is still re-read from
++   // the cached handle on every call, so a mid-session value change is picked
++   // up exactly as before -- only the lookup is cached, not the value. The
++   // cache is dropped on the existing ~60-tick updateModOptions cadence so a
++   // late-registered option (or one not present at first touch) is re-resolved.
++   private final HashMap<String, SandboxOption> sandboxHandleCache = new HashMap<>();
++   private final java.util.HashSet<String> sandboxHandleMisses = new java.util.HashSet<>();
++
++   private SandboxOption resolveSandboxOption(String key) {
++      SandboxOption cached = this.sandboxHandleCache.get(key);
++      if (cached != null) {
++         return cached;
++      }
++      if (this.sandboxHandleMisses.contains(key)) {
++         return null;
++      }
 +      SandboxOption opt = SandboxOptions.instance.getOptionByName(key);
++      if (opt == null) {
++         this.sandboxHandleMisses.add(key);
++         return null;
++      }
++      this.sandboxHandleCache.put(key, opt);
++      return opt;
++   }
++
++   private float getSandboxOption(String key, float fallback) {
++      SandboxOption opt = this.resolveSandboxOption(key);
 +      if (opt == null) {
 +         return fallback;
 +      }
@@ -213,7 +295,7 @@ index e0cfcc2..73b0110 100644
 +   }
 +
 +   private boolean getSandboxOptionBoolean(String key, boolean fallback) {
-+      SandboxOption opt = SandboxOptions.instance.getOptionByName(key);
++      SandboxOption opt = this.resolveSandboxOption(key);
 +      if (opt == null) {
 +         return fallback;
 +      }
@@ -299,7 +381,7 @@ index e0cfcc2..73b0110 100644
              return gears[i];
           }
        }
-@@ -106,704 +255,1362 @@ public final class CarController {
+@@ -106,704 +337,1362 @@ public final class CarController {
        return null;
     }
  
@@ -478,16 +560,8 @@ index e0cfcc2..73b0110 100644
 +                  es.engineSound = val.toString();
 +               } else if (prop.equals("engineSoundRPM")) {
 +                  if (val instanceof Double dv) { es.engineSoundRpm = (float)dv.doubleValue(); }
-+               } else if (prop.equals("engineSoundBias")) {
-+                  if (val instanceof Double dv) { es.engineSoundBias = (float)dv.doubleValue(); }
-+               } else if (prop.equals("engineSoundMultipler")) {
-+                  if (val instanceof Double dv) { es.engineSoundGain = (float)dv.doubleValue(); }
 +               } else if (prop.equals("exhaustSound")) {
 +                  es.exhaustSound = val.toString();
-+               } else if (prop.equals("exhaustSoundBias")) {
-+                  if (val instanceof Double dv) { es.exhaustSoundBias = (float)dv.doubleValue(); }
-+               } else if (prop.equals("exhaustSoundMultipler")) {
-+                  if (val instanceof Double dv) { es.exhaustSoundGain = (float)dv.doubleValue(); }
 +               } else if (prop.equals("crankSound")) {
 +                  es.crankSound = val.toString();
 +               } else if (prop.equals("startSound")) {
@@ -573,6 +647,14 @@ index e0cfcc2..73b0110 100644
 +         return;
 +      }
 +      this.configRefreshCountdown = 60;
++      // Drop the resolved-sandbox-handle cache on the same ~60-tick cadence so
++      // an option that registered after our first touch (or a miss-cached key)
++      // is re-resolved. Behaviour-identical: every getSandboxOption* call still
++      // reads the live value from its handle; this only periodically forgets
++      // the handle so a fresh getOptionByName runs at most once per ~60 ticks
++      // per key instead of every substep.
++      this.sandboxHandleCache.clear();
++      this.sandboxHandleMisses.clear();
 +      KahluaTableImpl bridge = this.bvdBridge();
 +      if (bridge == null) {
 +         return;
@@ -649,48 +731,48 @@ index e0cfcc2..73b0110 100644
 +            this.pedalBrake = swap;
           }
 +      }
- 
--         if (bDrunkDriver && this.vehicleObject.engineState != BaseVehicle.engineStateTypes.Idle) {
--            if (this.isBreak && !this.wasBreaking) {
--               this.isBreak = this.delayCommandWhileDrunk(this.isBreak);
++
 +      if (autoRev && !this.analogPedals) {
 +         if (this.clientControls.backward) {
 +            if (forwardDot > 0.0F) {
 +               this.isBreak = true;
-             }
++            }
  
--            if (this.isGas && !this.wasGas) {
--               this.isGas = this.delayCommandWhileDrunk(this.isGas);
+-         if (bDrunkDriver && this.vehicleObject.engineState != BaseVehicle.engineStateTypes.Idle) {
+-            if (this.isBreak && !this.wasBreaking) {
+-               this.isBreak = this.delayCommandWhileDrunk(this.isBreak);
 +            if (forwardDot <= 0.0F) {
 +               this.isGasR = true;
 +               this.reversing = true;
              }
 +         }
  
--            if (this.isGasR && !this.wasGasR) {
--               this.isGasR = this.delayCommandWhileDrunk(this.isGas);
+-            if (this.isGas && !this.wasGas) {
+-               this.isGas = this.delayCommandWhileDrunk(this.isGas);
 +         if (this.clientControls.forward) {
 +            if (forwardDot < 0.0F) {
 +               this.isBreak = true;
              }
  
--            if (this.clientControls.steering != 0.0F && !this.wasSteering) {
--               this.clientControls.steering = this.delayCommandWhileDrunk(this.clientControls.steering);
+-            if (this.isGasR && !this.wasGasR) {
+-               this.isGasR = this.delayCommandWhileDrunk(this.isGas);
 +            if (forwardDot >= 0.0F) {
 +               this.isGas = true;
 +               this.reversing = false;
              }
-+
+ 
+-            if (this.clientControls.steering != 0.0F && !this.wasSteering) {
+-               this.clientControls.steering = this.delayCommandWhileDrunk(this.clientControls.steering);
 +            if (this.isGasR) {
 +               this.isGasR = false;
 +               this.isBreak = true;
-+            }
-+         }
+             }
+          }
 +      } else if (!autoRev && !this.analogPedals) {
 +         this.reversing = false;
 +         if (this.clientControls.forward) {
 +            this.isGas = true;
-          }
++         }
  
 -         this.updateRegulator();
 -         this.wasBreaking = this.isBreak;
@@ -765,17 +847,17 @@ index e0cfcc2..73b0110 100644
 +         this.isGas = false;
 +         this.isGasR = false;
 +      }
- 
--         this.vehicleObject.throttle = throttle;
--         float fpsMod = zombie.GameTime.getInstance().getMultiplier() / 0.8F;
--         CarController.ControlState controlState = CarController.ControlState.NoControl;
++
 +      if (this.clientControls.shift) {
 +         this.isGas = false;
 +         this.isGasR = false;
 +         this.clientControls.wasUsingParkingBrakes = false;
 +         this.reversing = false;
 +      }
-+
+ 
+-         this.vehicleObject.throttle = throttle;
+-         float fpsMod = zombie.GameTime.getInstance().getMultiplier() / 0.8F;
+-         CarController.ControlState controlState = CarController.ControlState.NoControl;
 +      float throttle = this.vehicleObject.throttle;
 +      if (this.vehicleObject.isRegulator() && !this.isGas && !this.isGasR) {
 +         float gap = this.vehicleObject.getRegulatorSpeed() - fakeSpeed;
@@ -850,7 +932,10 @@ index e0cfcc2..73b0110 100644
 +      if (this.isGas || this.isGasR || this.isBreak) {
 +         UIManager.speedControls.SetCurrentGameSpeed(1);
 +      }
-+
+ 
+-         this.updateBackSignal();
+-         if (controlState == CarController.ControlState.Braking) {
+-            this.control_Braking();
 +      if ((this.isGasR || this.isGas) && this.clientControls.wasUsingParkingBrakes) {
 +         this.clientControls.wasUsingParkingBrakes = false;
 +      }
@@ -859,10 +944,7 @@ index e0cfcc2..73b0110 100644
 +      if (this.analogPedals) {
 +         this.isBreak = this.isBreak | this.pedalBrake > 0.1;
 +      }
- 
--         this.updateBackSignal();
--         if (controlState == CarController.ControlState.Braking) {
--            this.control_Braking();
++
 +      if (this.isBreak) {
 +         this.brakingForce = this.vehicleObject.getBrakingForce();
 +         if (this.analogPedals && !this.clientControls.brake) {
@@ -953,57 +1035,22 @@ index e0cfcc2..73b0110 100644
 -            if (this.engineStartingFromKeyboard && this.engineForce == 0.0F) {
 -               this.engineStartingFromKeyboard = false;
 -            }
--         }
 +   // --- Steering -----------------------------------------------------------
- 
--         if (this.vehicleObject.engineState != BaseVehicle.engineStateTypes.Running) {
--            this.acceleratorOn = false;
--            if (!GameServer.server && this.vehicleObject.getCurrentSpeedKmHour() > 5.0F && this.vehicleObject.getScript().getWheelCount() > 0) {
--               Bullet.controlVehicle(this.vehicleObject.vehicleId, 0.0F, this.brakingForce, this.vehicleSteering);
--            } else {
--               this.park();
--            }
--         }
++
 +   // When the player is holding the drift key the steering rack turns the
 +   // front wheels in faster than usual, so the car can rotate into a corner
 +   // while the rear is loose. Returns a multiplier (1.0 = no drift assist).
 +   private float getDriftSteeringBoost() {
 +      if (!this.getSandboxOptionBoolean("BetterVehicleDynamics.Drift", false)) {
 +         return 1.0F;
-       }
++      }
 +      KahluaTableImpl bridge = this.bvdBridge();
 +      if (bridge != null && bridge.rawgetBool("driftActive")) {
 +         return this.getSandboxOption("BetterVehicleDynamics.DriftSteer", 1.5F);
 +      }
 +      return 1.0F;
-    }
- 
--   public void updateTrailer() {
--      BaseVehicle vehicleTowedBy = this.vehicleObject.getVehicleTowedBy();
--      if (vehicleTowedBy != null) {
--         if (GameServer.server) {
--            if (vehicleTowedBy.getDriver() == null && this.vehicleObject.getDriver() != null) {
--               this.vehicleObject.addPointConstraint(null, vehicleTowedBy, this.vehicleObject.getTowAttachmentSelf(), vehicleTowedBy.getTowAttachmentSelf());
--            }
--         } else {
--            this.speed = this.vehicleObject.getCurrentSpeedKmHour();
--            this.isGas = false;
--            this.isGasR = false;
--            this.isBreak = false;
--            this.wasGas = false;
--            this.wasGasR = false;
--            this.wasBreaking = false;
--            this.vehicleObject.throttle = 0.0F;
--            if (vehicleTowedBy.getDriver() == null && this.vehicleObject.getDriver() != null && !GameClient.client) {
--               this.vehicleObject.addPointConstraint(null, vehicleTowedBy, this.vehicleObject.getTowAttachmentSelf(), vehicleTowedBy.getTowAttachmentSelf());
--            } else {
--               this.checkShouldBeActive();
--               this.engineForce = 0.0F;
--               this.brakingForce = 0.0F;
--               this.vehicleSteering = 0.0F;
--               if (!this.vehicleObject.getScriptName().contains("Trailer")) {
--                  this.brakingForce = 10.0F;
--               }
++   }
++
 +   // Stock-feel steering: turn-in scaled by remaining speed headroom, then a
 +   // soft self-centre when the wheel is released. Used when tunable steering
 +   // is disabled on the bridge.
@@ -1026,9 +1073,7 @@ index e0cfcc2..73b0110 100644
 +         this.steerAngle += 0.04F * fps;
 +         this.steerAngle = Math.min(this.steerAngle, 0.0F);
 +      }
- 
--               Bullet.controlVehicle(this.vehicleObject.vehicleId, this.engineForce, this.brakingForce, this.vehicleSteering);
--            }
++
 +      float clamp = script.getSteeringClamp(this.speed);
 +      this.steerAngle = PZMath.clamp(this.steerAngle, -clamp, clamp);
 +   }
@@ -1051,19 +1096,30 @@ index e0cfcc2..73b0110 100644
 +            pumpHealth = pump.getCondition();
 +            pumpHealth *= Math.min(1.0F, pump.getFluidContainer().getFilledRatio() * 2.0F);
           }
-+
+ 
+-         if (this.vehicleObject.engineState != BaseVehicle.engineStateTypes.Running) {
+-            this.acceleratorOn = false;
+-            if (!GameServer.server && this.vehicleObject.getCurrentSpeedKmHour() > 5.0F && this.vehicleObject.getScript().getWheelCount() > 0) {
+-               Bullet.controlVehicle(this.vehicleObject.vehicleId, 0.0F, this.brakingForce, this.vehicleSteering);
+-            } else {
+-               this.park();
+-            }
 +         if (belt != null) {
 +            beltHealth = belt.getCondition();
-+         }
+          }
 +
 +         float assist = pumpHealth / 50.0F * Math.max(1.0F, beltHealth / 30.0F) * (float)this.vehicleObject.engineSpeed / 2000.0F;
 +         turnIn = Math.min(turnIn, assist * this.steerGainLow);
        }
 -   }
  
--   private void updateRegulator() {
--      if (this.regulatorTimer > 0.0F) {
--         this.regulatorTimer = this.regulatorTimer - zombie.GameTime.getInstance().getThirtyFPSMultiplier();
+-   public void updateTrailer() {
+-      BaseVehicle vehicleTowedBy = this.vehicleObject.getVehicleTowedBy();
+-      if (vehicleTowedBy != null) {
+-         if (GameServer.server) {
+-            if (vehicleTowedBy.getDriver() == null && this.vehicleObject.getDriver() != null) {
+-               this.vehicleObject.addPointConstraint(null, vehicleTowedBy, this.vehicleObject.getTowAttachmentSelf(), vehicleTowedBy.getTowAttachmentSelf());
+-            }
 +      boolean activelyTurning = false;
 +      if (Math.abs(this.clientControls.steering) > 0.1F) {
 +         if (this.clientControls.steering < 0.0F == this.steerAngle < 0.0F) {
@@ -1074,46 +1130,41 @@ index e0cfcc2..73b0110 100644
 +         activelyTurning = true;
 +      } else if (Math.abs(this.steerAngle) <= 0.04) {
 +         this.steerAngle = 0.0F;
-       }
- 
--      if (this.clientControls.shift) {
--         if (this.clientControls.forward && this.regulatorTimer <= 0.0F) {
--            if (this.vehicleObject.getRegulatorSpeed() < this.vehicleObject.getMaxSpeed() + 20.0F
--               && (!this.vehicleObject.isRegulator() && this.vehicleObject.getRegulatorSpeed() == 0.0F || this.vehicleObject.isRegulator())) {
--               if (this.vehicleObject.getRegulatorSpeed() == 0.0F && this.vehicleObject.getCurrentSpeedForRegulator() != this.vehicleObject.getRegulatorSpeed()
--                  )
--                {
--                  this.vehicleObject.setRegulatorSpeed(this.vehicleObject.getCurrentSpeedForRegulator());
--               } else {
--                  this.vehicleObject.setRegulatorSpeed(this.vehicleObject.getRegulatorSpeed() + 5.0F);
--               }
--            }
++      }
++
 +      if (!activelyTurning) {
 +         if (this.steerAngle > 0.0F) {
 +            this.steerAngle -= selfCentre * 4.0F * dt;
 +            this.steerAngle = Math.max(this.steerAngle, 0.0F);
-+         } else {
+          } else {
+-            this.speed = this.vehicleObject.getCurrentSpeedKmHour();
+-            this.isGas = false;
+-            this.isGasR = false;
+-            this.isBreak = false;
+-            this.wasGas = false;
+-            this.wasGasR = false;
+-            this.wasBreaking = false;
+-            this.vehicleObject.throttle = 0.0F;
+-            if (vehicleTowedBy.getDriver() == null && this.vehicleObject.getDriver() != null && !GameClient.client) {
+-               this.vehicleObject.addPointConstraint(null, vehicleTowedBy, this.vehicleObject.getTowAttachmentSelf(), vehicleTowedBy.getTowAttachmentSelf());
+-            } else {
+-               this.checkShouldBeActive();
+-               this.engineForce = 0.0F;
+-               this.brakingForce = 0.0F;
+-               this.vehicleSteering = 0.0F;
+-               if (!this.vehicleObject.getScriptName().contains("Trailer")) {
+-                  this.brakingForce = 10.0F;
+-               }
 +            this.steerAngle += selfCentre * 4.0F * dt;
 +            this.steerAngle = Math.min(this.steerAngle, 0.0F);
 +         }
 +      }
- 
--            this.vehicleObject.setRegulator(true);
--            this.regulatorTimer = 20.0F;
--         } else if (this.clientControls.backward && this.regulatorTimer <= 0.0F) {
--            this.regulatorTimer = 20.0F;
--            if (this.vehicleObject.getRegulatorSpeed() >= 5.0F
--               && (!this.vehicleObject.isRegulator() && this.vehicleObject.getRegulatorSpeed() == 0.0F || this.vehicleObject.isRegulator())) {
--               this.vehicleObject.setRegulatorSpeed(this.vehicleObject.getRegulatorSpeed() - 5.0F);
--            }
++
 +      float clamp = script.getSteeringClamp(this.speed);
 +      this.steerAngle = PZMath.clamp(this.steerAngle, -clamp, clamp);
 +   }
  
--            this.vehicleObject.setRegulator(true);
--            if (this.vehicleObject.getRegulatorSpeed() <= 0.0F) {
--               this.vehicleObject.setRegulatorSpeed(0.0F);
--               this.vehicleObject.setRegulator(false);
+-               Bullet.controlVehicle(this.vehicleObject.vehicleId, this.engineForce, this.brakingForce, this.vehicleSteering);
 +   // --- Grip + drag --------------------------------------------------------
 +
 +   // Aggregate tire pressure/condition and fold in the sandbox grip budget
@@ -1134,30 +1185,42 @@ index e0cfcc2..73b0110 100644
 +               this.vehicleObject.setTireInflation(i, 1.0F);
              }
           }
--      } else if (this.isGasR || this.isBreak) {
--         this.vehicleObject.setRegulator(false);
        }
 -   }
  
--   public float getVehicleSteering() {
--      return this.vehicleSteering;
--   }
+-   private void updateRegulator() {
+-      if (this.regulatorTimer > 0.0F) {
+-         this.regulatorTimer = this.regulatorTimer - zombie.GameTime.getInstance().getThirtyFPSMultiplier();
 +      if (wheelCount > 0) {
 +         fillSum /= wheelCount;
 +         wearSum = wearSum * 0.01F / wheelCount;
-+      }
+       }
  
--   public boolean isGas() {
--      return this.isGas;
--   }
+-      if (this.clientControls.shift) {
+-         if (this.clientControls.forward && this.regulatorTimer <= 0.0F) {
+-            if (this.vehicleObject.getRegulatorSpeed() < this.vehicleObject.getMaxSpeed() + 20.0F
+-               && (!this.vehicleObject.isRegulator() && this.vehicleObject.getRegulatorSpeed() == 0.0F || this.vehicleObject.isRegulator())) {
+-               if (this.vehicleObject.getRegulatorSpeed() == 0.0F && this.vehicleObject.getCurrentSpeedForRegulator() != this.vehicleObject.getRegulatorSpeed()
+-                  )
+-                {
+-                  this.vehicleObject.setRegulatorSpeed(this.vehicleObject.getCurrentSpeedForRegulator());
+-               } else {
+-                  this.vehicleObject.setRegulatorSpeed(this.vehicleObject.getRegulatorSpeed() + 5.0F);
+-               }
+-            }
 +      this.tireFill = fillSum;
 +      this.tireWear = wearSum;
 +      float grip = this.tireWear * 0.5F + 0.5F;
 +      grip *= this.getSandboxOption("BetterVehicleDynamics.GripLevel", 1.0F);
  
--   public boolean isGasR() {
--      return this.isGasR;
--   }
+-            this.vehicleObject.setRegulator(true);
+-            this.regulatorTimer = 20.0F;
+-         } else if (this.clientControls.backward && this.regulatorTimer <= 0.0F) {
+-            this.regulatorTimer = 20.0F;
+-            if (this.vehicleObject.getRegulatorSpeed() >= 5.0F
+-               && (!this.vehicleObject.isRegulator() && this.vehicleObject.getRegulatorSpeed() == 0.0F || this.vehicleObject.isRegulator())) {
+-               this.vehicleObject.setRegulatorSpeed(this.vehicleObject.getRegulatorSpeed() - 5.0F);
+-            }
 +      float snowGrip = 1.0F;
 +      if (ClimateManager.getInstance().getSnowStrength() > 0.5F) {
 +         float snowLoss = 1.0F - this.getSandboxOption("BetterVehicleDynamics.SnowGrip", 0.45F);
@@ -1165,33 +1228,39 @@ index e0cfcc2..73b0110 100644
 +         snowGrip = (1.0F - snowLoss) * script.getOffroadEfficiency();
 +      }
  
--   public boolean isBreak() {
--      return this.isBreak;
+-            this.vehicleObject.setRegulator(true);
+-            if (this.vehicleObject.getRegulatorSpeed() <= 0.0F) {
+-               this.vehicleObject.setRegulatorSpeed(0.0F);
+-               this.vehicleObject.setRegulator(false);
+-            }
+-         }
+-      } else if (this.isGasR || this.isBreak) {
+-         this.vehicleObject.setRegulator(false);
 +      float surfaceGrip = 1.0F;
 +      if (this.vehicleObject.isDoingOffroad()) {
 +         float offLoss = this.getSandboxOption("BetterVehicleDynamics.OffroadGrip", 0.85F);
 +         offLoss = 1.0F - offLoss;
 +         offLoss *= 0.5F + this.tireFill / 2.0F;
 +         surfaceGrip = (1.0F - offLoss) * script.getOffroadEfficiency();
-+      }
-+
+       }
+-   }
+ 
+-   public float getVehicleSteering() {
+-      return this.vehicleSteering;
+-   }
 +      if (ClimateManager.getInstance().isRaining()) {
 +         surfaceGrip *= this.getSandboxOption("BetterVehicleDynamics.WetGrip", 0.7F);
 +      }
-+
+ 
+-   public boolean isGas() {
+-      return this.isGas;
 +      grip *= Math.min(1.0F, Math.min(snowGrip, surfaceGrip));
 +      this.gripFactor = grip;
     }
  
--   public void control_NoControl() {
--      float fpsMult = zombie.GameTime.getInstance().getMultiplier() / 0.8F;
--      if (!this.vehicleObject.isEngineRunning()) {
--         if (this.vehicleObject.engineSpeed > 0.0) {
--            this.vehicleObject.engineSpeed = Math.max(this.vehicleObject.engineSpeed - 50.0F * fpsMult, 0.0);
--         }
--      } else if (this.vehicleObject.engineSpeed > this.vehicleObject.getScript().getEngineIdleSpeed()) {
--         if (!this.vehicleObject.isRegulator()) {
--            this.vehicleObject.engineSpeed -= 20.0F * fpsMult;
+-   public boolean isGasR() {
+-      return this.isGasR;
+-   }
 +   // Push the script's effective wheel friction toward the grip target, and
 +   // apply aerodynamic + rolling drag as a central force. While drifting,
 +   // friction is slashed and a yaw torque is applied so the car rotates into
@@ -1225,39 +1294,54 @@ index e0cfcc2..73b0110 100644
 +               float yaw = -this.clientControls.steering * rotScale * (this.vehicleObject.getMass() * 0.001F);
 +               Bullet.applyTorqueToVehicle(this.vehicleObject.vehicleId, 0.0F, yaw, 0.0F);
 +            }
++         }
++      }
+ 
+-   public boolean isBreak() {
+-      return this.isBreak;
+-   }
++      // Grip-model gate is always-on per the BVD sandbox taxonomy: there is no
++      // "GripLevelEnabled" tickbox to disable it (grip is tuned by the GripLevel
++      // / SnowGrip / WetGrip / OffroadGrip knobs instead). The undeclared key
++      // resolves to its true fallback every call, so this is held as a constant
++      // to make the always-on intent explicit and skip the per-substep lookup.
++      boolean applyGrip = true;
++      if (this.vehicleObject.getDriver() != null) {
++         lastDrivenScript = script.getName();
++      } else if (lastDrivenScript.equals(script.getName())) {
++         applyGrip = false;
++      }
+ 
+-   public void control_NoControl() {
+-      float fpsMult = zombie.GameTime.getInstance().getMultiplier() / 0.8F;
+-      if (!this.vehicleObject.isEngineRunning()) {
+-         if (this.vehicleObject.engineSpeed > 0.0) {
+-            this.vehicleObject.engineSpeed = Math.max(this.vehicleObject.engineSpeed - 50.0F * fpsMult, 0.0);
++      if (applyGrip) {
++         Float lastApplied = lastAppliedFriction.get(script.getName());
++         if (lastApplied != null && Math.abs(lastApplied - target) < FRICTION_EPSILON) {
++            // The shared script's wheelFriction is already at this target
++            // (within a sub-physical epsilon); the Load + toBullet round-trip
++            // would reproduce the identical effective friction. Skip it.
++            return;
+          }
+-      } else if (this.vehicleObject.engineSpeed > this.vehicleObject.getScript().getEngineIdleSpeed()) {
+-         if (!this.vehicleObject.isRegulator()) {
+-            this.vehicleObject.engineSpeed -= 20.0F * fpsMult;
++         try {
++            script.Load(script.getName(), "{ wheelFriction = " + target + ", }");
++            script.toBullet();
++            lastAppliedFriction.put(script.getName(), target);
++         } catch (Exception ex) {
++            DebugLog.log("[BetterVehicleDynamics] failed to push wheelFriction to script");
           }
 -      } else {
 -         this.vehicleObject.engineSpeed += 20.0F * fpsMult;
        }
++   }
  
 -      if (!this.vehicleObject.isRegulator()) {
 -         this.vehicleObject.transmissionNumber = TransmissionNumber.N;
-+      boolean applyGrip = this.getSandboxOptionBoolean("BetterVehicleDynamics.GripLevelEnabled", true);
-+      if (this.vehicleObject.getDriver() != null) {
-+         lastDrivenScript = script.getName();
-+      } else if (lastDrivenScript == script.getName()) {
-+         applyGrip = false;
-       }
- 
--      this.engineForce = 0.0F;
--      if (this.vehicleObject.engineSpeed > 1000.0) {
--         this.brakingForce = 15.0F;
--      } else {
--         this.brakingForce = 10.0F;
-+      if (applyGrip) {
-+         try {
-+            script.Load(script.getName(), "{ wheelFriction = " + target + ", }");
-+            script.toBullet();
-+         } catch (Exception ex) {
-+            DebugLog.log("[BetterVehicleDynamics] failed to push wheelFriction to script");
-+         }
-       }
-    }
- 
--   private void control_Braking() {
--      float fpsMult = zombie.GameTime.getInstance().getMultiplier() / 0.8F;
--      if (this.vehicleObject.engineSpeed > this.vehicleObject.getScript().getEngineIdleSpeed()) {
--         this.vehicleObject.engineSpeed = this.vehicleObject.engineSpeed - Rand.Next(10, 30) * fpsMult;
 +   private void applyDrag(float dt) {
 +      VehicleScript script = this.vehicleObject.getScript();
 +      this.applyFriction();
@@ -1268,8 +1352,11 @@ index e0cfcc2..73b0110 100644
 +         drag *= 0.7F;
 +      } else if (script.getMechanicType() == 2) {
 +         drag *= 1.5F;
-+      }
-+
+       }
+ 
+-      this.engineForce = 0.0F;
+-      if (this.vehicleObject.engineSpeed > 1000.0) {
+-         this.brakingForce = 15.0F;
 +      if (this.vehicleObject.isDoingOffroad()) {
 +         float eff = script.getOffroadEfficiency();
 +         if (this.vehicleObject.isInForest()) {
@@ -1281,11 +1368,37 @@ index e0cfcc2..73b0110 100644
 +         roll *= this.vehicleObject.getMass() * (1.0F + this.tireFill * 0.6F) / eff;
 +         drag += roll;
        } else {
--         this.vehicleObject.engineSpeed = this.vehicleObject.engineSpeed + Rand.Next(20) * fpsMult;
+-         this.brakingForce = 10.0F;
 +         float roll = this.getSandboxOption("BetterVehicleDynamics.RollResistance", 1.0F) * 0.05F;
 +         roll += 0.001F * absSpeed;
 +         roll *= this.vehicleObject.getMass() * (2.0F - this.tireFill);
 +         drag += roll;
+       }
++
++      Vector3f dir = this.dragDir.set(this.vehicleObject.jniLinearVelocity);
++      if (dir.lengthSquared() > 0.1) {
++         dir.normalize();
++      }
++
++      dir.mul(drag * WorldSimulation.instance.massScaler * dt * -200.0F);
++      Bullet.applyCentralForceToVehicle(this.vehicleObject.vehicleId, dir.x, dir.y, dir.z);
+    }
+ 
+-   private void control_Braking() {
+-      float fpsMult = zombie.GameTime.getInstance().getMultiplier() / 0.8F;
+-      if (this.vehicleObject.engineSpeed > this.vehicleObject.getScript().getEngineIdleSpeed()) {
+-         this.vehicleObject.engineSpeed = this.vehicleObject.engineSpeed - Rand.Next(10, 30) * fpsMult;
+-      } else {
+-         this.vehicleObject.engineSpeed = this.vehicleObject.engineSpeed + Rand.Next(20) * fpsMult;
++   // --- Idle + audio -------------------------------------------------------
++
++   private void updateIdle(float dt, VehiclePart enginePart) {
++      this.idleRpmRetimer -= dt;
++      if (this.idleRpmRetimer <= 0.0F) {
++         this.idleRpmRetimer = 0.1F;
++         if (enginePart != null) {
++            this.idleRpmTarget = Rand.Next(650, 700 + (200 - enginePart.getCondition() * 2));
++         }
        }
  
 -      this.vehicleObject.transmissionNumber = TransmissionNumber.N;
@@ -1293,13 +1406,11 @@ index e0cfcc2..73b0110 100644
 -      this.brakingForce = this.vehicleObject.getBrakingForce();
 -      if (this.clientControls.brake) {
 -         this.brakingForce *= 13.0F;
-+      Vector3f dir = new Vector3f(this.vehicleObject.jniLinearVelocity);
-+      if (dir.lengthSquared() > 0.1) {
-+         dir.normalize();
++      float rpm = (float)this.vehicleObject.engineSpeed;
++      if (rpm < this.idleRpmTarget) {
++         float bump = Math.min(Math.max((this.idleRpmTarget - rpm) * 0.01F, 0.0F), 0.3F);
++         this.vehicleObject.throttle = Math.max(bump, this.vehicleObject.throttle);
        }
-+
-+      dir.mul(drag * WorldSimulation.instance.massScaler * dt * -200.0F);
-+      Bullet.applyCentralForceToVehicle(this.vehicleObject.vehicleId, dir.x, dir.y, dir.z);
     }
  
 -   private void control_Forward(float speed) {
@@ -1317,32 +1428,9 @@ index e0cfcc2..73b0110 100644
 -            if (this.vehicleObject.transmissionNumber == TransmissionNumber.Speed1) {
 -               engineSpeedCalc = 3000.0F * speed / 30.0F;
 -            }
-+   // --- Idle + audio -------------------------------------------------------
- 
+-
 -            if (this.vehicleObject.transmissionNumber == TransmissionNumber.Speed2) {
 -               engineSpeedCalc = 3000.0F * speed / 40.0F;
--            }
-+   private void updateIdle(float dt, VehiclePart enginePart) {
-+      this.idleRpmRetimer -= dt;
-+      if (this.idleRpmRetimer <= 0.0F) {
-+         this.idleRpmRetimer = 0.1F;
-+         if (enginePart != null) {
-+            this.idleRpmTarget = Rand.Next(650, 700 + (200 - enginePart.getCondition() * 2));
-+         }
-+      }
- 
--            if (this.vehicleObject.transmissionNumber == TransmissionNumber.Speed3) {
--               engineSpeedCalc = 3000.0F * speed / 60.0F;
--            }
-+      float rpm = (float)this.vehicleObject.engineSpeed;
-+      if (rpm < this.idleRpmTarget) {
-+         float bump = Math.min(Math.max((this.idleRpmTarget - rpm) * 0.01F, 0.0F), 0.3F);
-+         this.vehicleObject.throttle = Math.max(bump, this.vehicleObject.throttle);
-+      }
-+   }
- 
--            if (this.vehicleObject.transmissionNumber == TransmissionNumber.Speed4) {
--               engineSpeedCalc = 3000.0F * speed / 85.0F;
 -            }
 +   // Engine-sound overhaul. Entirely data-gated: with no engine-sound spec
 +   // (the stock BVD case) this is a no-op and PZ's own engine audio plays.
@@ -1358,31 +1446,31 @@ index e0cfcc2..73b0110 100644
 +         return;
 +      }
  
--            if (this.vehicleObject.transmissionNumber == TransmissionNumber.Speed5) {
--               engineSpeedCalc = 3000.0F * speed / 105.0F;
+-            if (this.vehicleObject.transmissionNumber == TransmissionNumber.Speed3) {
+-               engineSpeedCalc = 3000.0F * speed / 60.0F;
 -            }
 +      BaseSoundEmitter local = this.vehicleObject.getEmitter();
 +      if (this.vehicleObject.engineState == engineStateTypes.Starting && !local.isPlaying(this.crankSoundId)) {
 +         this.crankSoundId = local.playSoundImpl(es.crankSound, (IsoObject)null);
 +      }
  
--            if (this.vehicleObject.transmissionNumber == TransmissionNumber.Speed6) {
--               engineSpeedCalc = 3000.0F * speed / 130.0F;
+-            if (this.vehicleObject.transmissionNumber == TransmissionNumber.Speed4) {
+-               engineSpeedCalc = 3000.0F * speed / 85.0F;
 -            }
 +      if (this.vehicleObject.engineState != engineStateTypes.Starting && local.isPlaying(this.crankSoundId)) {
 +         local.stopSound(this.crankSoundId);
 +      }
  
--            if (this.vehicleObject.transmissionNumber == TransmissionNumber.Speed7) {
--               engineSpeedCalc = 3000.0F * speed / 160.0F;
+-            if (this.vehicleObject.transmissionNumber == TransmissionNumber.Speed5) {
+-               engineSpeedCalc = 3000.0F * speed / 105.0F;
 -            }
 +      if (this.vehicleObject.engineState == engineStateTypes.StartingSuccess && !local.isPlaying(this.startSoundId)) {
 +         this.startSoundId = local.playSoundImpl(es.startSound, (IsoObject)null);
 +         this.startupBlend = 0.0F;
 +      }
  
--            if (this.vehicleObject.transmissionNumber == TransmissionNumber.Speed8) {
--               engineSpeedCalc = 3000.0F * speed / 200.0F;
+-            if (this.vehicleObject.transmissionNumber == TransmissionNumber.Speed6) {
+-               engineSpeedCalc = 3000.0F * speed / 130.0F;
 -            }
 +      float pitch = (float)this.vehicleObject.engineSpeed / es.engineSoundRpm;
 +      pitch = (pitch + 0.4F) / 1.4F;
@@ -1392,9 +1480,8 @@ index e0cfcc2..73b0110 100644
 +            loop.stopAll();
 +         }
  
--            if (engineSpeedCalc > 3000.0F) {
--               this.vehicleObject.changeTransmission(this.vehicleObject.transmissionNumber.getNext(gearRatioCount));
--               isChangeTransmission = true;
+-            if (this.vehicleObject.transmissionNumber == TransmissionNumber.Speed7) {
+-               engineSpeedCalc = 3000.0F * speed / 160.0F;
 -            }
 +         this.loopEmitter = IsoWorld.instance.getFreeEmitter(this.vehicleObject.getX(), this.vehicleObject.getY(), (int)this.vehicleObject.getZ());
 +         loop = this.loopEmitter;
@@ -1404,8 +1491,8 @@ index e0cfcc2..73b0110 100644
 +         }
 +      }
  
--            if (!isChangeTransmission || this.vehicleObject.transmissionNumber.getIndex() >= gearRatioCount) {
--               break;
+-            if (this.vehicleObject.transmissionNumber == TransmissionNumber.Speed8) {
+-               engineSpeedCalc = 3000.0F * speed / 200.0F;
 -            }
 +      if (this.loopEngineId != 0L && !this.vehicleObject.isEngineRunning() && loop != null) {
 +         loop.stopSound(this.loopEngineId);
@@ -1414,35 +1501,38 @@ index e0cfcc2..73b0110 100644
 +         this.loopExhaustId = 0L;
 +      }
  
--            isChangeTransmission = false;
--         }
+-            if (engineSpeedCalc > 3000.0F) {
+-               this.vehicleObject.changeTransmission(this.vehicleObject.transmissionNumber.getNext(gearRatioCount));
+-               isChangeTransmission = true;
+-            }
 +      float vol = Core.getInstance().getOptionVehicleEngineVolume() / 10.0F;
 +      if (this.vehicleObject.isEngineRunning()) {
 +         this.startupBlend = Math.min(1.0F, this.startupBlend + dt * 1.0F);
-       }
++      }
  
--      if (this.vehicleObject.engineSpeed > 3000.0 && this.vehicleObject.transmissionChangeTime.Check()) {
--         this.vehicleObject.changeTransmission(this.vehicleObject.transmissionNumber.getNext(gearRatioCount));
+-            if (!isChangeTransmission || this.vehicleObject.transmissionNumber.getIndex() >= gearRatioCount) {
+-               break;
+-            }
 +      KahluaTableImpl bridge = this.bvdBridge();
 +      float overhaulVol = 0.4F;
 +      if (bridge != null) {
 +         overhaulVol = bridge.rawgetFloat("EngineOverhaulVolume");
-       }
++      }
  
--      if (this.vehicleObject.transmissionNumber == TransmissionNumber.Speed1) {
--         engineSpeedCalc = 3000.0F * speed / 30.0F;
+-            isChangeTransmission = false;
+-         }
 +      if (this.startSoundId != 0L && local.isPlaying(this.startSoundId)) {
 +         local.setVolume(this.startSoundId, (1.0F - this.startupBlend) * vol * overhaulVol);
        }
  
--      if (this.vehicleObject.transmissionNumber == TransmissionNumber.Speed2) {
--         engineSpeedCalc = 3000.0F * speed / 40.0F;
+-      if (this.vehicleObject.engineSpeed > 3000.0 && this.vehicleObject.transmissionChangeTime.Check()) {
+-         this.vehicleObject.changeTransmission(this.vehicleObject.transmissionNumber.getNext(gearRatioCount));
 +      if (this.crankSoundId != 0L && local.isPlaying(this.crankSoundId)) {
 +         local.setVolume(this.crankSoundId, vol * overhaulVol);
        }
  
--      if (this.vehicleObject.transmissionNumber == TransmissionNumber.Speed3) {
--         engineSpeedCalc = 3000.0F * speed / 60.0F;
+-      if (this.vehicleObject.transmissionNumber == TransmissionNumber.Speed1) {
+-         engineSpeedCalc = 3000.0F * speed / 30.0F;
 +      if (this.loopEngineId != 0L) {
 +         this.loopEmitter.setPos(this.vehicleObject.getX(), this.vehicleObject.getY(), this.vehicleObject.getZ());
 +         loop.setPitch(this.loopEngineId, pitch);
@@ -1451,11 +1541,11 @@ index e0cfcc2..73b0110 100644
 +         loop.setVolume(this.loopExhaustId, (this.vehicleObject.throttle * 0.8F + 0.2F) * vol * this.startupBlend * overhaulVol);
        }
 +   }
- 
--      if (this.vehicleObject.transmissionNumber == TransmissionNumber.Speed4) {
--         engineSpeedCalc = 3000.0F * speed / 85.0F;
-+   // --- Main physics tick --------------------------------------------------
 +
++   // --- Main physics tick --------------------------------------------------
+ 
+-      if (this.vehicleObject.transmissionNumber == TransmissionNumber.Speed2) {
+-         engineSpeedCalc = 3000.0F * speed / 40.0F;
 +   public void update() {
 +      this.loadLUATables();
 +      this.updateModOptions();
@@ -1464,14 +1554,18 @@ index e0cfcc2..73b0110 100644
 +      this.updateAudio(dt, spec);
 +      if (this.vehicleObject.getVehicleTowedBy() != null) {
 +         return;
-+      }
-+
+       }
+ 
+-      if (this.vehicleObject.transmissionNumber == TransmissionNumber.Speed3) {
+-         engineSpeedCalc = 3000.0F * speed / 60.0F;
 +      VehiclePart enginePart = this.vehicleObject.getPartById("Engine");
 +      ItemContainer engineBox = null;
 +      if (enginePart != null) {
 +         engineBox = enginePart.getItemContainer();
-+      }
-+
+       }
+ 
+-      if (this.vehicleObject.transmissionNumber == TransmissionNumber.Speed4) {
+-         engineSpeedCalc = 3000.0F * speed / 85.0F;
 +      KahluaTableImpl bridge = this.bvdBridge();
 +      VehicleScript script = this.vehicleObject.getScript();
 +      this.updateControlsCalculation(engineBox);
@@ -1484,31 +1578,33 @@ index e0cfcc2..73b0110 100644
 +      if (script.getEngineRPMType().equals("firebird")) {
 +         redline = 6000.0F;
 +         shiftRpm = 5800.0F;
-+      }
-+
+       }
+ 
+-      if (this.vehicleObject.transmissionNumber == TransmissionNumber.Speed5) {
+-         engineSpeedCalc = 3000.0F * speed / 105.0F;
 +      topSpeed /= redline;
 +      float speedToRpm = 0.95F / topSpeed;
 +      float wheelRpm = Math.abs(this.vehicleObject.getCurrentSpeedKmHour() * BaseVehicle.getFakeSpeedModifier()) * speedToRpm;
 +
-+      CarController.GearboxSpec gearbox = new CarController.GearboxSpec();
-+      gearbox.ratios = new float[]{3.0F, 3.0F, 1.8F, 1.3F, 1.0F};
-+      gearbox.gearCount = 4;
++      CarController.GearboxSpec gearbox = DEFAULT_GEARBOX_4;
 +      int ratioCount = script.getGearRatioCount();
 +      if (ratioCount == 3) {
-+         gearbox.ratios = new float[]{2.6F, 2.6F, 1.6F, 1.0F};
-+         gearbox.gearCount = 3;
++         gearbox = DEFAULT_GEARBOX_3;
 +      } else if (ratioCount == 5) {
-+         gearbox.ratios = new float[]{3.2F, 3.2F, 2.0F, 1.5F, 1.15F, 0.9F};
-+         gearbox.gearCount = 5;
-+      }
-+
++         gearbox = DEFAULT_GEARBOX_5;
+       }
+ 
+-      if (this.vehicleObject.transmissionNumber == TransmissionNumber.Speed6) {
+-         engineSpeedCalc = 3000.0F * speed / 130.0F;
 +      InventoryItem gearboxItem = null;
 +      InventoryItem converterItem = null;
 +      if (engineBox != null) {
 +         gearboxItem = engineBox.getFirstTag(tagGearbox);
 +         converterItem = engineBox.getFirstTag(tagConverter);
-+      }
-+
+       }
+ 
+-      if (this.vehicleObject.transmissionNumber == TransmissionNumber.Speed7) {
+-         engineSpeedCalc = 3000.0F * speed / 160.0F;
 +      if (gearboxItem != null) {
 +         String key = gearboxItem.getFullType();
 +         key = key.substring(0, key.length() - 2);
@@ -1516,11 +1612,11 @@ index e0cfcc2..73b0110 100644
 +         if (found != null) {
 +            gearbox = found;
 +         }
-+      }
-+
-+      CarController.ConverterSpec converter = new CarController.ConverterSpec();
-+      converter.lockupRpm = 2000.0F;
-+      converter.lockupRange = 800.0F;
+       }
+ 
+-      if (this.vehicleObject.transmissionNumber == TransmissionNumber.Speed8) {
+-         engineSpeedCalc = 3000.0F * speed / 200.0F;
++      CarController.ConverterSpec converter = DEFAULT_CONVERTER;
 +      if (converterItem != null) {
 +         String key = converterItem.getFullType();
 +         key = key.substring(0, key.length() - 2);
@@ -1528,20 +1624,13 @@ index e0cfcc2..73b0110 100644
 +         if (found != null) {
 +            converter = found;
 +         }
-+      }
-+
-+      TransmissionNumber[] gearLabels = new TransmissionNumber[]{
-+         TransmissionNumber.R,
-+         TransmissionNumber.Speed1,
-+         TransmissionNumber.Speed2,
-+         TransmissionNumber.Speed3,
-+         TransmissionNumber.Speed4,
-+         TransmissionNumber.Speed5,
-+         TransmissionNumber.Speed6,
-+         TransmissionNumber.Speed7,
-+         TransmissionNumber.Speed8
-+      };
-+
+       }
+ 
+-      this.vehicleObject.engineSpeed = this.vehicleObject.engineSpeed - Math.min(0.5 * (this.vehicleObject.engineSpeed - engineSpeedCalc), 100.0) * fpsMult;
+-      if (trainFastDriver) {
+-         if (speed < 50.0F) {
+-            this.vehicleObject.engineSpeed = this.vehicleObject.engineSpeed
+-               - Math.min(0.06 * (this.vehicleObject.engineSpeed - 7000.0), (double)(30.0F - speed)) * fpsMult;
 +      // Automatic gear pick: climb while the geared wheel RPM is below the
 +      // shift point (with hysteresis when shifting down), then bias one gear
 +      // higher if we are clearly cruising (low overrev) and have headroom.
@@ -1550,86 +1639,6 @@ index e0cfcc2..73b0110 100644
 +         float hysteresis = this.heldGear > gear ? 500.0F : 0.0F;
 +         if (wheelRpm * gearbox.ratios[gear] < shiftRpm - hysteresis) {
 +            break;
-+         }
-       }
- 
--      if (this.vehicleObject.transmissionNumber == TransmissionNumber.Speed5) {
--         engineSpeedCalc = 3000.0F * speed / 105.0F;
-+      this.heldGear = gear;
-+      if (gear >= 1 && gear < gearbox.gearCount && wheelRpm * gearbox.ratios[gear + 1] > shiftRpm * 0.5 && this.overrev < 0.5F) {
-+         gear++;
-       }
- 
--      if (this.vehicleObject.transmissionNumber == TransmissionNumber.Speed6) {
--         engineSpeedCalc = 3000.0F * speed / 130.0F;
-+      if (this.manualGearbox && bridge != null) {
-+         gear = bridge.rawgetInt("forceGear");
-+         if (this.shiftDownEdge == 1) {
-+            this.shiftDownEdge = 2;
-+            gear--;
-+         }
-+
-+         if (this.shiftUpEdge == 1) {
-+            this.shiftUpEdge = 2;
-+            gear++;
-+         }
-+
-+         if (this.autoReverseEnabled) {
-+            if (gear < 1) {
-+               gear = 1;
-+            }
-+         } else if (gear < 0) {
-+            gear = 0;
-+         }
-+
-+         if (gear > gearbox.gearCount) {
-+            gear = gearbox.gearCount;
-+         }
-+
-+         bridge.rawset("forceGear", Integer.valueOf(gear).doubleValue());
-+         if (this.reversing) {
-+            bridge.rawset("forceGear", Integer.valueOf(1).doubleValue());
-+         }
-       }
- 
--      if (this.vehicleObject.transmissionNumber == TransmissionNumber.Speed7) {
--         engineSpeedCalc = 3000.0F * speed / 160.0F;
-+      if (this.reversing) {
-+         gear = 0;
-+      }
-+
-+      wheelRpm *= gearbox.ratios[gear];
-+      this.vehicleObject.transmissionNumber = gearLabels[gear];
-+
-+      float powerUnit = this.vehicleObject.getEnginePower() / 10.0F;
-+      boolean realismHpWeight = this.getSandboxOptionBoolean("BetterVehicleDynamics.RealismHPWeight", false);
-+      if (spec != null && spec.realismApplied && realismHpWeight) {
-+         powerUnit *= 4.0F;
-       }
- 
--      if (this.vehicleObject.transmissionNumber == TransmissionNumber.Speed8) {
--         engineSpeedCalc = 3000.0F * speed / 200.0F;
-+      float engineRpm = (float)this.vehicleObject.engineSpeed;
-+      float engineTorqueDelta = 0.0F;
-+      float powerKnob = this.getSandboxOption("BetterVehicleDynamics.EnginePower", 1.0F);
-+      if (powerKnob > 5.0F) {
-+         powerKnob = 5.0F;
-       }
- 
--      this.vehicleObject.engineSpeed = this.vehicleObject.engineSpeed - Math.min(0.5 * (this.vehicleObject.engineSpeed - engineSpeedCalc), 100.0) * fpsMult;
--      if (trainFastDriver) {
--         if (speed < 50.0F) {
--            this.vehicleObject.engineSpeed = this.vehicleObject.engineSpeed
--               - Math.min(0.06 * (this.vehicleObject.engineSpeed - 7000.0), (double)(30.0F - speed)) * fpsMult;
-+      float ratedTorque = powerUnit * powerKnob * 4500.0F / redline;
-+      float flywheelInertia = ratedTorque * 1.0E-4F;
-+      if (engineBox != null) {
-+         InventoryItem flywheel = engineBox.getFirstTag(tagFlywheel);
-+         if (flywheel != null) {
-+            float size = flywheel.getScriptItem().getMaxItemSize();
-+            if (size > 0.0F) {
-+               flywheelInertia /= size;
-+            }
           }
 -      } else if (speed < 30.0F) {
 -         this.vehicleObject.engineSpeed = this.vehicleObject.engineSpeed
@@ -1643,18 +1652,90 @@ index e0cfcc2..73b0110 100644
 -         if (this.vehicleObject.getVehicleTowedBy().getScript().getPassengerCount() == 0
 -            && this.vehicleObject.getVehicleTowedBy().getScript().getMass() > 200.0F) {
 -            towingBurntVehicle = true;
-+      flywheelInertia = Math.max(0.001F, flywheelInertia);
-+      if (this.vehicleObject.isEngineRunning()) {
-+         if (engineRpm < 400.0F) {
-+            engineRpm = 400.0F;
-+            this.vehicleObject.engineSpeed = engineRpm;
++      this.heldGear = gear;
++      if (gear >= 1 && gear < gearbox.gearCount && wheelRpm * gearbox.ratios[gear + 1] > shiftRpm * 0.5 && this.overrev < 0.5F) {
++         gear++;
++      }
++
++      if (this.manualGearbox && bridge != null) {
++         gear = bridge.rawgetInt("forceGear");
++         if (this.shiftDownEdge == 1) {
++            this.shiftDownEdge = 2;
++            gear--;
++         }
++
++         if (this.shiftUpEdge == 1) {
++            this.shiftUpEdge = 2;
++            gear++;
           }
  
 -         if (speed < (towingBurntVehicle ? 20 : 5)) {
 -            this.engineForce = this.engineForce * Math.min(1.2F, this.vehicleObject.getVehicleTowedBy().getMass() / 500.0F);
 -            if (towingBurntVehicle) {
 -               this.engineForce *= 4.0F;
--            }
++         if (this.autoReverseEnabled) {
++            if (gear < 1) {
++               gear = 1;
+             }
++         } else if (gear < 0) {
++            gear = 0;
++         }
++
++         if (gear > gearbox.gearCount) {
++            gear = gearbox.gearCount;
++         }
++
++         bridge.rawset("forceGear", Integer.valueOf(gear).doubleValue());
++         if (this.reversing) {
++            bridge.rawset("forceGear", Integer.valueOf(1).doubleValue());
+          }
+       }
+ 
+-      if (this.vehicleObject.engineSpeed > 6000.0) {
+-         this.engineForce = (float)(this.engineForce * ((7000.0 - this.vehicleObject.engineSpeed) / 1000.0));
++      if (this.reversing) {
++         gear = 0;
++      }
++
++      wheelRpm *= gearbox.ratios[gear];
++      this.vehicleObject.transmissionNumber = GEAR_LABELS[gear];
++
++      float powerUnit = this.vehicleObject.getEnginePower() / 10.0F;
++      boolean realismHpWeight = this.getSandboxOptionBoolean("BetterVehicleDynamics.RealismHPWeight", false);
++      if (spec != null && spec.realismApplied && realismHpWeight) {
++         powerUnit *= 4.0F;
++      }
++
++      float engineRpm = (float)this.vehicleObject.engineSpeed;
++      float engineTorqueDelta = 0.0F;
++      float powerKnob = this.getSandboxOption("BetterVehicleDynamics.EnginePower", 1.0F);
++      if (powerKnob > 5.0F) {
++         powerKnob = 5.0F;
++      }
++
++      float ratedTorque = powerUnit * powerKnob * 4500.0F / redline;
++      float flywheelInertia = ratedTorque * 1.0E-4F;
++      if (engineBox != null) {
++         InventoryItem flywheel = engineBox.getFirstTag(tagFlywheel);
++         if (flywheel != null) {
++            float size = flywheel.getScriptItem().getMaxItemSize();
++            if (size > 0.0F) {
++               flywheelInertia /= size;
++            }
++         }
+       }
+ 
+-      if (trainSlowDriver) {
+-         this.engineForce *= 0.75F;
+-         if (speed > this.vehicleObject.getMaxSpeed() * 0.6F) {
+-            this.engineForce = this.engineForce * ((this.vehicleObject.getMaxSpeed() * 0.75F + 20.0F - speed) / 20.0F);
++      flywheelInertia = Math.max(0.001F, flywheelInertia);
++      if (this.vehicleObject.isEngineRunning()) {
++         if (engineRpm < 400.0F) {
++            engineRpm = 400.0F;
++            this.vehicleObject.engineSpeed = engineRpm;
++         }
++
 +         this.updateIdle(dt, enginePart);
 +         float signedSpeed = this.vehicleObject.getCurrentSpeedKmHour() * BaseVehicle.getFakeSpeedModifier();
 +         float reverseCap = this.getSandboxOption("BetterVehicleDynamics.ReverseTopSpeed", 25.0F);
@@ -1666,10 +1747,8 @@ index e0cfcc2..73b0110 100644
 +         curveTop = (float)(curveTop * Math.min(Math.max((double)(engineRpm / redline * 2.0F), 0.2), 1.0));
 +         engineTorqueDelta = this.vehicleObject.throttle * curveTop * ratedTorque;
 +         engineTorqueDelta = (float)(engineTorqueDelta - ratedTorque * 0.35F * this.vehicleObject.engineSpeed / redline);
-       }
- 
--      if (this.vehicleObject.engineSpeed > 6000.0) {
--         this.engineForce = (float)(this.engineForce * ((7000.0 - this.vehicleObject.engineSpeed) / 1000.0));
++      }
++
 +      // Torque-converter slip: clamp(0..3) of how far we are above the lockup
 +      // band, scaled down by how well the geared wheel speed already tracks
 +      // engine RPM (locked at high coupling). LowSpeedGrunt multiplies the
@@ -1680,10 +1759,9 @@ index e0cfcc2..73b0110 100644
 +         gearedWheelRpm = -gearedWheelRpm;
        }
  
--      if (trainSlowDriver) {
--         this.engineForce *= 0.75F;
--         if (speed > this.vehicleObject.getMaxSpeed() * 0.6F) {
--            this.engineForce = this.engineForce * ((this.vehicleObject.getMaxSpeed() * 0.75F + 20.0F - speed) / 20.0F);
+-      if (trainFastDriver) {
+-         if (speed > this.vehicleObject.getMaxSpeed() * 1.15F) {
+-            this.engineForce = this.engineForce * ((this.vehicleObject.getMaxSpeed() * 1.15F + 20.0F - speed) / 20.0F);
 +      gearedWheelRpm = Math.max(0.0F, gearedWheelRpm);
 +      float coupleRatio = gearedWheelRpm / Math.max(engineRpm, 1.0F);
 +      coupleRatio = Math.min(coupleRatio, 1.0F);
@@ -1697,6 +1775,8 @@ index e0cfcc2..73b0110 100644
 +            converterHealth = Math.min(1.2F, gearboxItem.getCondition() / 50.0F);
 +            converterHealth = (float)(converterHealth * Math.min(1.0, gearboxItem.getFluidContainer().getFilledRatio() * 2.0));
           }
+-      } else if (speed > this.vehicleObject.getMaxSpeed()) {
+-         this.engineForce = this.engineForce * ((this.vehicleObject.getMaxSpeed() + 20.0F - speed) / 20.0F);
 +
 +         if (converterItem != null) {
 +            converterHealth *= Math.min(1.0F, converterItem.getCondition() / 50.0F);
@@ -1729,21 +1809,15 @@ index e0cfcc2..73b0110 100644
 +         this.burnout = Math.max(this.drivenWheelSpeed - vehSpeed - 3.0F, 0.0F);
        }
  
--      if (trainFastDriver) {
--         if (speed > this.vehicleObject.getMaxSpeed() * 1.15F) {
--            this.engineForce = this.engineForce * ((this.vehicleObject.getMaxSpeed() * 1.15F + 20.0F - speed) / 20.0F);
--         }
--      } else if (speed > this.vehicleObject.getMaxSpeed()) {
--         this.engineForce = this.engineForce * ((this.vehicleObject.getMaxSpeed() + 20.0F - speed) / 20.0F);
-+      if (wheelTorque > gripLimit) {
-+         forceScale = gripLimit / Math.max(1.0F, wheelTorque);
-+         wheelTorque = gripLimit;
-       }
- 
 -      this.brakingForce = 0.0F;
 -      if (this.clientControls.wasUsingParkingBrakes) {
 -         this.clientControls.wasUsingParkingBrakes = false;
 -         this.engineForce *= 8.0F;
++      if (wheelTorque > gripLimit) {
++         forceScale = gripLimit / Math.max(1.0F, wheelTorque);
++         wheelTorque = gripLimit;
++      }
++
 +      if (gear == 0) {
 +         this.burnout = -this.burnout;
        }
@@ -1820,11 +1894,18 @@ index e0cfcc2..73b0110 100644
 -         );
 +      if (this.engineForce != this.engineForce) {
 +         this.engineForce = 0.0F;
++      }
++
++      if (gear == 0) {
++         this.engineForce = -this.engineForce;
        }
  
 -      if (this.vehicleObject.engineSpeed > engineSpeedCalc) {
 -         this.vehicleObject.engineSpeed = this.vehicleObject.engineSpeed - Math.min(0.5 * (this.vehicleObject.engineSpeed - engineSpeedCalc), 10.0) * fpsMult;
--      } else {
++      this.updateSkidding(false);
++      if (this.tunableSteering) {
++         this.updateSteeringTunable(engineBox, script, dt);
+       } else {
 -         float rpmIncrease = switch (this.vehicleObject.transmissionNumber) {
 -            case Speed1 -> 10.0F;
 -            case Speed2 -> 8.0F;
@@ -1834,18 +1915,10 @@ index e0cfcc2..73b0110 100644
 -            default -> 4.0F;
 -         };
 -         this.vehicleObject.engineSpeed += rpmIncrease * fpsMult;
-+      if (gear == 0) {
-+         this.engineForce = -this.engineForce;
-       }
- 
+-      }
+-
 -      float enginePower = this.vehicleObject.getScript().getEngineForce();
-+      this.updateSkidding(false);
-+      if (this.tunableSteering) {
-+         this.updateSteeringTunable(engineBox, script, dt);
-+      } else {
-+         this.updateSteeringStock(script);
-+      }
- 
+-
 -      enginePower *= switch (this.vehicleObject.transmissionNumber) {
 -         case Speed1 -> 1.5F;
 -         default -> 1.0F;
@@ -1863,6 +1936,9 @@ index e0cfcc2..73b0110 100644
 -            this.engineForce = this.engineForce * Math.min(1.2F, this.vehicleObject.getVehicleTowedBy().getMass() / 500.0F);
 -            if (towingBurntVehicle) {
 -               this.engineForce *= 4.0F;
++         this.updateSteeringStock(script);
++      }
++
 +      CarController.BulletVariables bv = bulletVariables.set(this.vehicleObject, this.engineForce, this.brakingForce, this.steerAngle);
 +      this.checkTire(bv);
 +      this.engineForce = bv.engineForce;
@@ -2070,7 +2146,13 @@ index e0cfcc2..73b0110 100644
 +   // Drive the rear-wheel visual spin from the burnout amount and play the
 +   // skid loop when the rear is sliding (offroad/snow uses a different clip).
 +   private void updateSkidding(boolean towed) {
-+      boolean towedSkidEnabled = this.getSandboxOptionBoolean("BetterVehicleDynamics.TowedSkid", false);
++      // Towed-skid gate. "TowedSkid" is not a declared sandbox option in the
++      // BVD taxonomy; it is a client mod-options tickbox surfaced through the
++      // bridge, so the bridge value is authoritative. The no-bridge degenerate
++      // path keeps the historical default (towed skid off) without a redundant
++      // getSandboxOptionBoolean lookup that would only ever return this same
++      // fallback for an undeclared key.
++      boolean towedSkidEnabled = false;
 +      float skidVolume = 0.5F;
 +      KahluaTableImpl bridge = this.bvdBridge();
 +      if (bridge != null) {
@@ -2093,10 +2175,9 @@ index e0cfcc2..73b0110 100644
 +
 +         slip += Math.abs(this.burnout * 0.1F);
 +         slip = Math.max(Math.min(slip, 1.0F), 0.0F);
-+         float[] spinDelta = new float[]{
-+            this.vehicleObject.wheelInfo[2].rotation - this.rearSpinAngleLast[0],
-+            this.vehicleObject.wheelInfo[3].rotation - this.rearSpinAngleLast[1]
-+         };
++         float[] spinDelta = this.skidSpinDelta;
++         spinDelta[0] = this.vehicleObject.wheelInfo[2].rotation - this.rearSpinAngleLast[0];
++         spinDelta[1] = this.vehicleObject.wheelInfo[3].rotation - this.rearSpinAngleLast[1];
 +         this.rearSpinAngleLast[0] = this.vehicleObject.wheelInfo[2].rotation;
 +         this.rearSpinAngleLast[1] = this.vehicleObject.wheelInfo[3].rotation;
 +         boolean braking = this.clientControls.brake;
@@ -2104,9 +2185,7 @@ index e0cfcc2..73b0110 100644
 +         if (towedByVehicle != null) {
 +            braking = this.brakingForce > 1.0F;
 +         }
- 
--      this.brakingForce = 0.0F;
--   }
++
 +         if (slip > 0.2 && braking) {
 +            spinDelta[0] = 0.0F;
 +            spinDelta[1] = 0.0F;
@@ -2114,7 +2193,9 @@ index e0cfcc2..73b0110 100644
 +            spinDelta[0] += this.burnout * dt * 1.0F;
 +            spinDelta[1] += this.burnout * dt * 1.0F;
 +         }
-+
+ 
+-      this.brakingForce = 0.0F;
+-   }
 +         this.rearSpinAngle[0] = this.rearSpinAngle[0] + spinDelta[0];
 +         this.rearSpinAngle[1] = this.rearSpinAngle[1] + spinDelta[1];
  
@@ -2175,7 +2256,7 @@ index e0cfcc2..73b0110 100644
              this.vehicleObject.stopSound(this.vehicleObject.ramSound);
              this.vehicleObject.ramSound = 0L;
           }
-@@ -813,10 +1620,52 @@ public final class CarController {
+@@ -813,10 +1702,52 @@ public final class CarController {
        }
     }
  
@@ -2229,7 +2310,7 @@ index e0cfcc2..73b0110 100644
           } else {
              this.vehicleObject.onBackMoveSignalStart();
           }
-@@ -824,7 +1673,7 @@ public final class CarController {
+@@ -824,7 +1755,7 @@ public final class CarController {
  
        if (!this.isGasR && this.vehicleObject.isBackSignalEmitting()) {
           if (GameClient.client) {
@@ -2238,7 +2319,7 @@ index e0cfcc2..73b0110 100644
           } else {
              this.vehicleObject.onBackMoveSignalStop();
           }
-@@ -838,7 +1687,7 @@ public final class CarController {
+@@ -838,7 +1769,7 @@ public final class CarController {
           }
  
           if (GameClient.client) {
@@ -2247,7 +2328,7 @@ index e0cfcc2..73b0110 100644
           }
  
           if (!GameServer.server) {
-@@ -850,7 +1699,7 @@ public final class CarController {
+@@ -850,7 +1781,7 @@ public final class CarController {
           }
  
           if (GameClient.client) {
@@ -2256,7 +2337,7 @@ index e0cfcc2..73b0110 100644
           }
  
           if (!GameServer.server) {
-@@ -860,7 +1709,7 @@ public final class CarController {
+@@ -860,7 +1791,7 @@ public final class CarController {
     }
  
     private boolean delayCommandWhileDrunk(boolean command) {
@@ -2265,7 +2346,7 @@ index e0cfcc2..73b0110 100644
        if (Rand.AdjustForFramerate(4 * this.vehicleObject.getDriver().getMoodles().getMoodleLevel(MoodleType.DRUNK)) < this.drunkDelayCommandTimer) {
           this.drunkDelayCommandTimer = 0.0F;
           return true;
-@@ -870,7 +1719,7 @@ public final class CarController {
+@@ -870,7 +1801,7 @@ public final class CarController {
     }
  
     private float delayCommandWhileDrunk(float steering) {
@@ -2274,7 +2355,7 @@ index e0cfcc2..73b0110 100644
        if (Rand.AdjustForFramerate(4 * this.vehicleObject.getDriver().getMoodles().getMoodleLevel(MoodleType.DRUNK)) < this.drunkDelayCommandTimer) {
           this.drunkDelayCommandTimer = 0.0F;
           return steering;
-@@ -902,56 +1751,104 @@ public final class CarController {
+@@ -902,56 +1833,104 @@ public final class CarController {
     }
  
     public void updateControls() {
@@ -2304,9 +2385,7 @@ index e0cfcc2..73b0110 100644
 +         if (left) {
 +            this.clientControls.steering--;
 +         }
- 
--            if (right) {
--               this.clientControls.steering++;
++
 +         if (right) {
 +            this.clientControls.steering++;
 +         }
@@ -2336,7 +2415,9 @@ index e0cfcc2..73b0110 100644
 +         } else if (this.shiftDownEdge == 2) {
 +            this.shiftDownEdge = JoypadManager.instance.isLBPressed(joypad) ? 2 : 0;
 +         }
-+
+ 
+-            if (right) {
+-               this.clientControls.steering++;
 +         if (this.shiftUpEdge == 0) {
 +            this.shiftUpEdge = JoypadManager.instance.isRBPressed(joypad) ? 1 : 0;
 +         } else if (this.shiftUpEdge == 2) {
@@ -2417,7 +2498,7 @@ index e0cfcc2..73b0110 100644
        }
  
        this.isGas = this.wasGas = false;
-@@ -971,12 +1868,12 @@ public final class CarController {
+@@ -971,12 +1950,12 @@ public final class CarController {
        } else if (this.isPlayerDrivenVehicleNearby()) {
           return true;
        } else {
@@ -2435,7 +2516,7 @@ index e0cfcc2..73b0110 100644
           }
        }
     }
-@@ -990,7 +1887,7 @@ public final class CarController {
+@@ -990,7 +1969,7 @@ public final class CarController {
           this.atRestTimer = 1.0F;
        } else if (this.isEnable && this.vehicleObject.isAtRest()) {
           if (this.atRestTimer > 0.0F) {
@@ -2444,7 +2525,7 @@ index e0cfcc2..73b0110 100644
           }
  
           if (this.atRestTimer <= 0.0F) {
-@@ -1019,11 +1916,11 @@ public final class CarController {
+@@ -1019,11 +1998,11 @@ public final class CarController {
           for (int dx = -1; dx <= 1; dx++) {
              IsoChunk chunk = IsoWorld.instance.currentCell.getChunk(chunkX + dx, chunkY + dy);
              if (chunk != null) {
@@ -2460,7 +2541,7 @@ index e0cfcc2..73b0110 100644
                          closestDistSq = distSq;
                       }
                    }
-@@ -1045,9 +1942,10 @@ public final class CarController {
+@@ -1045,9 +2024,10 @@ public final class CarController {
        if (Core.debug && DebugOptions.instance.vehicleRenderOutline.getValue()) {
           VehicleScript script = this.vehicleObject.getScript();
           int zi = PZMath.fastfloor(this.vehicleObject.getZ());
@@ -2474,7 +2555,7 @@ index e0cfcc2..73b0110 100644
           VehiclePoly poly = this.vehicleObject.getPoly();
           LineDrawer.addLine(poly.x1, poly.y1, zi, poly.x2, poly.y2, zi, 1.0F, 1.0F, 1.0F, null, true);
           LineDrawer.addLine(poly.x2, poly.y2, zi, poly.x3, poly.y3, zi, 1.0F, 1.0F, 1.0F, null, true);
-@@ -1067,8 +1965,8 @@ public final class CarController {
+@@ -1067,8 +2047,8 @@ public final class CarController {
           _UNIT_Y.set(0.0F, 1.0F, 0.0F);
  
           for (int i = 0; i < this.vehicleObject.getScript().getWheelCount(); i++) {
@@ -2485,7 +2566,7 @@ index e0cfcc2..73b0110 100644
              if (script.getModel() != null) {
                 this.tempVec3f.add(script.getModelOffset());
              }
-@@ -1079,12 +1977,16 @@ public final class CarController {
+@@ -1079,12 +2059,16 @@ public final class CarController {
              this.vehicleObject.getWheelForwardVector(i, this.tempVec3f);
              LineDrawer.addLine(originX, originY, zi, originX + this.tempVec3f.x, originY + this.tempVec3f.z, zi, 1.0F, 1.0F, 1.0F, null, true);
              this.drawRect(
@@ -2504,7 +2585,7 @@ index e0cfcc2..73b0110 100644
              this.drawCircle(this.vehicleObject.collideX, this.vehicleObject.collideY, 0.3F);
              this.vehicleObject.collideX = -1.0F;
              this.vehicleObject.collideY = -1.0F;
-@@ -1092,16 +1994,19 @@ public final class CarController {
+@@ -1092,16 +2076,19 @@ public final class CarController {
  
           int joypad = this.vehicleObject.getJoypad();
           if (joypad != -1) {
@@ -2530,7 +2611,7 @@ index e0cfcc2..73b0110 100644
                    this.vehicleObject.getZ(),
                    1.0F,
                    1.0F,
-@@ -1150,48 +2055,47 @@ public final class CarController {
+@@ -1150,48 +2137,47 @@ public final class CarController {
        }
     }
  
@@ -2616,7 +2697,7 @@ index e0cfcc2..73b0110 100644
     }
  
     public void drawCircle(float x, float y, float radius) {
-@@ -1209,12 +2113,12 @@ public final class CarController {
+@@ -1209,12 +2195,12 @@ public final class CarController {
     }
  
     public static final class BulletVariables {
@@ -2634,7 +2715,7 @@ index e0cfcc2..73b0110 100644
           this.vehicle = vehicle;
           this.engineForce = engineForce;
           this.brakingForce = brakingForce;
-@@ -1230,7 +2134,7 @@ public final class CarController {
+@@ -1230,7 +2216,7 @@ public final class CarController {
        public boolean brake;
        public boolean shift;
        public boolean wasUsingParkingBrakes;
@@ -2643,18 +2724,14 @@ index e0cfcc2..73b0110 100644
  
        public void reset() {
           this.steering = 0.0F;
-@@ -1250,15 +2154,43 @@ public final class CarController {
+@@ -1250,15 +2236,39 @@ public final class CarController {
        Reverse;
     }
  
 +   public static final class EngineSpec {
 +      public float engineSoundRpm = 2000.0F;
 +      public String engineSound;
-+      public float engineSoundBias = 0.4F;
-+      public float engineSoundGain = 0.5F;
 +      public String exhaustSound;
-+      public float exhaustSoundBias = 0.2F;
-+      public float exhaustSoundGain = 0.8F;
 +      public String crankSound;
 +      public String startSound;
 +   }

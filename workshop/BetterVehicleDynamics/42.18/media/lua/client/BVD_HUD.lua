@@ -1,25 +1,32 @@
 -- BVD_HUD.lua — Better Vehicle Dynamics inspection panel.
 --
--- This module no longer draws a free-floating on-screen instrument
--- cluster. Instead it adds a clearly-labelled, read-only "Better Vehicle
--- Dynamics" section INSIDE the game's own vehicle mechanics window
--- (ISVehicleMechanics) — the screen a player already opens to inspect a
--- parked vehicle. Because that window is only ever seen on a stationary
--- vehicle, the section shows STATIC / inspection data (configured power
--- and weight references, the active tuning profile, grip settings, drift
--- and tyre-mark state) rather than any live speed or gear readout.
+-- This module presents a clearly-labelled, read-only "Better Vehicle
+-- Dynamics" companion as its OWN standalone window, docked just outside
+-- the game's vehicle mechanics screen (ISVehicleMechanics) — the screen a
+-- player already opens to inspect a parked vehicle. It deliberately does
+-- NOT draw into the mechanics window's own content region, so it can
+-- never overlap the car diagram / part column. Because the mechanics
+-- window is only ever seen on a stationary vehicle, the companion shows
+-- STATIC / inspection data (configured power and weight references, the
+-- active tuning profile, grip settings, drift and tyre-mark state) rather
+-- than any live speed or gear readout.
 --
 -- DESIGN CONTRACT
 -- ---------------
---   * We wrap ISVehicleMechanics:render with a stored-original + call-
---     through. The original is ALWAYS invoked first and is never
---     suppressed, short-circuited, or mutated. Our extra drawing happens
---     afterwards and is wrapped in its own pcall, so a fault in our block
---     can never break or blank the vanilla mechanics window.
---   * We only DRAW (read-only text/rects) into an unused region of that
---     window — the area below the vehicle info box on the left, beside
---     the part overlay. We add no child widgets, register no events on
---     the window, and write no vehicle or sandbox state.
+--   * The companion is a separate ISPanel instance with its own rect,
+--     background, border and rows. It is added to the UI manager and
+--     positioned each frame ADJACENT to the mechanics window — never
+--     inside it. No child widgets are added to the vanilla window and no
+--     events are registered on it.
+--   * Lifecycle is tied to ISVehicleMechanics by wrapping its prerender
+--     (create-once + reposition) and its close / setVisible (teardown).
+--     The stored original is ALWAYS invoked first and is never
+--     suppressed, short-circuited, or mutated. Our extra logic runs
+--     afterwards, wrapped in its own pcall, so a fault on our side can
+--     never break or blank the vanilla mechanics window.
+--   * The companion ref is cached on the mechanics-window instance
+--     (self._bvdPanel). On close / hide it is removed from the UI manager
+--     and the ref cleared, so no orphan panel is ever left on screen.
 --   * Display strings are rebuilt only when the window's update tick says
 --     the underlying vehicle/config changed, not every frame, so steady-
 --     state rendering allocates nothing.
@@ -30,24 +37,26 @@
 --
 -- Visibility is gated by the SAME sandbox toggle the rest of BVD reads:
 -- SandboxVars.BetterVehicleDynamics.DriverHUD, surfaced via BVD.cfg().
--- When that option is off the section is simply not drawn and the
--- vanilla window is left exactly as the game shipped it.
+-- When that option is off the companion is never created and the vanilla
+-- window is left exactly as the game shipped it.
 
 require "Vehicles/ISUI/ISVehicleMechanics"
+require "ISUI/ISPanel"
 
 BVD = BVD or {}
 
 -- ---------------------------------------------------------------------------
 -- Layout constants (all local; no per-frame table churn)
 -- ---------------------------------------------------------------------------
-local PAD       = 6      -- inner text padding
-local LINE_PAD  = 2      -- extra spacing between rows
-local TITLE_GAP = 4      -- gap under the section heading
-local BLOCK_TOP = 10     -- gap below the vanilla info box before our block
+local PAD       = 8      -- inner text padding
+local LINE_PAD  = 3      -- extra spacing between rows
+local TITLE_GAP = 5      -- gap under the panel heading
+local GAP       = 8      -- gap between the mechanics window and our panel
+local PANEL_W   = 280    -- companion panel width
 
 -- Tints, hoisted so render allocates no per-frame table.
-local C_BORDER = { 0.55, 0.62, 0.70, 0.30 }
-local C_BG     = { 0.04, 0.05, 0.07, 0.55 }
+local C_BORDER = { 0.55, 0.62, 0.70, 0.45 }
+local C_BG     = { 0.04, 0.05, 0.07, 0.78 }
 local C_TITLE  = { 0.62, 0.80, 0.96 }
 local C_LABEL  = { 0.74, 0.78, 0.84 }
 local C_VALUE  = { 0.93, 0.95, 0.98 }
@@ -82,7 +91,7 @@ end
 -- ---------------------------------------------------------------------------
 -- A "row" is { label, value, tintIndex } where tintIndex selects a value
 -- colour: 1 = normal, 2 = dim/"--", 3 = warn, 4 = over. The label is nil
--- for the surface/info one-liner so it spans the row.
+-- for a one-liner so it spans the row.
 
 local R_NORM, R_DIM, R_WARN, R_OVER = 1, 2, 3, 4
 
@@ -220,72 +229,67 @@ local function buildRows(vehicle)
     return rows
 end
 
--- ---------------------------------------------------------------------------
--- ISVehicleMechanics wrapper
--- ---------------------------------------------------------------------------
-
--- Cache the font once; never resolve it per frame.
-local BVD_FONT = UIFont.Small
-
--- Decide whether the BVD section should draw at all. Gated by the same
+-- Decide whether the companion should exist at all. Gated by the same
 -- DriverHUD toggle the rest of BVD reads.
 local function sectionEnabled()
     local cfg = effectiveCfg()
     return cfg.DriverHUD ~= false
 end
 
--- Draw the section into the window. `self` is the ISVehicleMechanics
--- instance; this is only called from the wrapped render, AFTER the
--- original render, and only inside a pcall.
-local function drawSection(self)
-    if self.isCollapsed then return end
-    if not self.vehicle then return end
-    if not sectionEnabled() then return end
+-- ---------------------------------------------------------------------------
+-- The standalone companion panel
+-- ---------------------------------------------------------------------------
+-- A plain ISPanel subclass. It owns its rect, paints its own background
+-- and border, and renders its own rows. It draws NOTHING into the
+-- mechanics window. Its rows are supplied (and invalidated) by the
+-- mechanics-window wrappers below.
 
-    -- Rebuild rows only when the window's update tick flagged a change.
-    -- buildRows is pure; we cache its result on the instance.
-    if self._bvdRows == nil then
-        self._bvdRows = buildRows(self.vehicle)
-    end
-    local rows = self._bvdRows
+local BVD_FONT = UIFont.Small   -- cached once; never resolved per frame
+
+BVDCompanionPanel = ISPanel:derive("BVDCompanionPanel")
+
+function BVDCompanionPanel:new(x, y, width, height)
+    local o = ISPanel.new(self, x, y, width, height)
+    o.background      = false   -- we paint our own tinted fill in render
+    o.moveWithMouse   = false
+    o._rows           = nil
+    o._vehicle        = nil
+    return o
+end
+
+-- Compute the content height this panel needs for its current rows. Used
+-- to size the panel so it never relies on, or spills into, the mechanics
+-- window's geometry.
+function BVDCompanionPanel:contentHeight()
+    local lineHgt = getTextManager():getFontHeight(BVD_FONT)
+    local nRows   = (self._rows and #self._rows) or 0
+    return PAD + lineHgt + TITLE_GAP + nRows * (lineHgt + LINE_PAD) + PAD
+end
+
+function BVDCompanionPanel:render()
+    local rows = self._rows
     if not rows or #rows == 0 then return end
 
+    local w = self.width
+    local h = self.height
     local lineHgt = getTextManager():getFontHeight(BVD_FONT)
 
-    -- Anchor: directly below the vanilla vehicle info box, on the left
-    -- side of the window beside the part overlay. rectY/rectHgt and
-    -- xCarTexOffset are vanilla layout fields we only READ.
-    local infoBottom = (self.rectY or 0) + (self.rectHgt or 0)
-    local x = PAD
-    local y = infoBottom + BLOCK_TOP
-    local w = (self.xCarTexOffset or 300) - (PAD * 2)
-    if w < 120 then return end   -- pathologically narrow window: skip
-
-    -- Total block height: title + a blank gap + one line per row.
-    local rowsH  = (#rows) * (lineHgt + LINE_PAD)
-    local blockH = PAD + lineHgt + TITLE_GAP + rowsH + PAD
-
-    -- Do not draw past the bottom of the window content.
-    local maxY = self:getHeight() - PAD
-    if y + blockH > maxY then
-        blockH = maxY - y
-        if blockH < lineHgt * 3 then return end
-    end
-
-    self:drawRect(x, y, w, blockH, C_BG[4], C_BG[1], C_BG[2], C_BG[3])
-    self:drawRectBorder(x, y, w, blockH, C_BORDER[4],
+    -- Own fill + border. Local coordinates: ISUIElement:drawRect is
+    -- relative to this element, so (0,0) is the panel's own top-left.
+    self:drawRect(0, 0, w, h, C_BG[4], C_BG[1], C_BG[2], C_BG[3])
+    self:drawRectBorder(0, 0, w, h, C_BORDER[4],
         C_BORDER[1], C_BORDER[2], C_BORDER[3])
 
-    local tx = x + PAD
-    local ty = y + PAD
+    local tx = PAD
+    local ty = PAD
     self:drawText("Better Vehicle Dynamics", tx, ty,
         C_TITLE[1], C_TITLE[2], C_TITLE[3], 1, BVD_FONT)
     ty = ty + lineHgt + TITLE_GAP
 
-    local valX = x + math.floor(w * 0.52)
+    local valX = math.floor(w * 0.54)
     for i = 1, #rows do
         local row = rows[i]
-        if ty + lineHgt > y + blockH - 2 then break end
+        if ty + lineHgt > h - 2 then break end
         local label, value, tint = row[1], row[2], row[3]
         if label then
             self:drawText(label, tx, ty,
@@ -300,28 +304,141 @@ local function drawSection(self)
     end
 end
 
--- Invalidate the cached rows on the window's update tick so configuration
--- or vehicle changes are picked up without per-frame rebuilds. The update
--- method runs far less often than render and is the natural refresh point.
+-- ---------------------------------------------------------------------------
+-- Lifecycle: tie the companion to the mechanics window
+-- ---------------------------------------------------------------------------
+
+-- Tear the companion down and forget it. Safe to call repeatedly. Never
+-- throws (callers still pcall-isolate it, belt and braces).
+local function teardownCompanion(mw)
+    local p = mw._bvdPanel
+    mw._bvdPanel = nil
+    if p then
+        pcall(function()
+            if p.removeFromUIManager then p:removeFromUIManager() end
+        end)
+    end
+end
+
+-- Create the companion once and cache it on the mechanics-window
+-- instance. Returns the panel, or nil if it should not exist.
+local function ensureCompanion(mw)
+    if not sectionEnabled() then
+        -- Option off: make sure no orphan survives a runtime toggle.
+        if mw._bvdPanel then teardownCompanion(mw) end
+        return nil
+    end
+    if mw._bvdPanel then return mw._bvdPanel end
+
+    local p = BVDCompanionPanel:new(0, 0, PANEL_W, 200)
+    p:initialise()
+    p:instantiate()
+    p:addToUIManager()
+    p:setVisible(false)   -- stays hidden until first reposition this frame
+    mw._bvdPanel = p
+    return p
+end
+
+-- Position the companion adjacent to the mechanics window: right by
+-- default, left if the right edge would run off-screen, with y clamped
+-- on-screen and height clamped to the window height.
+local function repositionCompanion(mw, p)
+    local rows = mw._bvdRows
+    if not rows then
+        rows = buildRows(mw.vehicle)
+        mw._bvdRows = rows
+    end
+    p._rows = rows
+
+    local screenW = getCore():getScreenWidth()
+    local screenH = getCore():getScreenHeight()
+
+    -- Height: prefer the panel's own content height, but never taller
+    -- than the mechanics window (keeps it visually paired and on-screen).
+    local mwX, mwY = mw:getX(), mw:getY()
+    local mwW, mwH = mw:getWidth(), mw:getHeight()
+    local h = p:contentHeight()
+    if h > mwH then h = mwH end
+    if h < 60 then h = 60 end
+
+    -- X: dock right by default; fall back to left if the right dock
+    -- would push the panel off the right screen edge.
+    local x = mwX + mwW + GAP
+    if x + PANEL_W > screenW then
+        x = mwX - PANEL_W - GAP
+    end
+    -- Last-resort clamp so it always stays fully on-screen horizontally.
+    if x < 0 then x = 0 end
+    if x + PANEL_W > screenW then x = screenW - PANEL_W end
+
+    -- Y: align to the window top, then clamp so the whole panel is
+    -- on-screen vertically.
+    local y = mwY
+    if y + h > screenH then y = screenH - h end
+    if y < 0 then y = 0 end
+
+    p:setX(x)
+    p:setY(y)
+    p:setWidth(PANEL_W)
+    p:setHeight(h)
+    if not p:isVisible() then p:setVisible(true) end
+    -- Keep the companion painted above the mechanics window.
+    p:bringToTop()
+end
+
 -- Idempotent install: a sentinel on the class prevents a second wrap
--- (e.g. on /reloadlua) from stacking and double-drawing the section.
-if not ISVehicleMechanics.__bvdInspectionWrapped then
+-- (e.g. on /reloadlua) from stacking handlers and double-creating panels.
+if not ISVehicleMechanics.__bvdCompanionWrapped then
+
+    -- update: invalidate cached rows so config/vehicle changes are picked
+    -- up without per-frame rebuilds. update runs far less often than
+    -- prerender/render and is the natural refresh point.
     local _origUpdate = ISVehicleMechanics.update
     function ISVehicleMechanics:update()
         if _origUpdate then _origUpdate(self) end
-        -- Cheap: just drop the cache; the next render rebuilds once.
         self._bvdRows = nil
     end
 
-    -- Wrap render: original first (never suppressed), then our
-    -- pcall-isolated section. A fault in drawSection can never reach
-    -- the vanilla window.
-    local _origRender = ISVehicleMechanics.render
-    function ISVehicleMechanics:render()
-        if _origRender then _origRender(self) end
-        pcall(drawSection, self)
+    -- prerender: original first (never suppressed), then create/reposition
+    -- the companion in our own pcall. A fault here can never reach the
+    -- vanilla window.
+    local _origPrerender = ISVehicleMechanics.prerender
+    function ISVehicleMechanics:prerender()
+        if _origPrerender then _origPrerender(self) end
+        pcall(function()
+            -- Only show the companion while the window itself is visible
+            -- and not collapsed; otherwise tear it down so nothing is
+            -- orphaned behind a hidden/collapsed window.
+            if (not self:isVisible()) or self.isCollapsed or (not self.vehicle) then
+                if self._bvdPanel then teardownCompanion(self) end
+                return
+            end
+            local p = ensureCompanion(self)
+            if p then repositionCompanion(self, p) end
+        end)
     end
 
-    ISVehicleMechanics.__bvdInspectionWrapped = true
-    print("[BVD] vehicle inspection section installed (mechanics window)")
+    -- close: vanilla removes itself from the UI manager here. Tear the
+    -- companion down too so no orphan is left on screen.
+    local _origClose = ISVehicleMechanics.close
+    function ISVehicleMechanics:close()
+        if _origClose then _origClose(self) end
+        pcall(teardownCompanion, self)
+    end
+
+    -- setVisible(false): the window can be hidden without close() (e.g.
+    -- joypad / escape paths). Mirror its visibility onto the companion,
+    -- tearing it fully down when hidden so nothing lingers.
+    local _origSetVisible = ISVehicleMechanics.setVisible
+    function ISVehicleMechanics:setVisible(bVisible, joypadData)
+        if _origSetVisible then _origSetVisible(self, bVisible, joypadData) end
+        pcall(function()
+            if not bVisible then
+                if self._bvdPanel then teardownCompanion(self) end
+            end
+        end)
+    end
+
+    ISVehicleMechanics.__bvdCompanionWrapped = true
+    print("[BVD] vehicle inspection companion installed (docked panel)")
 end

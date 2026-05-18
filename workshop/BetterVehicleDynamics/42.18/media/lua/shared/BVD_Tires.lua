@@ -51,16 +51,19 @@ function BVD.registerTireProfile(familyKey, profile)
     return false
 end
 
+-- Returns a COPY so a caller can't mutate the live registry entry.
 function BVD.getTireProfile(familyKey)
-    return registry[familyKey]
+    local r = registry[familyKey]
+    if not r then return nil end
+    return { road = r.road, wet = r.wet, snow = r.snow, offroad = r.offroad }
 end
 
 -- Push the merged table onto the bridge for Java. Defaults first, then
 -- any registered families (registry already first-write-wins).
 function BVD.publishTireProfiles()
     local merged = {}
-    for k, v in pairs(DEFAULTS)  do merged[k] = v end
-    for k, v in pairs(registry)  do merged[k] = v end
+    for k, v in pairs(DEFAULTS) do merged[k] = v end
+    for k, v in pairs(registry) do merged[k] = v end
     BetterVehicleDynamicsMod.tireProfiles = merged
 end
 

@@ -58,9 +58,30 @@ function BVD.getTireProfile(familyKey)
     return { road = r.road, wet = r.wet, snow = r.snow, offroad = r.offroad }
 end
 
+-- Is the per-tire grip model enabled? Gated by the TireGripModel sandbox
+-- toggle (default on). Read defensively via BVD.cfg(); falls back to
+-- enabled if the config layer is unavailable for any reason.
+local function tireModelOn()
+    if BVD and BVD.cfg then
+        local ok, c = pcall(BVD.cfg)
+        if ok and type(c) == "table" then return c.TireGripModel ~= false end
+    end
+    local sv = SandboxVars and SandboxVars.BetterVehicleDynamics
+    return not (sv and sv.TireGripModel == false)
+end
+
 -- Push the merged table onto the bridge for Java. Defaults first, then
--- any registered families (registry already first-write-wins).
+-- any registered families (registry already first-write-wins). When the
+-- TireGripModel toggle is OFF we publish an EMPTY table: Java's per-family
+-- lookups all miss -> every surface factor is the neutral 1.0, i.e. tire
+-- choice has no per-surface effect (identical to pre-feature behaviour).
+-- Called on the live sandbox cadence too, so toggling applies without a
+-- Java reinstall.
 function BVD.publishTireProfiles()
+    if not tireModelOn() then
+        BetterVehicleDynamicsMod.tireProfiles = {}
+        return
+    end
     local merged = {}
     for k, v in pairs(DEFAULTS) do merged[k] = v end
     for k, v in pairs(registry) do merged[k] = v end

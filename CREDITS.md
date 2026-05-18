@@ -14,12 +14,7 @@ copyrightable; only this project's own code and text are shipped here.
 
 ## Sound assets
 
-Every sound shipped with this mod is wholly original. Both tyre-squeal
-clips — the on-road `media/sound/BVD_skid.ogg` and the off-road
-`media/sound/BVD_skid_offroad.ogg` — are synthesised from scratch by the
-committed generator `tools/gen_skid_audio.py`: a deterministic numpy
-build of a warbling stick-slip squeal tone over band-passed rubber-scrub
-noise, resonant formants and a low contact body, finished with light
-saturation, a high-shelf trim and a sample-exact equal-power loop
-crossfade, then Vorbis-encoded. No sampled, recorded, or third-party
-audio is used anywhere in the mod — there is none to attribute.
+This mod ships no audio files. Skid and engine sounds use the game's
+own built-in sound events, played through the normal engine path. There
+is no sampled, recorded, synthesised, or third-party audio in the mod,
+and therefore nothing to attribute.

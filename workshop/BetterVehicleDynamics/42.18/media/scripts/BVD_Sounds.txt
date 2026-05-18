@@ -1,5 +1,0 @@
-module Base
-{
-    sound BVD_Skid        { category = Item, clip { file = media/sound/BVD_skid.ogg, } }
-    sound BVD_SkidOffroad { category = Item, clip { file = media/sound/BVD_skid_offroad.ogg, } }
-}

@@ -246,6 +246,19 @@ end
 
 local BVD_FONT = UIFont.Small   -- cached once; never resolved per frame
 
+-- Font line height is constant for a fixed font in a session; resolve it
+-- at most once instead of per contentHeight()/render() call.
+local _fontH = nil
+local function fontH()
+    if not _fontH then _fontH = getTextManager():getFontHeight(BVD_FONT) end
+    return _fontH
+end
+
+-- Live companions, so an abnormally-dropped mechanics window (mod
+-- conflict, crash-recovery path that never calls close()/setVisible)
+-- cannot leave an orphan panel; OnGameStop sweeps any survivor.
+local liveCompanions = {}
+
 BVDCompanionPanel = ISPanel:derive("BVDCompanionPanel")
 
 function BVDCompanionPanel:new(x, y, width, height)
@@ -253,7 +266,6 @@ function BVDCompanionPanel:new(x, y, width, height)
     o.background      = false   -- we paint our own tinted fill in render
     o.moveWithMouse   = false
     o._rows           = nil
-    o._vehicle        = nil
     return o
 end
 
@@ -261,7 +273,7 @@ end
 -- to size the panel so it never relies on, or spills into, the mechanics
 -- window's geometry.
 function BVDCompanionPanel:contentHeight()
-    local lineHgt = getTextManager():getFontHeight(BVD_FONT)
+    local lineHgt = fontH()
     local nRows   = (self._rows and #self._rows) or 0
     return PAD + lineHgt + TITLE_GAP + nRows * (lineHgt + LINE_PAD) + PAD
 end
@@ -272,7 +284,7 @@ function BVDCompanionPanel:render()
 
     local w = self.width
     local h = self.height
-    local lineHgt = getTextManager():getFontHeight(BVD_FONT)
+    local lineHgt = fontH()
 
     -- Own fill + border. Local coordinates: ISUIElement:drawRect is
     -- relative to this element, so (0,0) is the panel's own top-left.
@@ -314,6 +326,19 @@ local function teardownCompanion(mw)
     local p = mw._bvdPanel
     mw._bvdPanel = nil
     if p then
+        liveCompanions[p] = nil
+        pcall(function()
+            if p.removeFromUIManager then p:removeFromUIManager() end
+        end)
+    end
+end
+
+-- Global safety-net: if the mechanics window is ever dropped without
+-- close()/setVisible() running (mod conflict, abrupt session teardown),
+-- sweep any surviving companion so none can orphan on screen.
+local function sweepCompanions()
+    for p in pairs(liveCompanions) do
+        liveCompanions[p] = nil
         pcall(function()
             if p.removeFromUIManager then p:removeFromUIManager() end
         end)
@@ -336,6 +361,7 @@ local function ensureCompanion(mw)
     p:addToUIManager()
     p:setVisible(false)   -- stays hidden until first reposition this frame
     mw._bvdPanel = p
+    liveCompanions[p] = true
     return p
 end
 
@@ -376,6 +402,14 @@ local function repositionCompanion(mw, p)
     local y = mwY
     if y + h > screenH then y = screenH - h end
     if y < 0 then y = 0 end
+
+    -- If neither dock could clear the window (pathological narrow screen /
+    -- very wide window), hide rather than draw stacked over it — the whole
+    -- point of this panel is to never obscure the mechanics screen.
+    if x < mwX + mwW and x + PANEL_W > mwX then
+        if p:isVisible() then p:setVisible(false) end
+        return
+    end
 
     p:setX(x)
     p:setY(y)
@@ -438,6 +472,12 @@ if not ISVehicleMechanics.__bvdCompanionWrapped then
             end
         end)
     end
+
+    -- Last-resort sweep so a companion can never outlive its session even
+    -- if the window vanished by an unhooked path. Registered once (inside
+    -- the idempotent guard) so /reloadlua cannot stack handlers.
+    if Events and Events.OnGameStop then Events.OnGameStop.Add(sweepCompanions) end
+    if Events and Events.OnPlayerDeath then Events.OnPlayerDeath.Add(sweepCompanions) end
 
     ISVehicleMechanics.__bvdCompanionWrapped = true
     print("[BVD] vehicle inspection companion installed (docked panel)")

@@ -30,9 +30,11 @@
 --   * Display strings are rebuilt only when the window's update tick says
 --     the underlying vehicle/config changed, not every frame, so steady-
 --     state rendering allocates nothing.
---   * It reads only BVD.cfg() (pcall-guarded, with a direct SandboxVars
---     fallback) and the resolved preset name -- no per-frame Java vehicle
---     getters, so there is no probe/exception-spam surface at all.
+--   * It reads BVD.cfg() (pcall-guarded, SandboxVars fallback), the
+--     resolved preset name, and the Java-published computed bridge state
+--     (BetterVehicleDynamicsMod.computed, pcall-guarded). All of this is
+--     read on row-invalidation only, never per frame, so there is no
+--     probe/exception-spam surface.
 --
 -- Visibility is gated by the SAME sandbox toggle the rest of BVD reads:
 -- SandboxVars.BetterVehicleDynamics.DriverHUD, surfaced via BVD.cfg().
@@ -92,13 +94,6 @@ local function profileName(cfg)
         if ok and type(nm) == "string" and nm ~= "" then return nm end
     end
     return "Mode " .. tostring(mode)
-end
-
--- Format a numeric config value compactly (drops a trailing ".0").
-local function numStr(n)
-    if type(n) ~= "number" then return "--" end
-    if n == math.floor(n) then return string.format("%d", n) end
-    return string.format("%.2f", n)
 end
 
 -- Sum the weight currently stowed in the vehicle's cargo containers

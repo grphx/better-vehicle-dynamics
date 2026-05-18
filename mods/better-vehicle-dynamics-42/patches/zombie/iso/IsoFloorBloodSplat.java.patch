@@ -1,5 +1,5 @@
 diff --git a/zombie/iso/IsoFloorBloodSplat.java b/zombie/iso/IsoFloorBloodSplat.java
-index c04b985..1834675 100644
+index c04b985..e8f4c0e 100644
 --- a/zombie/iso/IsoFloorBloodSplat.java
 +++ b/zombie/iso/IsoFloorBloodSplat.java
 @@ -9,6 +9,16 @@ import zombie.iso.sprite.IsoSprite;
@@ -14,8 +14,8 @@ index c04b985..1834675 100644
 +   // Inclusive range used by the fade override in IsoChunkMap.
 +   public static final int BVD_TIREMARK_TYPE_MIN = 21;
 +   public static final int BVD_TIREMARK_TYPE_MAX = 24;
-+   // Tyre marks vanish much faster than blood — half an hour by default.
-+   public static final float BVD_TIREMARK_FADE_HOURS = 0.5F;
++   // Tyre marks vanish much faster than blood — 10 in-game minutes.
++   public static final float BVD_TIREMARK_FADE_HOURS = 10.0F / 60.0F;
     public static final String[] FLOOR_BLOOD_TYPES = new String[]{
        "blood_floor_small_01",
        "blood_floor_small_02",

@@ -1,8 +1,8 @@
 diff --git a/zombie/iso/IsoChunkMap.java b/zombie/iso/IsoChunkMap.java
-index d60a94c..8961676 100644
+index d60a94c..4fd1a92 100644
 --- a/zombie/iso/IsoChunkMap.java
 +++ b/zombie/iso/IsoChunkMap.java
-@@ -1116,8 +1116,14 @@ public final class IsoChunkMap {
+@@ -1116,13 +1116,36 @@ public final class IsoChunkMap {
                          inf.g -= cc / 3.0F;
                          inf.b -= cc / 3.0F;
                          float deltaAge = worldAge - b.worldAge;
@@ -19,3 +19,25 @@ index d60a94c..8961676 100644
                             inf.r *= 0.2F + f * 0.8F;
                             inf.g *= 0.2F + f * 0.8F;
                             inf.b *= 0.2F + f * 0.8F;
+                            inf.a *= 0.25F + f * 0.75F;
+                         } else {
++                           if (b.type >= zombie.iso.IsoFloorBloodSplat.BVD_TIREMARK_TYPE_MIN
++                                 && b.type <= zombie.iso.IsoFloorBloodSplat.BVD_TIREMARK_TYPE_MAX) {
++                              // Blood lingers forever as a faint stain; a tyre
++                              // mark should genuinely VANISH once past its (much
++                              // shorter) window. floorBloodSplats is a
++                              // BoundedQueue (no remove(Object)) so locate the
++                              // reference by index, then drop it from both the
++                              // queue and the fade list and skip rendering it.
++                              for (int qi = 0; qi < b.chunk.floorBloodSplats.size(); qi++) {
++                                 if (b.chunk.floorBloodSplats.get(qi) == b) {
++                                    b.chunk.floorBloodSplats.remove(qi);
++                                    break;
++                                 }
++                              }
++                              b.chunk.floorBloodSplatsFade.remove(b);
++                              continue;
++                           }
+                            inf.r *= 0.2F;
+                            inf.g *= 0.2F;
+                            inf.b *= 0.2F;

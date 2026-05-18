@@ -42,6 +42,9 @@ local RPM_FULLSCALE = 4200
 -- its own transmission model and is not consulted or altered here.
 local GEAR_BANDS = { 14, 32, 54, 80 }
 
+-- Label tint, hoisted so :render() allocates no per-frame table.
+local LABEL_C = { 0.78, 0.82, 0.88 }
+
 -- One-time probe verdicts for Java getters whose presence we will not
 -- assume on B42.18. nil = not yet probed; true/false = cached result.
 local probed = {
@@ -78,7 +81,6 @@ function BVD_DriverReadout:new(x, y, w, h)
     o:setVisible(false)
     -- Cache the font handle once; do not resolve it per frame.
     o.font     = UIFont.Small
-    o.fontH    = getTextManager():getFontHeight(o.font)
     o.vehicle  = nil
     return o
 end
@@ -179,7 +181,6 @@ function BVD_DriverReadout:render()
     local font  = self.font
     local x     = PAD_L
     local y     = PAD_T
-    local labelC = { 0.78, 0.82, 0.88 }
 
     -- Speed -----------------------------------------------------------
     local kmh = probeGet("speed", function() return v:getCurrentSpeedKmHour() end) or 0
@@ -188,7 +189,7 @@ function BVD_DriverReadout:render()
     local reversing = kmh < -0.5
     local mph = abs * 0.621371
 
-    self:drawText("Speed", x, y, labelC[1], labelC[2], labelC[3], 1, font)
+    self:drawText("Speed", x, y, LABEL_C[1], LABEL_C[2], LABEL_C[3], 1, font)
     local spdStr = string.format("%3.0f km/h  %3.0f mph", abs, mph)
     if reversing then spdStr = "R  " .. spdStr end
     self:drawTextRight(spdStr, self.width - PAD_L, y, 1, 1, 1, 1, font)
@@ -204,14 +205,14 @@ function BVD_DriverReadout:render()
     else
         gearStr = tostring(gear)
     end
-    self:drawText("Gear", x, y, labelC[1], labelC[2], labelC[3], 1, font)
+    self:drawText("Gear", x, y, LABEL_C[1], LABEL_C[2], LABEL_C[3], 1, font)
     self:drawTextRight(gearStr, self.width - PAD_L, y, 0.85, 0.92, 1.0, 1, font)
     y = y + ROW_H
 
     -- RPM + bar -------------------------------------------------------
     local running = probeGet("running", function() return v:isEngineRunning() end)
     local rpm = probeGet("rpm", function() return v:getEngineRPM() end) or 0
-    self:drawText("Revs", x, y, labelC[1], labelC[2], labelC[3], 1, font)
+    self:drawText("Revs", x, y, LABEL_C[1], LABEL_C[2], LABEL_C[3], 1, font)
     if probed.rpm == false then
         self:drawTextRight("--", self.width - PAD_L, y, 0.7, 0.7, 0.7, 1, font)
         y = y + ROW_H
@@ -243,7 +244,7 @@ function BVD_DriverReadout:render()
 
     -- Laden weight vs rated -------------------------------------------
     local mass = probeGet("mass", function() return v:getMass() end)
-    self:drawText("Laden", x, y, labelC[1], labelC[2], labelC[3], 1, font)
+    self:drawText("Laden", x, y, LABEL_C[1], LABEL_C[2], LABEL_C[3], 1, font)
     if not mass then
         self:drawTextRight("--", self.width - PAD_L, y, 0.7, 0.7, 0.7, 1, font)
     else

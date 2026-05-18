@@ -60,9 +60,14 @@ local function tick(v)
     if ratio <= 1.0 then return end
     if ratio > 3.0 then ratio = 3.0 end
 
-    local thr = 0
-    pcall(function() thr = v:getThrottle() or 0 end)
-    if thr <= 0 then return end
+    -- Only burn the extra while the driver is actually on the gas. Vanilla
+    -- pedals are digital, so gas-pressed == full throttle (1.0); there is no
+    -- analog throttle getter on the B42 vehicle object (isGasPedalPressed is
+    -- the accessor the rest of the mod uses).
+    local gas = false
+    pcall(function() gas = v:isGasPedalPressed() == true end)
+    if not gas then return end
+    local thr = 1.0
 
     local id  = (v.getId and v:getId()) or tostring(v)
     local now = (getTimestampMs and getTimestampMs()) or 0

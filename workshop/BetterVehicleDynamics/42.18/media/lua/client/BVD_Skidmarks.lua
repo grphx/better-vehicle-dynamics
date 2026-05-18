@@ -1,13 +1,15 @@
-local MIN_INTERVAL_MS = 90     -- sample the path often so drift arcs are smooth
+local MIN_INTERVAL_MS = 50     -- sample the path often (low lag, smooth arcs)
 local DEDUPE_MS       = 1500
 local BURNOUT_SPEED   = 10
 local SKID_SPEED      = 30
 
--- The vehicle can travel several tiles between two drops, which used to
--- leave visible gaps between separate stamps. We now fill every tile
--- along the segment from the previous drop to the current one so the
--- skid reads as one continuous streak at any speed.
-local STEP_TILES    = 0.5      -- interpolation granularity (tiles)
+-- A floor-splat sprite renders SMALLER than a 1x1 tile, so one decal per
+-- tile always reads as dashes. We instead allow several overlapping
+-- decals per tile: dedupe on a quarter-tile grid and interpolate the
+-- segment between drops at that same granularity, so the skid is a solid
+-- continuous streak at any speed. A stationary burnout still maps to a
+-- single cell, so it can't pile up (the dedupe still gates it).
+local CELL_TILES    = 0.25     -- dedupe / interpolation cell size (tiles)
 local MAX_FILL_DIST = 20.0     -- skip the fill past this (teleport/chunk load)
 
 local TYPE_V, TYPE_H, TYPE_D1, TYPE_D2 = 21, 22, 23, 24
@@ -165,7 +167,9 @@ end
 -- interpolated point may fall in a different chunk than the vehicle's),
 -- with per-tile dedupe so a tile is only stamped once per DEDUPE_MS.
 local function placeSplatAt(wx, wy, wz, t, now)
-    local key = math.floor(wx) .. "," .. math.floor(wy) .. "," .. math.floor(wz)
+    -- Quarter-tile dedupe cell -> several overlapping decals per tile.
+    local key = math.floor(wx / CELL_TILES) .. "," ..
+                math.floor(wy / CELL_TILES) .. "," .. math.floor(wz)
     if recentTiles[key] and (now - recentTiles[key]) < DEDUPE_MS then return end
     recentTiles[key] = now
     local cell  = getCell and getCell()
@@ -205,7 +209,7 @@ local function dropMark(v, sq)
         local dx, dy = vx - lastDrop.x, vy - lastDrop.y
         local dist = math.sqrt(dx * dx + dy * dy)
         if dist > 0.0 and dist <= MAX_FILL_DIST then
-            local steps = math.ceil(dist / STEP_TILES)
+            local steps = math.ceil(dist / CELL_TILES)
             for i = 1, steps do
                 local f = i / steps
                 placeSplatAt(lastDrop.x + dx * f, lastDrop.y + dy * f, vz, t, now)

@@ -101,11 +101,11 @@
     "Sandbox_BVD_TireGripModel_tooltip": "Different tire types (worn / standard / modern) get distinct grip on road, rain, snow and off-road instead of one flat value.",
 
     "Sandbox_BVD_LoadAffectsHandling": "Load affects handling",
-    "Sandbox_BVD_LoadAffectsHandling_tooltip": "A heavily laden vehicle pulls away sluggishly from low speed, as if the engine is straining against the weight.",
+    "Sandbox_BVD_LoadAffectsHandling_tooltip": "A heavily loaded vehicle is slow to pull away from a stop, as if the engine is straining against the weight.",
 
     "Sandbox_BVD_LoadAffectsFuel": "Load affects fuel use",
     "Sandbox_BVD_LoadAffectsFuel_tooltip": "Carrying a heavy load burns extra fuel while driving.",
 
-    "Sandbox_BVD_LoadMaxPenalty": "Max launch penalty when fully laden",
-    "Sandbox_BVD_LoadMaxPenalty_tooltip": "Strongest possible reduction in launch force for a fully loaded vehicle (0.50 = up to 50% less force off the line). Eases off as speed builds. Requires 'Load affects handling'."
+    "Sandbox_BVD_LoadMaxPenalty": "Max launch penalty when fully loaded",
+    "Sandbox_BVD_LoadMaxPenalty_tooltip": "Biggest drop in launch force for a fully loaded vehicle (0.50 = up to 50% less force from a stop). Fades out as the vehicle speeds up. Requires 'Load affects handling'."
 }

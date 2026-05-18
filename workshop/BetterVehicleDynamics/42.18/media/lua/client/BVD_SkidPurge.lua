@@ -69,9 +69,12 @@ function BVD_ClearSkidMarks()
             local sq = cell:getGridSquare(px + dx, py + dy, pz)
             local ch = sq and sq.getChunk and sq:getChunk()
             if ch then
-                local key
-                pcall(function() key = ch:getChunkX() .. ":" .. ch:getChunkY() end)
-                key = key or tostring(ch)
+                -- Dedupe by the chunk's grid coords, derived from the
+                -- world tile (IsoChunk exposes no getChunkX/Y to Lua —
+                -- calling one spams a caught-but-logged nil error per
+                -- iteration). Same chunk -> same key, no Java call.
+                local key = math.floor((px + dx) / CHUNK_TILES) .. ":" ..
+                            math.floor((py + dy) / CHUNK_TILES)
                 if not seen[key] then
                     seen[key] = true
                     chunks[#chunks + 1] = ch

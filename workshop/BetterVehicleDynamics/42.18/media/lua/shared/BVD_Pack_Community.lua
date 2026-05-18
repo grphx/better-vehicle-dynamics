@@ -71,11 +71,16 @@ BVD = BVD or {}
 -- resolve on a given install is simply ignored with zero side effects,
 -- so the table favours the best-known forms over an exhaustive guess.
 --
+-- All figures below are the author's OWN reference values, chosen from
+-- general public real-world manufacturer/encyclopaedic knowledge of the
+-- actual production vehicle (basis noted per entry) -- not taken from
+-- any other vehicle mod's data.
+--
 -- hp      = author-chosen reference horsepower (engine output)
 -- mass_kg = author-chosen reference mass (kg)
--- cargo   = forward-compat only. API_VERSION 1 validates + stores but
---           does NOT apply cargo (see BVD_API.lua header). Included as
---           honest forward data; harmless today.
+-- cargo   = author-estimated; forward-compat only. API_VERSION 1
+--           validates + stores but does NOT apply cargo (see
+--           BVD_API.lua header). Honest forward data; harmless today.
 -- --------------------------------------------------------------------------
 local DATA = {}
 
@@ -146,10 +151,9 @@ local function anyTargetScriptPresent()
         local sm = getScriptManager and getScriptManager()
         if not sm then return end
         for fullType in pairs(DATA) do
-            local v = sm:getVehicle(fullType)
-            if v ~= nil then
+            if sm:getVehicle(fullType) ~= nil then
                 found = true
-                return -- one hit is enough; stop probing
+                break -- one hit is enough; stop probing
             end
         end
     end)

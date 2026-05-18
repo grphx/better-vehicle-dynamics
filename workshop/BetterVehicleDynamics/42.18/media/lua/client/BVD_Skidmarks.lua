@@ -52,12 +52,12 @@ local recentTiles  = {}
 --              false = probed, API unusable -> permanent silent no-op
 --              a function(square) = the cached caller that worked
 local SOUND_NAME       = "BVD_Skid"
--- TIED TO THE CLIP: tools/make_skid_sample.sh emits a 1800 ms loop-seamless
+-- TIED TO THE CLIP: tools/gen_skid_audio.py emits a ~2000 ms loop-seamless
 -- clip whose last 200 ms is an equal-power crossfade back into its head.
--- Re-trigger exactly as that crossfade tail begins (1800 - 200 = 1600) so a
+-- Re-trigger exactly as that crossfade tail begins (2000 - 200 = 1800) so a
 -- sustained slide is one continuous squeal with no overlap and no gap. If the
--- script's DUR/XF change, change this to (DUR-XF)*1000 - XF*1000 to match.
-local SOUND_COOLDOWN_MS = 1600
+-- script's DUR_S/XFADE_S change, set this to (clip_ms - XFADE_ms) to match.
+local SOUND_COOLDOWN_MS = 1800
 local SOUND_STATE      = nil
 local lastSoundMs      = 0
 

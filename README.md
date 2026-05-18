@@ -225,6 +225,18 @@ Workshop-only updates: the Lua side controls the policy tables and the
 display; the Java side exposes stable hooks and publishes `protocolVersion`
 so the Lua side always knows which hooks are available.
 
+## Vehicle ground-clip guard (multiplayer safety net)
+
+On a server or host, if a vehicle sinks implausibly far below the floor
+of the level it is on — the "sucked into the ground" multiplayer desync
+— Better Vehicle Dynamics snaps it back onto that floor. It only ever
+acts on a state that normal driving cannot produce (a vehicle below its
+*own* level's floor), so ramps, basements and multi-level parking are
+unaffected. Controlled by the **Vehicle ground-clip guard** toggle
+(default on) and **Ground-clip trigger depth (levels)** on the
+Handling sandbox page; both are tunable live with no manual Java
+reinstall.
+
 ## Compatibility
 
 Better Vehicle Dynamics patches vehicle handling data at load time through

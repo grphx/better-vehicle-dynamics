@@ -25,11 +25,13 @@ of respect for the recordist who shared it.
 
 All processing is performed by the committed helper
 `tools/make_skid_loop.sh`, which is the sole producer of the shipped clip:
-it objectively selects the steadiest sustained-slide window of the source,
-reduces it to mono at 44100 Hz, builds a seamless loop with an equal-power
-wrap crossfade, applies a light low-end roll-off and gentle high-shelf
-trim, normalises the level, and encodes to Vorbis. The result is fully
-reproducible from the same source file by running that one script.
+it applies real spectral noise reduction to remove the recording's
+broadband floor, objectively selects the most tonal tyre-squeal window of
+the source, reduces it to mono at 44100 Hz, builds a seamless loop with an
+equal-power wrap crossfade, applies a light low-end roll-off and gentle
+high-shelf trim, normalises the level to a quiet background layer, and
+encodes to Vorbis. The result is fully reproducible from the same source
+file by running that one script.
 
 Engine sounds use the game's own built-in sound events, played through the
 normal engine path. No audio, samples, or sound scripts from "Realistic

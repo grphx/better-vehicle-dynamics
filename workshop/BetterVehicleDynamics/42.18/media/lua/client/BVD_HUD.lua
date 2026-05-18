@@ -7,9 +7,9 @@
 -- NOT draw into the mechanics window's own content region, so it can
 -- never overlap the car diagram / part column. Because the mechanics
 -- window is only ever seen on a stationary vehicle, the companion shows
--- STATIC / inspection data (configured power and weight references, the
--- active tuning profile, grip settings, drift and tyre-mark state) rather
--- than any live speed or gear readout.
+-- STATIC / inspection data: the active BVD tuning profile and grip
+-- settings -- only the values the vanilla mechanics window does NOT
+-- already show (it lists power and weight itself, right beside us).
 --
 -- DESIGN CONTRACT
 -- ---------------
@@ -30,10 +30,9 @@
 --   * Display strings are rebuilt only when the window's update tick says
 --     the underlying vehicle/config changed, not every frame, so steady-
 --     state rendering allocates nothing.
---   * Every uncertain Java getter is probed exactly once through a cached
---     pcall (project Kahlua rule: probe-and-cache, never call-and-hope,
---     no per-frame caught-exception spam). A missing getter degrades the
---     affected line to "--" and is never retried.
+--   * It reads only BVD.cfg() (pcall-guarded, with a direct SandboxVars
+--     fallback) and the resolved preset name -- no per-frame Java vehicle
+--     getters, so there is no probe/exception-spam surface at all.
 --
 -- Visibility is gated by the SAME sandbox toggle the rest of BVD reads:
 -- SandboxVars.BetterVehicleDynamics.DriverHUD, surfaced via BVD.cfg().
@@ -64,27 +63,6 @@ local C_DIM    = { 0.62, 0.64, 0.67 }
 local C_WARN   = { 1.00, 0.78, 0.38 }
 local C_OVER   = { 1.00, 0.55, 0.45 }
 
--- ---------------------------------------------------------------------------
--- One-time probe verdicts. nil = not yet probed; true/false = cached.
--- ---------------------------------------------------------------------------
-local probed = {
-    mass    = nil,
-    enginep = nil,
-}
-
--- Probe a getter once, cache callability, return value-or-nil. After the
--- first failure the getter is never invoked again — one caught exception
--- total for a missing method, not one per frame.
-local function probeGet(key, fn)
-    if probed[key] == false then return nil end
-    local ok, val = pcall(fn)
-    if not ok then
-        probed[key] = false
-        return nil
-    end
-    probed[key] = true
-    return val
-end
 
 -- ---------------------------------------------------------------------------
 -- Build the display rows for the current vehicle + config.
@@ -123,108 +101,57 @@ local function numStr(n)
     return string.format("%.2f", n)
 end
 
--- Look up BVD reference data for this vehicle script, if any. This is the
--- researched HP/weight figure the realism option would apply — shown here
--- as the "rated" reference even when the option is off, for inspection.
-local function referenceData(vehicle)
-    local fullType
-    pcall(function()
-        local scr = vehicle:getScript()
-        if scr and scr.getFullType then fullType = scr:getFullType() end
+-- Sum the weight currently stowed in the vehicle's cargo containers
+-- (trunk / bed / seat-as-storage). Vanilla shows the vehicle's TOTAL
+-- mass but never the cargo portion on its own, so this is additive, not
+-- redundant. Fully defensive: any missing API yields nil -> "--".
+local function cargoLoad(vehicle)
+    local ok, total = pcall(function()
+        local sum = 0.0
+        local n   = vehicle:getPartCount()
+        for i = 1, n do
+            local part = vehicle:getPartByIndex(i - 1)
+            local cont = part and part.getItemContainer and part:getItemContainer()
+            if cont and cont.getCapacityWeight then
+                sum = sum + (cont:getCapacityWeight() or 0)
+            end
+        end
+        return sum
     end)
-    if not fullType then return nil, nil end
-    if BVD and type(BVD.getVehicleData) == "function" then
-        local ok, d = pcall(BVD.getVehicleData, fullType)
-        if ok and type(d) == "table" then return d, fullType end
-    end
-    return nil, fullType
+    if not ok or type(total) ~= "number" then return nil end
+    return total
 end
 
--- Build the full row list. Pure read; no side effects.
+-- Build the row list. Pure read; no side effects.
+--
+-- Deliberately shows ONLY the BVD-specific tune that the vanilla vehicle
+-- mechanics window does NOT already display. Engine power and the
+-- vehicle's total weight are shown by the vanilla window right beside
+-- this panel, so repeating them here is redundant; drift/tyre-mark are
+-- global sandbox toggles (the same for every vehicle) so they don't
+-- belong in a per-vehicle inspection. Cargo load IS shown because
+-- vanilla never breaks the stowed weight out on its own.
 local function buildRows(vehicle)
     local cfg  = effectiveCfg()
     local rows = {}
 
-    -- Engine power -------------------------------------------------------
-    -- Prefer the BVD reference HP for this script; otherwise derive from
-    -- the live vehicle's engine power (PZ stores it x10 internally, the
-    -- vanilla window divides by 10 for display — we match that).
-    local refData = select(1, referenceData(vehicle))
-    local hpStr, hpTint = "--", R_DIM
-    if refData and type(refData.hp) == "number" and refData.hp > 0 then
-        hpStr  = string.format("%d hp", refData.hp)
-        hpTint = R_NORM
-    else
-        local ep = probeGet("enginep", function() return vehicle:getEnginePower() end)
-        if type(ep) == "number" and ep > 0 then
-            hpStr  = string.format("%d hp", math.floor((ep / 10) + 0.5))
-            hpTint = R_NORM
-        end
-    end
-    rows[#rows + 1] = { "Engine power", hpStr, hpTint }
-
-    -- Mass: current laden vs reference ----------------------------------
-    local mass = probeGet("mass", function() return vehicle:getMass() end)
-    local massStr, massTint = "--", R_DIM
-    if type(mass) == "number" and mass > 0 then
-        local rated
-        if refData and type(refData.mass_kg) == "number" and refData.mass_kg > 0 then
-            rated = refData.mass_kg
-        else
-            pcall(function()
-                local scr = vehicle:getScript()
-                if scr and scr.getMass then
-                    local m = scr:getMass()
-                    if type(m) == "number" and m > 0 then rated = m end
-                end
-            end)
-        end
-        if rated then
-            massStr  = string.format("%d / %d kg", mass, rated)
-            massTint = R_NORM
-            local ratio = mass / rated
-            if ratio > 1.25 then
-                massTint = R_OVER
-            elseif ratio > 1.05 then
-                massTint = R_WARN
-            end
-        else
-            massStr  = string.format("%d kg", mass)
-            massTint = R_NORM
-        end
-    end
-    rows[#rows + 1] = { "Mass (laden / rated)", massStr, massTint }
-
-    -- Tuning profile ----------------------------------------------------
+    -- Active handling tune ----------------------------------------------
     rows[#rows + 1] = { "Tuning profile", profileName(cfg), R_NORM }
 
-    -- Grip settings -----------------------------------------------------
-    rows[#rows + 1] = { "Tyre grip",   numStr(cfg.GripLevel),   R_NORM }
-    rows[#rows + 1] = { "Rain grip",   numStr(cfg.WetGrip),     R_NORM }
-    rows[#rows + 1] = { "Snow grip",   numStr(cfg.SnowGrip),    R_NORM }
+    -- Grip settings (BVD config; not surfaced anywhere in vanilla) -------
+    rows[#rows + 1] = { "Tire grip",     numStr(cfg.GripLevel),   R_NORM }
+    rows[#rows + 1] = { "Rain grip",     numStr(cfg.WetGrip),     R_NORM }
+    rows[#rows + 1] = { "Snow grip",     numStr(cfg.SnowGrip),    R_NORM }
     rows[#rows + 1] = { "Off-road grip", numStr(cfg.OffroadGrip), R_NORM }
 
-    -- Drift + tyre-mark state -------------------------------------------
-    local driftEnabled = cfg.Drift == true
-    local driftLive = false
-    pcall(function()
-        if BetterVehicleDynamicsMod and BetterVehicleDynamicsMod.driftActive == true then
-            driftLive = true
-        end
-    end)
-    local driftStr
-    if not driftEnabled then
-        driftStr = "off"
-    elseif driftLive then
-        driftStr = "armed (sliding now)"
+    -- Cargo load: total weight stowed across the vehicle's containers
+    -- (additive — vanilla shows total mass, not the cargo portion).
+    local cl = cargoLoad(vehicle)
+    if cl == nil then
+        rows[#rows + 1] = { "Cargo load", "--", R_DIM }
     else
-        driftStr = "armed"
+        rows[#rows + 1] = { "Cargo load", string.format("%.1f", cl), R_NORM }
     end
-    rows[#rows + 1] = { "Drift mode", driftStr, driftEnabled and R_NORM or R_DIM }
-
-    local skid = cfg.SkidMarks ~= false
-    rows[#rows + 1] = { "Tyre marks", skid and "on" or "off",
-        skid and R_NORM or R_DIM }
 
     return rows
 end

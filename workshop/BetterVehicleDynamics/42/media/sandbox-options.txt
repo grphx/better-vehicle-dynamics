@@ -60,6 +60,18 @@ option BetterVehicleDynamics.OffroadGrip
     page = BetterVehicleDynamics_Handling, translation = BVD_OffroadGrip,
 }
 
+option BetterVehicleDynamics.StabilityGuard
+{
+    type = boolean, default = true,
+    page = BetterVehicleDynamics_Handling, translation = BVD_StabilityGuard,
+}
+
+option BetterVehicleDynamics.StabilityGuardSinkTiles
+{
+    type = double, min = 0.25, max = 3.0, default = 0.75,
+    page = BetterVehicleDynamics_Handling, translation = BVD_StabilityGuardSinkTiles,
+}
+
 option BetterVehicleDynamics.Drag
 {
     type = double, min = 0.25, max = 2.0, default = 1.0,

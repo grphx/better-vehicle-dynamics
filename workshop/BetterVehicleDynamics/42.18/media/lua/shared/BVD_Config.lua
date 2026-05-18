@@ -79,6 +79,7 @@ local KEYS = {
     "ShoveFoliage", "ShoveZombies", "ShoveCorpses",
     "Drift", "DriftGrip", "DriftMinSpeed", "DriftSteer", "DriftRotation",
     "TireGripModel", "LoadAffectsHandling", "LoadAffectsFuel", "LoadMaxPenalty",
+    "StabilityGuard", "StabilityGuardSinkTiles",
 }
 
 -- Build the effective-config table fresh. Internal — public access is via
@@ -157,6 +158,8 @@ local function buildCfg()
         LoadAffectsHandling = boolTrue("LoadAffectsHandling"), -- default true
         LoadAffectsFuel     = boolTrue("LoadAffectsFuel"),     -- default true
         LoadMaxPenalty      = num("LoadMaxPenalty", 0.5),      -- 0..0.9 frac
+        StabilityGuard         = boolTrue("StabilityGuard"),          -- default true
+        StabilityGuardSinkTiles = num("StabilityGuardSinkTiles", 0.75),
     }
 end
 
@@ -231,6 +234,29 @@ local function publishLoadResponse()
 end
 
 -- ---------------------------------------------------------------------------
+-- Stability-guard bridge publish
+-- ---------------------------------------------------------------------------
+-- Writes BetterVehicleDynamicsMod.stabilityGuard so the frozen Java guard
+-- can re-seat a vehicle that has sunk implausibly below its own level's
+-- floor (MP "sucked into the ground" mitigation). The sandbox exposes a
+-- human "tiles" number; we convert it to physics-Y units here (PZ's level
+-- height is 2.44949) so the Java side stays a trivial comparison. dwell and
+-- cooldown are authoring constants (Lua-tunable later, no reinstall); only
+-- `enabled` and `sinkDepth` track sandbox at runtime.
+local function publishStabilityGuard()
+    BetterVehicleDynamicsMod = BetterVehicleDynamicsMod or {}
+    local c = BVD.cfg()
+    local tiles = tonumber(c and c.StabilityGuardSinkTiles) or 0.75
+    if tiles < 0.25 then tiles = 0.25 elseif tiles > 3.0 then tiles = 3.0 end
+    BetterVehicleDynamicsMod.stabilityGuard = {
+        enabled       = ((c and c.StabilityGuard ~= false) and 1.0) or 0.0,
+        sinkDepth     = tiles * 2.44949,   -- "tiles" -> physics-Y units
+        dwellTicks    = 5.0,               -- consecutive offending ticks
+        cooldownTicks = 60.0,              -- min ticks between corrections
+    }
+end
+
+-- ---------------------------------------------------------------------------
 -- Live re-read on the per-vehicle update tick
 -- ---------------------------------------------------------------------------
 -- Throttled so we are not concatenating a fingerprint every frame. When a
@@ -263,6 +289,7 @@ local function onLiveTick()
     end
     -- Re-publish bridge tables so Java picks up any toggled options live.
     publishLoadResponse()
+    publishStabilityGuard()
     if BVD and BVD.publishTireProfiles then pcall(BVD.publishTireProfiles) end
     print("[BVD] config: live sandbox change detected — cache refreshed")
 end
@@ -282,6 +309,7 @@ end
 -- Initial publish: seed the bridge table as soon as the module loads so
 -- Java sees a valid loadResponse even before any OnPlayerUpdate fires.
 publishLoadResponse()
+publishStabilityGuard()
 
 print("[BVD] config layer loaded (cached + live re-read)")
 

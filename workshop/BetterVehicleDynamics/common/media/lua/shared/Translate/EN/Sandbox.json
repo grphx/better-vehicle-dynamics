@@ -107,5 +107,11 @@
     "Sandbox_BVD_LoadAffectsFuel_tooltip": "Carrying a heavy load burns extra fuel while driving.",
 
     "Sandbox_BVD_LoadMaxPenalty": "Max launch penalty when fully loaded",
-    "Sandbox_BVD_LoadMaxPenalty_tooltip": "Biggest drop in launch force for a fully loaded vehicle (0.50 = up to 50% less force from a stop). Fades out as the vehicle speeds up. Requires 'Load affects handling'."
+    "Sandbox_BVD_LoadMaxPenalty_tooltip": "Biggest drop in launch force for a fully loaded vehicle (0.50 = up to 50% less force from a stop). Fades out as the vehicle speeds up. Requires 'Load affects handling'.",
+
+    "Sandbox_BVD_StabilityGuard": "Vehicle ground-clip guard",
+    "Sandbox_BVD_StabilityGuard_tooltip": "Safety net for multiplayer: if a vehicle sinks far below the floor of the level it is on (the 'sucked into the ground' desync), it is snapped back onto that floor. Only acts on a state that is never reached by normal driving, so ramps, basements and multi-level parking are unaffected.",
+
+    "Sandbox_BVD_StabilityGuardSinkTiles": "Ground-clip trigger depth (levels)",
+    "Sandbox_BVD_StabilityGuardSinkTiles_tooltip": "How far below its own level's floor a vehicle must sink before the guard re-seats it, measured in floor levels (0.75 = three-quarters of one level). Lower reacts sooner; raise it if a custom map ever triggers it wrongly. Requires 'Vehicle ground-clip guard'."
 }

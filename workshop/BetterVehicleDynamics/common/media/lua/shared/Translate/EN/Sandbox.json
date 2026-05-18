@@ -8,8 +8,8 @@
     "Sandbox_BVD_Mode_option3": "Grounded",
     "Sandbox_BVD_Mode_option4": "Punishing",
 
-    "Sandbox_BVD_DriverHUD": "Driver readout",
-    "Sandbox_BVD_DriverHUD_tooltip": "Shows a compact corner panel with speed, engine RPM, laden weight and ignition state.",
+    "Sandbox_BVD_DriverHUD": "Vehicle info panel",
+    "Sandbox_BVD_DriverHUD_tooltip": "Adds a Better Vehicle Dynamics stats section to the vehicle mechanics window, listing reference power and weight, the active tuning profile, grip settings and drift/tyre-mark state for the inspected vehicle.",
 
     "Sandbox_BVD_SkidMarks": "Tyre marks",
     "Sandbox_BVD_SkidMarks_tooltip": "Leaves a ground decal when a tyre breaks loose under power or hard braking.",

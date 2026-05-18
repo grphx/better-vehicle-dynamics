@@ -3,173 +3,191 @@ VERSION = 1,
 option BetterVehicleDynamics.Mode
 {
     type = enum, numValues = 4, default = 1,
-    page = BetterVehicleDynamics, translation = BVD_Mode, valueTranslation = BVD_Mode,
+    page = BetterVehicleDynamics_Drivetrain, translation = BVD_Mode, valueTranslation = BVD_Mode,
 }
 
 option BetterVehicleDynamics.DriverHUD
 {
     type = boolean, default = true,
-    page = BetterVehicleDynamics, translation = BVD_DriverHUD,
+    page = BetterVehicleDynamics_Readout, translation = BVD_DriverHUD,
 }
 
 option BetterVehicleDynamics.SkidMarks
 {
     type = boolean, default = true,
-    page = BetterVehicleDynamics, translation = BVD_SkidMarks,
+    page = BetterVehicleDynamics_Readout, translation = BVD_SkidMarks,
 }
 
 option BetterVehicleDynamics.EnginePower
 {
     type = double, min = 0.25, max = 3.0, default = 1.0,
-    page = BetterVehicleDynamics, translation = BVD_EnginePower,
+    page = BetterVehicleDynamics_Drivetrain, translation = BVD_EnginePower,
 }
 
 option BetterVehicleDynamics.LowSpeedGrunt
 {
     type = double, min = 1.0, max = 4.0, default = 2.5,
-    page = BetterVehicleDynamics, translation = BVD_LowSpeedGrunt,
+    page = BetterVehicleDynamics_Drivetrain, translation = BVD_LowSpeedGrunt,
 }
 
 option BetterVehicleDynamics.ReverseTopSpeed
 {
     type = double, min = 5, max = 60, default = 25,
-    page = BetterVehicleDynamics, translation = BVD_ReverseTopSpeed,
+    page = BetterVehicleDynamics_Drivetrain, translation = BVD_ReverseTopSpeed,
 }
 
 option BetterVehicleDynamics.GripLevel
 {
     type = double, min = 0.25, max = 2.0, default = 1.0,
-    page = BetterVehicleDynamics, translation = BVD_GripLevel,
+    page = BetterVehicleDynamics_Handling, translation = BVD_GripLevel,
 }
 
 option BetterVehicleDynamics.WetGrip
 {
     type = double, min = 0.25, max = 1.0, default = 0.7,
-    page = BetterVehicleDynamics, translation = BVD_WetGrip,
+    page = BetterVehicleDynamics_Handling, translation = BVD_WetGrip,
 }
 
 option BetterVehicleDynamics.SnowGrip
 {
     type = double, min = 0.1, max = 1.0, default = 0.45,
-    page = BetterVehicleDynamics, translation = BVD_SnowGrip,
+    page = BetterVehicleDynamics_Handling, translation = BVD_SnowGrip,
 }
 
 option BetterVehicleDynamics.OffroadGrip
 {
     type = double, min = 0.25, max = 1.5, default = 0.85,
-    page = BetterVehicleDynamics, translation = BVD_OffroadGrip,
+    page = BetterVehicleDynamics_Handling, translation = BVD_OffroadGrip,
 }
 
 option BetterVehicleDynamics.Drag
 {
     type = double, min = 0.25, max = 2.0, default = 1.0,
-    page = BetterVehicleDynamics, translation = BVD_Drag,
+    page = BetterVehicleDynamics_Handling, translation = BVD_Drag,
 }
 
 option BetterVehicleDynamics.RollResistance
 {
     type = double, min = 0.25, max = 2.0, default = 1.0,
-    page = BetterVehicleDynamics, translation = BVD_RollResistance,
+    page = BetterVehicleDynamics_Handling, translation = BVD_RollResistance,
 }
 
 option BetterVehicleDynamics.RollResistanceOffroad
 {
     type = double, min = 0.5, max = 4.0, default = 1.8,
-    page = BetterVehicleDynamics, translation = BVD_RollResistanceOffroad,
+    page = BetterVehicleDynamics_Handling, translation = BVD_RollResistanceOffroad,
 }
 
 option BetterVehicleDynamics.RealismHPWeight
 {
     type = boolean, default = false,
-    page = BetterVehicleDynamics, translation = BVD_RealismHPWeight,
+    page = BetterVehicleDynamics_Drivetrain, translation = BVD_RealismHPWeight,
 }
 
 option BetterVehicleDynamics.TrunkScaling
 {
     type = boolean, default = false,
-    page = BetterVehicleDynamics, translation = BVD_TrunkScaling,
+    page = BetterVehicleDynamics_Drivetrain, translation = BVD_TrunkScaling,
 }
 
 option BetterVehicleDynamics.TrunkCar
 {
     type = double, min = 0.25, max = 4.0, default = 1.0,
-    page = BetterVehicleDynamics, translation = BVD_TrunkCar,
+    page = BetterVehicleDynamics_Drivetrain, translation = BVD_TrunkCar,
 }
 
 option BetterVehicleDynamics.TrunkVan
 {
     type = double, min = 0.25, max = 4.0, default = 1.0,
-    page = BetterVehicleDynamics, translation = BVD_TrunkVan,
+    page = BetterVehicleDynamics_Drivetrain, translation = BVD_TrunkVan,
 }
 
 option BetterVehicleDynamics.TrunkTruck
 {
     type = double, min = 0.25, max = 4.0, default = 1.0,
-    page = BetterVehicleDynamics, translation = BVD_TrunkTruck,
+    page = BetterVehicleDynamics_Drivetrain, translation = BVD_TrunkTruck,
 }
 
 option BetterVehicleDynamics.TrunkTrailer
 {
     type = double, min = 0.25, max = 6.0, default = 1.0,
-    page = BetterVehicleDynamics, translation = BVD_TrunkTrailer,
+    page = BetterVehicleDynamics_Drivetrain, translation = BVD_TrunkTrailer,
 }
 
 option BetterVehicleDynamics.ThrottleStart
 {
     type = boolean, default = true,
-    page = BetterVehicleDynamics, translation = BVD_ThrottleStart,
+    page = BetterVehicleDynamics_Drivetrain, translation = BVD_ThrottleStart,
 }
 
 option BetterVehicleDynamics.KeylessTow
 {
     type = boolean, default = true,
-    page = BetterVehicleDynamics, translation = BVD_KeylessTow,
+    page = BetterVehicleDynamics_Drivetrain, translation = BVD_KeylessTow,
 }
 
 option BetterVehicleDynamics.ShoveFoliage
 {
     type = double, min = 0, max = 3.0, default = 1.0,
-    page = BetterVehicleDynamics, translation = BVD_ShoveFoliage,
+    page = BetterVehicleDynamics_Readout, translation = BVD_ShoveFoliage,
 }
 
 option BetterVehicleDynamics.ShoveZombies
 {
     type = double, min = 0, max = 3.0, default = 1.0,
-    page = BetterVehicleDynamics, translation = BVD_ShoveZombies,
+    page = BetterVehicleDynamics_Readout, translation = BVD_ShoveZombies,
 }
 
 option BetterVehicleDynamics.ShoveCorpses
 {
     type = double, min = 0, max = 3.0, default = 1.0,
-    page = BetterVehicleDynamics, translation = BVD_ShoveCorpses,
+    page = BetterVehicleDynamics_Readout, translation = BVD_ShoveCorpses,
 }
 
 option BetterVehicleDynamics.Drift
 {
     type = boolean, default = false,
-    page = BetterVehicleDynamics, translation = BVD_Drift,
+    page = BetterVehicleDynamics_Handling, translation = BVD_Drift,
 }
 
 option BetterVehicleDynamics.DriftGrip
 {
     type = double, min = 0.1, max = 1.0, default = 0.35,
-    page = BetterVehicleDynamics, translation = BVD_DriftGrip,
+    page = BetterVehicleDynamics_Handling, translation = BVD_DriftGrip,
 }
 
 option BetterVehicleDynamics.DriftMinSpeed
 {
     type = double, min = 5, max = 100, default = 20,
-    page = BetterVehicleDynamics, translation = BVD_DriftMinSpeed,
+    page = BetterVehicleDynamics_Handling, translation = BVD_DriftMinSpeed,
 }
 
 option BetterVehicleDynamics.DriftSteer
 {
     type = double, min = 1.0, max = 4.0, default = 1.5,
-    page = BetterVehicleDynamics, translation = BVD_DriftSteer,
+    page = BetterVehicleDynamics_Handling, translation = BVD_DriftSteer,
 }
 
 option BetterVehicleDynamics.DriftRotation
 {
     type = double, min = 0, max = 3000, default = 2000,
-    page = BetterVehicleDynamics, translation = BVD_DriftRotation,
+    page = BetterVehicleDynamics_Handling, translation = BVD_DriftRotation,
+}
+
+option BetterVehicleDynamics.TireGripModel
+{
+    type = boolean, default = true,
+    page = BetterVehicleDynamics_TiresLoad, translation = BVD_TireGripModel,
+}
+
+option BetterVehicleDynamics.LoadAffectsHandling
+{
+    type = boolean, default = true,
+    page = BetterVehicleDynamics_TiresLoad, translation = BVD_LoadAffectsHandling,
+}
+
+option BetterVehicleDynamics.LoadAffectsFuel
+{
+    type = boolean, default = true,
+    page = BetterVehicleDynamics_TiresLoad, translation = BVD_LoadAffectsFuel,
 }

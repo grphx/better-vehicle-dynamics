@@ -1,6 +1,11 @@
 {
     "Sandbox_BetterVehicleDynamics": "Better Vehicle Dynamics",
 
+    "Sandbox_BetterVehicleDynamics_Handling": "BVD — Handling",
+    "Sandbox_BetterVehicleDynamics_TiresLoad": "BVD — Tires & Load",
+    "Sandbox_BetterVehicleDynamics_Drivetrain": "BVD — Drivetrain",
+    "Sandbox_BetterVehicleDynamics_Readout": "BVD — Readout & Misc",
+
     "Sandbox_BVD_Mode": "Tuning preset",
     "Sandbox_BVD_Mode_tooltip": "Custom keeps every slider below as you set it. The other presets snap drivetrain, grip and shove values to a curated profile when the world loads.",
     "Sandbox_BVD_Mode_option1": "Custom",
@@ -90,5 +95,14 @@
     "Sandbox_BVD_DriftSteer_tooltip": "How much sharper the front wheels respond while a drift is held.",
 
     "Sandbox_BVD_DriftRotation": "Drift rotation force",
-    "Sandbox_BVD_DriftRotation_tooltip": "Strength of the rotation pushed into the car while drifting + steering. Raise if it slides wide, lower if it spins out."
+    "Sandbox_BVD_DriftRotation_tooltip": "Strength of the rotation pushed into the car while drifting + steering. Raise if it slides wide, lower if it spins out.",
+
+    "Sandbox_BVD_TireGripModel": "Tire grip model",
+    "Sandbox_BVD_TireGripModel_tooltip": "Different tire types (worn / standard / modern) get distinct grip on road, rain, snow and off-road instead of one flat value.",
+
+    "Sandbox_BVD_LoadAffectsHandling": "Load affects handling",
+    "Sandbox_BVD_LoadAffectsHandling_tooltip": "A heavily laden vehicle launches sluggishly from low speed, as if the engine is straining against the weight.",
+
+    "Sandbox_BVD_LoadAffectsFuel": "Load affects fuel use",
+    "Sandbox_BVD_LoadAffectsFuel_tooltip": "Carrying a heavy load burns extra fuel while driving."
 }

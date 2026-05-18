@@ -37,8 +37,14 @@ function BVD.Packs.register(name, spec)
         return
     end
     if registry[name] then
-        -- Already registered — keep first. Lets users `require` packs
-        -- defensively from multiple entry points without double-merging.
+        -- Already registered — keep first ("first registration wins").
+        -- Lets users `require` packs defensively from multiple entry
+        -- points without double-merging. One info line per duplicate
+        -- name (this dedupe site fires once per such call — not per
+        -- entry — so it is not spammy); pick a fresh name to register
+        -- genuinely different data.
+        print("[BVD.Packs] register: pack '" .. name ..
+            "' already registered — keeping first, ignoring duplicate")
         return
     end
     registry[name] = spec or {}

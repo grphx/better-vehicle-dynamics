@@ -230,6 +230,14 @@ local function onLiveTick()
     print("[BVD] config: live sandbox change detected — cache refreshed")
 end
 
+-- OnPlayerUpdate only fires in a context that has a local player, i.e.
+-- the client (and SP host). A dedicated server has no local player, so
+-- this event never fires there and the live re-read is client-only BY
+-- DESIGN: the server already reads SandboxVars at world start and the
+-- Java physics side re-reads them per tick, so a server has nothing to
+-- live-resync here. The `if Events and Events.OnPlayerUpdate` guard is
+-- what makes this shared/ placement safe — on the server the event may
+-- be absent/never-fired and we simply skip registration with no error.
 if Events and Events.OnPlayerUpdate then
     Events.OnPlayerUpdate.Add(onLiveTick)
 end

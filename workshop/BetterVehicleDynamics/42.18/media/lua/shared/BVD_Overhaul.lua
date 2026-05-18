@@ -156,7 +156,37 @@ end)
 
 -- HP / Weight overhaul: apply our reference values at world start.
 -- engineForce in PZ scales roughly 10x horsepower for similar feel to
--- vanilla balance (Step Van vanilla engineForce ~1070 ≈ 107hp×10).
+-- vanilla balance (a heavy box-truck vanilla engineForce ~1070 ≈ 107hp×10).
+--
+-- CARGO FIELD — accepted, validated, RESERVED (not applied by API v1).
+-- ------------------------------------------------------------------
+-- hp -> engineForce and mass_kg -> mass are TOP-LEVEL scalar fields of a
+-- PZ vehicle script, so vehicle:Load(name, "{ engineForce=.., mass=.. }")
+-- overlays them safely. Container capacity is NOT top-level: in B42 it
+-- lives doubly nested as `part <TrunkPartName> { container { capacity=N } }`
+-- and the trunk part name varies per vehicle (TruckBed / TrunkDoor /
+-- trailer trunk / converted van seats — see isCargoContainer above). The
+-- registration API only carries {hp,mass_kg,cargo} keyed by vehicle full
+-- type; it does NOT know each vehicle's trunk part name, and the deep-merge
+-- semantics of a partial nested `part` fragment through vehicle:Load are
+-- undocumented and untested here (a partial part block can replace the
+-- whole part, destroying install/uninstall/test/model data). Forcing it
+-- would risk breaking vehicles. BVD already has a SAFE per-class cargo
+-- mechanism — the live TrunkScaling ItemContainer hook above — so cargo
+-- via this API stays reserved until a verified per-vehicle mechanism
+-- exists. We still accept + validate it (forward-compat) and emit ONE
+-- info line the first time any registered entry supplies it.
+local _cargoNoticeShown = false
+local function noteReservedCargo()
+	if _cargoNoticeShown then return end
+	_cargoNoticeShown = true
+	print("[BVD] cargo: a registered entry supplied a 'cargo' value — " ..
+		"accepted and validated but NOT applied by this API version " ..
+		"(API_VERSION=" .. tostring(BVD and BVD.API_VERSION or "?") ..
+		"). hp/mass_kg apply now; cargo is stored for a future version. " ..
+		"For larger trunks today use the TrunkScaling sandbox option.")
+end
+
 local function applyHPWeight()
 	local sv = SandboxVars and SandboxVars.BetterVehicleDynamics
 	if not sv or sv.RealismHPWeight ~= true then return end
@@ -173,6 +203,13 @@ local function applyHPWeight()
 	end
 	local touched = 0
 	for fullType, spec in pairs(vehicleData) do
+		-- 'cargo' is validated + stored but reserved (see header note). If
+		-- any registered entry carries it, surface ONE info line. This is
+		-- the only place all registered data (built-in + packs) is funneled,
+		-- so it fires exactly once regardless of how cargo was registered.
+		-- Pure log — never mutates spec or the vehicle, so a registration
+		-- with no cargo is byte-identical to before this change.
+		if spec.cargo ~= nil then noteReservedCargo() end
 		local v = sm:getVehicle(fullType)
 		if v ~= nil then
 			local hp = spec.hp

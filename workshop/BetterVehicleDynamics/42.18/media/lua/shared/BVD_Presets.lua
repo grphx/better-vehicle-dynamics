@@ -224,6 +224,13 @@ function BVD.reapplyPresetLive()
         and ModData.getOrCreate(PRESET_MODDATA_KEY)
     if state then state.lastAppliedPreset = presetName end
 
+    -- Intentional defensive invalidate. When called from BVD_Config's
+    -- onLiveTick this is redundant (that path already drops _cache before
+    -- calling us and resyncs the fingerprint after), but reapplyPresetLive
+    -- is a public BVD.* function: any FUTURE external caller that invokes
+    -- it directly must still see a fresh cfg() afterward. Keep the call —
+    -- it is cheap (nils two locals) and keeps the function correct in
+    -- isolation rather than coupling correctness to onLiveTick's internals.
     if BVD.invalidateConfigCache then BVD.invalidateConfigCache() end
 
     local player = getSpecificPlayer and getSpecificPlayer(0)

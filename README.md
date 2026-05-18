@@ -60,8 +60,16 @@ settings; the systems are independent.
 ## Public data-pack API (for vehicle mod authors)
 
 If your mod adds vehicles, you can have Better Vehicle Dynamics apply
-real-world power, weight, and cargo figures to them. This is the supported,
+real-world power and weight figures to them. This is the supported,
 stable replacement for any per-vehicle string-override sandbox knob.
+
+> **Field status:** `hp` and `mass_kg` are applied now (at world start,
+> when the HP/Weight realism sandbox option is enabled). `cargo` is
+> **accepted and validated but reserved** — it is stored for a future
+> API version and does **not** change trunk capacity in API v1. The
+> first registered `cargo` value logs one informational line. To enlarge
+> trunks today, use the **TrunkScaling** sandbox option (a per-class
+> capacity multiplier, independent of this API).
 
 The API lives in the global `BVD` table and is safe to call from any
 `shared/` Lua file at module load time. It never calls `error()` — a
@@ -122,14 +130,18 @@ local all  = BVD.getRegisteredVehicles()                          -- read-only
 - `scriptName` must be a non-empty string.
 - `hp`, `mass_kg`, `cargo` are each optional; whichever you supply must be
   a positive, finite number. At least one is required.
+- `hp` and `mass_kg` are applied in API v1. `cargo` is validated and
+  stored but **reserved** (not applied in v1) — see the Field status note
+  above.
 - A malformed entry is rejected as a whole (no partial garbage is stored)
   with one warning line — never an error.
 - Unknown extra keys are ignored (forward-compatible).
 - Registering a vehicle whose script the game never loads is harmless: the
   overhaul simply does nothing for it. No error.
 
-Entries only take effect when the **HP/Weight realism** sandbox option is
-enabled; otherwise they are stored but inert.
+Entries' `hp` / `mass_kg` only take effect when the **HP/Weight realism**
+sandbox option is enabled; otherwise they are stored but inert. `cargo`
+is always stored but is reserved (not applied in API v1).
 
 ## Compatibility
 

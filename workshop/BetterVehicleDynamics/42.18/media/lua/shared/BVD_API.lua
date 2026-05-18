@@ -1,8 +1,8 @@
 -- BVD_API.lua — STABLE public registration API for other vehicle mods.
 --
 -- This is the supported, versioned entry point for third-party mods that
--- want Better Vehicle Dynamics to apply real-world HP / weight / cargo
--- figures to their vehicles. It is the original, superior replacement for
+-- want Better Vehicle Dynamics to apply real-world HP / weight figures to
+-- their vehicles. It is the original, superior replacement for
 -- the dropped per-vehicle sandbox string-override knobs: instead of one
 -- giant fragile sandbox string, mod authors register typed Lua tables.
 --
@@ -12,6 +12,15 @@
 --   BVD.registerVehicle(scriptName, { hp=, mass_kg=, cargo= })
 --       Register/replace one vehicle's data. scriptName is the PZ vehicle
 --       script full type, e.g. "MyMod.FictionalRoadster".
+--       FIELD STATUS: hp -> engineForce and mass_kg -> mass are APPLIED
+--       (at world start, when the HP/Weight realism sandbox option is on).
+--       cargo is ACCEPTED + VALIDATED but RESERVED — stored for a future
+--       API version, NOT applied in API_VERSION 1. Container capacity is a
+--       doubly-nested per-part script field whose part name this API does
+--       not carry; the safe per-class cargo lever today is the separate
+--       TrunkScaling sandbox option. The first registered cargo value logs
+--       one info line (see BVD_Overhaul.lua). Passing cargo is harmless
+--       and forward-compatible.
 --
 --   BVD.registerVehicles({ ["MyMod.A"]={...}, ["MyMod.B"]={...} })
 --       Bulk form. Each entry is validated independently.
@@ -159,10 +168,21 @@ end
 -- wrapper over BVD.Packs.register so authors who just have a static table
 -- do not need to learn the pack spec shape. Predicate / priority / source
 -- can still be passed via the optional opts table.
+--
+-- NAME IDEMPOTENCY: registration is keyed by `name` and is first-write-
+-- wins. A second registerPack (or BVD.Packs.register) call with a name
+-- already in the registry is IGNORED — the original pack is kept and the
+-- new data is discarded. This lets authors `require`/register defensively
+-- from multiple entry points without double-merging. A duplicate name
+-- logs one informational line (at the BVD.Packs.register dedupe point);
+-- pick a fresh name if you actually intend to register different data.
+--
 -- @param name  string  pack identifier (for logs + spawner grouping)
 -- @param tbl   table   { [scriptName] = { hp=, mass_kg=, cargo= }, ... }
 -- @param opts  table?  { check=function, priority=number, source=string }
--- @return boolean  true if the pack was accepted into the registry.
+-- @return boolean  true if the pack was accepted into the registry. Note:
+--                  returns true even when an earlier pack of the same name
+--                  already won (the call is a well-formed no-op then).
 function BVD.registerPack(name, tbl, opts)
     if type(name) ~= "string" or name == "" then
         warn("registerPack: name must be a non-empty string")

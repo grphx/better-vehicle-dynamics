@@ -216,10 +216,13 @@ local function publishLoadResponse()
     BetterVehicleDynamicsMod = BetterVehicleDynamicsMod or {}
     BetterVehicleDynamicsMod.loadResponse = {
         enabled        = (BVD.cfg().LoadAffectsHandling ~= false),
-        threshold      = 1.05,
-        maxPenalty     = 0.35,
-        fullAt         = 1.60,
-        easeBySpeedKmh = 25.0,
+        -- AGGRESSIVE TEST VALUES (2026-05-18): exaggerated so the load
+        -- effect is unmistakable while verifying it works at all. Dial
+        -- back to shippable feel (≈0.35 / 1.60 / 25) once confirmed.
+        threshold      = 1.03,
+        maxPenalty     = 0.90,
+        fullAt         = 1.25,
+        easeBySpeedKmh = 60.0,
     }
 end
 

@@ -1,8 +1,16 @@
 diff --git a/zombie/iso/IsoChunkMap.java b/zombie/iso/IsoChunkMap.java
-index d60a94c..4fd1a92 100644
+index d60a94c..7418db0 100644
 --- a/zombie/iso/IsoChunkMap.java
 +++ b/zombie/iso/IsoChunkMap.java
-@@ -1116,13 +1116,36 @@ public final class IsoChunkMap {
+@@ -58,6 +58,7 @@ public final class IsoChunkMap {
+    public static int chunkWidthInTiles = 8 * chunkGridWidth;
+    private static final ColorInfo inf = new ColorInfo();
+    private static final ArrayList<ArrayList<IsoFloorBloodSplat>> splatByType = new ArrayList<>();
++   private static long bvdSkidDbgMs = 0L;   // diagnostic throttle (temp)
+    public int playerId;
+    public boolean ignore;
+    public int worldX = chunkMapSquareToChunkMapChunkXY(worldXa);
+@@ -1116,13 +1117,49 @@ public final class IsoChunkMap {
                          inf.g -= cc / 3.0F;
                          inf.b -= cc / 3.0F;
                          float deltaAge = worldAge - b.worldAge;
@@ -13,6 +21,17 @@ index d60a94c..4fd1a92 100644
 +                        if (b.type >= zombie.iso.IsoFloorBloodSplat.BVD_TIREMARK_TYPE_MIN
 +                              && b.type <= zombie.iso.IsoFloorBloodSplat.BVD_TIREMARK_TYPE_MAX) {
 +                           fadeWindow = zombie.iso.IsoFloorBloodSplat.BVD_TIREMARK_FADE_HOURS;
++                        }
++                        if (b.type >= zombie.iso.IsoFloorBloodSplat.BVD_TIREMARK_TYPE_MIN
++                              && b.type <= zombie.iso.IsoFloorBloodSplat.BVD_TIREMARK_TYPE_MAX) {
++                           long nowMs = System.currentTimeMillis();
++                           if (nowMs - bvdSkidDbgMs > 3000L) {
++                              bvdSkidDbgMs = nowMs;
++                              System.out.println("[BVD-SKID-DBG] type=" + b.type
++                                 + " deltaAge=" + deltaAge + " win=" + fadeWindow
++                                 + " worldAge=" + worldAge + " bAge=" + b.worldAge
++                                 + " expired=" + (deltaAge >= fadeWindow));
++                           }
 +                        }
 +                        if (deltaAge >= 0.0F && deltaAge < fadeWindow) {
 +                           float f = 1.0F - deltaAge / fadeWindow;
@@ -36,6 +55,8 @@ index d60a94c..4fd1a92 100644
 +                                 }
 +                              }
 +                              b.chunk.floorBloodSplatsFade.remove(b);
++                              System.out.println("[BVD-SKID-DBG] REMOVED type=" + b.type
++                                 + " deltaAge=" + deltaAge);
 +                              continue;
 +                           }
                             inf.r *= 0.2F;

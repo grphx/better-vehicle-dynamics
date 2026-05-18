@@ -41,6 +41,27 @@ Therefore "Z is below `restingZ` by more than `sinkDepth`" is a state
 that is never legitimate in normal play, so correcting it cannot harm
 ramps/garages/jumps/towing. This single rule is the core safety argument.
 
+**Underground / negative-Z levels (basements, tunnels, multi-level):**
+`restingZ` is derived from `fastfloor(z)` — the vehicle's *own current
+integer level* — not from world ground or z=0. A vehicle resting on a
+basement floor at, say, level -2 has its `restingZ` computed for level
+-2, so `liveZ ≈ restingZ` and it is not "sunk." Being underground (or on
+any non-zero level) therefore does **not** trip the guard; the test is
+purely relative to whatever floor the vehicle currently occupies.
+
+**Hard correctness rule (level changes):** the guard MUST recompute the
+floor for the vehicle's *current* level every check
+(`fastfloor(currentZ) * 3 * 0.8164967 - min(wheelLow, chassisLow)`,
+lower-clamped). It must **not** compare against a stale `savedPhysicsZ`
+that may have been seated on a different level the vehicle has since
+left — doing so would read a legitimate level change as a sink. The
+`restingZ` reuse from `CarController` is valid only because it is the
+current-level computation; if the cached/saved value is from another
+level it must be recomputed before the sink test. Combined with
+`dwellTicks` (the brief Z excursion while crossing a level boundary is
+far shorter than the debounce) and the `sinkDepth` margin, level
+transitions and underground bases are safe.
+
 ## 3. Bridge contract addition
 
 Lua publishes `BetterVehicleDynamicsMod.stabilityGuard` (a table), read in
@@ -77,9 +98,13 @@ Logic, in order:
    would fight the server. Runs only on SP and the server/host.
 2. **Policy gate.** Resolve `stabilityGuard`; if null/absent/`enabled<0.5`,
    return.
-3. **Compute / reuse `restingZ`** for this vehicle using the same
-   expression `CarController` already uses for the Bullet seat (single
-   source of truth — no second floor formula anywhere).
+3. **Compute `restingZ` for the vehicle's CURRENT level** using the same
+   expression `CarController` uses for the Bullet seat
+   (`fastfloor(currentZ) * 3 * 0.8164967 - min(wheelLow, chassisLow)`,
+   lower-clamped) — single source of truth, no second floor formula. It
+   may reuse `CarController`'s `restingZ` *only* when that value is the
+   current-level computation; a saved/cached resting Z from a level the
+   vehicle has since left MUST be recomputed first (see §2 hard rule).
 4. **Sink test.** Let `liveZ` be the vehicle's current physics Z. It is
    "sunk" iff `liveZ < restingZ - sinkDepth`.
 5. **Debounce.** Per-vehicle-controller counter `sinkTicks`: increment
@@ -131,6 +156,13 @@ guard is doing real work in the field. It is gated so it cannot spam.
 - **One freeze:** ships with the current Necroid Java; thereafter
   `sinkDepth`/`enabled` are sandbox, `dwell`/`cooldown` are Lua —
   zero future manual reinstalls for tuning.
+- **Exotic-map escape hatch:** a custom map mod with non-integer or
+  irregular Z floors is the only theoretical misfire source; the
+  per-correction is already small, debounced and cooldown-bounded
+  (recoverable nudge, never a lock), and the sandbox toggle fully
+  disables the guard / the `sinkDepth` number loosens it without a
+  reinstall. No special-casing is designed in (YAGNI) — the toggle is
+  the documented remedy.
 
 ## 7. Testing & honest limitations
 
@@ -140,8 +172,10 @@ Objective gates (the project's "tests"):
   included — uses "predecessor/upstream mod" wording only).
 - Staged-tree assertion (mod ROOT rsync, `42`==`42.18` sandbox).
 - **SP parity smoke (USER):** drive normally across slopes, ramps,
-  multi-level parking, towing, jumps for a session → expect **zero**
-  corrections and unchanged feel. Any spurious correction is a failure.
+  multi-level parking, towing, jumps, **and into/out of an underground
+  or basement level and across Z-level boundaries** for a session →
+  expect **zero** corrections and unchanged feel. Any spurious
+  correction (especially at a level transition) is a failure.
 
 **Honest limitation (in scope by acknowledgement, not by omission):**
 no multiplayer reproduction of the predecessor desync exists, so true

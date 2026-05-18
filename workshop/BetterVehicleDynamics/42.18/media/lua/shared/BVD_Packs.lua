@@ -21,7 +21,7 @@ local registry = {}
 local appliedSnapshot = {}
 
 --- Register a pack. Idempotent on `name`.
--- @param name   string identifier ("KI5", "PapaChad", etc.)
+-- @param name   string identifier (e.g. "acme_trucks", "examplePack")
 -- @param spec   {
 --   check    = function(): bool — should this pack apply?  Default: always true.
 --   data     = table | string  — inline table or `require`-path to a data module

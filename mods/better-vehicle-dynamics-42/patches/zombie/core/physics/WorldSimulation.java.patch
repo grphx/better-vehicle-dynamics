@@ -1,5 +1,5 @@
 diff --git a/zombie/core/physics/WorldSimulation.java b/zombie/core/physics/WorldSimulation.java
-index bd7e915..945a51b 100644
+index bd7e915..f063ba3 100644
 --- a/zombie/core/physics/WorldSimulation.java
 +++ b/zombie/core/physics/WorldSimulation.java
 @@ -1,13 +1,21 @@
@@ -144,7 +144,7 @@ index bd7e915..945a51b 100644
           IsoChunkMap cm = IsoWorld.instance.currentCell.chunkMap[0];
           Bullet.initWorld(
              metaGrid.getMinX(),
-@@ -77,34 +184,207 @@ public final class WorldSimulation {
+@@ -77,34 +184,205 @@ public final class WorldSimulation {
     }
  
     private void updatePhysic() {
@@ -361,14 +361,12 @@ index bd7e915..945a51b 100644
 +                  ch.floorBloodSplats.add(keep.get(i));
 +               }
 +               ch.invalidateRenderChunkLevels(1L);
-+               zombie.debug.DebugType.General.println(
-+                  "[BVD-SKID] world-pruned " + removed + " expired tyre mark(s)");
 +            }
 +         }
        }
     }
  
-@@ -116,6 +396,7 @@ public final class WorldSimulation {
+@@ -116,6 +394,7 @@ public final class WorldSimulation {
  
     private void updateInternal() {
        if (this.created) {

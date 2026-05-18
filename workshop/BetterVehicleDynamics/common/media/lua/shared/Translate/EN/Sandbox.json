@@ -101,7 +101,7 @@
     "Sandbox_BVD_TireGripModel_tooltip": "Different tire types (worn / standard / modern) get distinct grip on road, rain, snow and off-road instead of one flat value.",
 
     "Sandbox_BVD_LoadAffectsHandling": "Load affects handling",
-    "Sandbox_BVD_LoadAffectsHandling_tooltip": "A heavily laden vehicle launches sluggishly from low speed, as if the engine is straining against the weight.",
+    "Sandbox_BVD_LoadAffectsHandling_tooltip": "A heavily laden vehicle pulls away sluggishly from low speed, as if the engine is straining against the weight.",
 
     "Sandbox_BVD_LoadAffectsFuel": "Load affects fuel use",
     "Sandbox_BVD_LoadAffectsFuel_tooltip": "Carrying a heavy load burns extra fuel while driving."

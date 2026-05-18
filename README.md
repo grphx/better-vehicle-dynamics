@@ -143,6 +143,88 @@ Entries' `hp` / `mass_kg` only take effect when the **HP/Weight realism**
 sandbox option is enabled; otherwise they are stored but inert. `cargo`
 is always stored but is reserved (not applied in API v1).
 
+## Tire-profile API and bridge contract (for tire and vehicle mod authors)
+
+### Registering a tire-grip profile
+
+`BVD.registerTireProfile(familyKey, profile)` lets any mod add a new tire
+family to the grip system without touching Java. The function is safe to
+call from any `shared/` Lua file at module load time.
+
+**`familyKey`** is the vanilla-style item family identifier with trailing
+size digits removed — so a tire item family `NormalTire14` registers as
+`"NormalTire"`. The key is case-sensitive and must be a non-empty string.
+
+**`profile`** is a table with four numeric multipliers, one per surface:
+
+```lua
+{ road = <number>, wet = <number>, snow = <number>, offroad = <number> }
+```
+
+Each multiplier is relative to that surface's own base grip value, where
+`1.0` is neutral (no change). A value below `1.0` reduces grip on that
+surface; a value above `1.0` increases it. Any missing or invalid field
+is silently defaulted to `1.0`, so partial profiles are safe.
+
+**Return value:** `true` if the profile was stored, `false` if the
+`familyKey` was invalid or the profile argument was not a table. The
+function never calls `error()`.
+
+**First registration wins.** If two mods register the same key the second
+call returns `false` and the original profile is preserved. This keeps
+the grip model stable across mod load orders.
+
+**Fictional example:**
+
+```lua
+-- Call from your mod's shared/ Lua file. familyKey must match
+-- your tire item family with trailing digits stripped.
+BVD.registerTireProfile("ExampleSportTire", {
+    road    = 1.20,   -- 20 % better than neutral on dry tarmac
+    wet     = 0.95,   -- slight wet penalty
+    snow    = 0.80,   -- noticeably worse on snow
+    offroad = 0.75,   -- not suited for loose surfaces
+})
+```
+
+### Built-in vanilla tire families
+
+BVD ships default profiles for the three vanilla tire families. Their
+approximate character:
+
+| Family       | Road | Wet  | Snow | Offroad |
+|--------------|------|------|------|---------|
+| `OldTire`    | 0.90 | 0.85 | 0.85 | 0.85    |
+| `NormalTire` | 1.00 | 1.00 | 1.00 | 1.00    |
+| `ModernTire` | 1.12 | 1.05 | 0.92 | 0.90    |
+
+Any family registered via `BVD.registerTireProfile` is automatically
+folded into the Java grip calculation at every surface touchpoint — no
+manual Java reinstall or rebuild is needed for new tire families. The Lua
+table is the sole source of truth; Java reads it on each grip evaluation.
+
+### Bridge protocol version
+
+`BetterVehicleDynamicsMod.protocolVersion` is an integer published by the
+Java bundle at world load. It is currently `1`.
+
+Future Lua-only Workshop updates can read this field to feature-detect
+what the installed Java bundle supports and degrade gracefully on the
+parts that need a newer contract, rather than hard-breaking. An older Java
+bundle always produces a lower-or-equal version number, so a guard such as
+
+```lua
+if (BetterVehicleDynamicsMod.protocolVersion or 0) >= 2 then
+    -- use a feature that needs protocol v2
+end
+```
+
+ensures older installs silently skip that branch. This is why tire
+profiles, load tuning, and the driver readout can all be shipped as
+Workshop-only updates: the Lua side controls the policy tables and the
+display; the Java side exposes stable hooks and publishes `protocolVersion`
+so the Lua side always knows which hooks are available.
+
 ## Compatibility
 
 Better Vehicle Dynamics patches vehicle handling data at load time through

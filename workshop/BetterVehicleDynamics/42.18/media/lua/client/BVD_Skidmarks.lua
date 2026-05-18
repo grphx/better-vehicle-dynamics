@@ -1,7 +1,14 @@
-local MIN_INTERVAL_MS = 380
+local MIN_INTERVAL_MS = 90     -- sample the path often so drift arcs are smooth
 local DEDUPE_MS       = 1500
 local BURNOUT_SPEED   = 10
 local SKID_SPEED      = 30
+
+-- The vehicle can travel several tiles between two drops, which used to
+-- leave visible gaps between separate stamps. We now fill every tile
+-- along the segment from the previous drop to the current one so the
+-- skid reads as one continuous streak at any speed.
+local STEP_TILES    = 0.5      -- interpolation granularity (tiles)
+local MAX_FILL_DIST = 20.0     -- skip the fill past this (teleport/chunk load)
 
 local TYPE_V, TYPE_H, TYPE_D1, TYPE_D2 = 21, 22, 23, 24
 
@@ -38,6 +45,7 @@ local SWAP_D1_D2         = false  -- flip if the two diagonals come out mirrored
 
 local LAST_TICK_MS = 0
 local recentTiles  = {}
+local lastDrop     = nil   -- {x,y,z} last placed point in the CURRENT streak
 
 -- Probe-and-cache (project Kahlua rule: Kahlua red-logs caught Java
 -- exceptions, so probe each uncertain Java method ONCE and remember the
@@ -153,25 +161,35 @@ local function typeForVehicle(v)
     return t
 end
 
+-- Place ONE decal at a world point, resolving its own square/chunk (an
+-- interpolated point may fall in a different chunk than the vehicle's),
+-- with per-tile dedupe so a tile is only stamped once per DEDUPE_MS.
+local function placeSplatAt(wx, wy, wz, t, now)
+    local key = math.floor(wx) .. "," .. math.floor(wy) .. "," .. math.floor(wz)
+    if recentTiles[key] and (now - recentTiles[key]) < DEDUPE_MS then return end
+    recentTiles[key] = now
+    local cell  = getCell and getCell()
+    local sq    = cell and cell:getGridSquare(math.floor(wx), math.floor(wy), math.floor(wz))
+    local chunk = sq and sq.getChunk and sq:getChunk()
+    if chunk and chunk.addBloodSplat then
+        chunk:addBloodSplat(wx, wy, wz, t)
+    end
+end
+
 local function dropMark(v, sq)
     if not sq then return end
-    local chunk = sq.getChunk and sq:getChunk()
-    if not chunk or not chunk.addBloodSplat then return end
 
-    -- Vehicle world coords (floats). chunk:addBloodSplat treats them as
-    -- the splat's render anchor inside the resolved tile.
+    -- Vehicle world coords (floats). addBloodSplat treats them as the
+    -- splat's render anchor inside the resolved tile.
     local vx = v:getX() or sq:getX()
     local vy = v:getY() or sq:getY()
     local vz = v:getZ() or sq:getZ()
-
-    local key = math.floor(vx) .. "," .. math.floor(vy) .. "," .. math.floor(vz)
+    local t  = typeForVehicle(v)
     local now = getTimestampMs and getTimestampMs() or 0
-    if recentTiles[key] and (now - recentTiles[key]) < DEDUPE_MS then return end
-    recentTiles[key] = now
 
     if (now % 8000) < 50 then
-        for k, t in pairs(recentTiles) do
-            if (now - t) > DEDUPE_MS * 4 then recentTiles[k] = nil end
+        for k, ts in pairs(recentTiles) do
+            if (now - ts) > DEDUPE_MS * 4 then recentTiles[k] = nil end
         end
         -- Drop heading state for vehicles untouched for a while so the
         -- table can't accrete stale per-id entries on long sessions.
@@ -180,15 +198,34 @@ local function dropMark(v, sq)
         end
     end
 
-    chunk:addBloodSplat(vx, vy, vz, typeForVehicle(v))
+    -- Connect to the previous drop in this streak: fill every ~half-tile
+    -- between them so there are no gaps even at high speed. A fresh streak
+    -- (lastDrop == nil) or a level change just stamps the current point.
+    if lastDrop and lastDrop.z == vz then
+        local dx, dy = vx - lastDrop.x, vy - lastDrop.y
+        local dist = math.sqrt(dx * dx + dy * dy)
+        if dist > 0.0 and dist <= MAX_FILL_DIST then
+            local steps = math.ceil(dist / STEP_TILES)
+            for i = 1, steps do
+                local f = i / steps
+                placeSplatAt(lastDrop.x + dx * f, lastDrop.y + dy * f, vz, t, now)
+            end
+        else
+            placeSplatAt(vx, vy, vz, t, now)
+        end
+    else
+        placeSplatAt(vx, vy, vz, t, now)
+    end
+
+    lastDrop = { x = vx, y = vy, z = vz }
 end
 
 local function onPlayerUpdate(player)
-    if not player or player:isDead() then return end
+    if not player or player:isDead() then lastDrop = nil return end
     local sv = SandboxVars and SandboxVars.BetterVehicleDynamics
-    if sv and sv.SkidMarks == false then return end
+    if sv and sv.SkidMarks == false then lastDrop = nil return end
     local v = player:getVehicle()
-    if not v or v:getDriver() ~= player then return end
+    if not v or v:getDriver() ~= player then lastDrop = nil return end
     local now = getTimestampMs and getTimestampMs() or 0
     if now - LAST_TICK_MS < MIN_INTERVAL_MS then return end
 

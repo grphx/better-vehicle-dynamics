@@ -135,14 +135,31 @@ local function buildRows(vehicle)
     local cfg  = effectiveCfg()
     local rows = {}
 
+    -- Read the Java-published computed bridge state once, pcall-guarded.
+    -- When the computed table is absent (Java side not yet published, or
+    -- mechanics window opened before the first tick), rows fall back to
+    -- "--" / R_DIM so the panel still renders gracefully.
+    local comp = nil
+    pcall(function() comp = BetterVehicleDynamicsMod and BetterVehicleDynamicsMod.computed end)
+
+    -- Helper: turn a computed numeric grip field into (string, tint).
+    local function gv(k)
+        local x = comp and comp[k]
+        if type(x) ~= "number" then return "--", R_DIM end
+        return string.format("%.2f", x), R_NORM
+    end
+
     -- Active handling tune ----------------------------------------------
     rows[#rows + 1] = { "Tuning profile", profileName(cfg), R_NORM }
 
-    -- Grip settings (BVD config; not surfaced anywhere in vanilla) -------
-    rows[#rows + 1] = { "Tire grip",     numStr(cfg.GripLevel),   R_NORM }
-    rows[#rows + 1] = { "Rain grip",     numStr(cfg.WetGrip),     R_NORM }
-    rows[#rows + 1] = { "Snow grip",     numStr(cfg.SnowGrip),    R_NORM }
-    rows[#rows + 1] = { "Off-road grip", numStr(cfg.OffroadGrip), R_NORM }
+    -- Per-vehicle effective grip (from computed bridge; "--" when absent) -
+    rows[#rows + 1] = { "Tire type",
+        (comp and comp.tireFamily) or "--",
+        (comp and comp.tireFamily) and R_NORM or R_DIM }
+    do local s, t = gv("gripRoad")    rows[#rows + 1] = { "Road grip",     s, t } end
+    do local s, t = gv("gripWet")     rows[#rows + 1] = { "Wet grip",      s, t } end
+    do local s, t = gv("gripSnow")    rows[#rows + 1] = { "Snow grip",     s, t } end
+    do local s, t = gv("gripOffroad") rows[#rows + 1] = { "Off-road grip", s, t } end
 
     -- Cargo load: total weight stowed across the vehicle's containers
     -- (additive — vanilla shows total mass, not the cargo portion).
@@ -151,6 +168,14 @@ local function buildRows(vehicle)
         rows[#rows + 1] = { "Cargo load", "--", R_DIM }
     else
         rows[#rows + 1] = { "Cargo load", string.format("%.1f", cl), R_NORM }
+    end
+
+    -- Load penalty: only shown when non-trivial (> 0.1 %).
+    local lp = comp and comp.loadPenalty
+    if type(lp) == "number" and lp > 0.001 then
+        rows[#rows + 1] = { "Load penalty",
+            string.format("-%d%% launch", math.floor(lp * 100 + 0.5)),
+            (lp > 0.2) and R_OVER or R_WARN }
     end
 
     return rows

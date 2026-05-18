@@ -1,5 +1,5 @@
 diff --git a/zombie/core/physics/CarController.java b/zombie/core/physics/CarController.java
-index e0cfcc2..25e7aef 100644
+index e0cfcc2..1700b9f 100644
 --- a/zombie/core/physics/CarController.java
 +++ b/zombie/core/physics/CarController.java
 @@ -1,104 +1,443 @@
@@ -489,7 +489,7 @@ index e0cfcc2..25e7aef 100644
              return gears[i];
           }
        }
-@@ -106,704 +445,1519 @@ public final class CarController {
+@@ -106,704 +445,1527 @@ public final class CarController {
        return null;
     }
  
@@ -2053,10 +2053,12 @@ index e0cfcc2..25e7aef 100644
 +            float speedKmh = Math.abs(this.vehicleObject.getCurrentSpeedKmHour());
 +            float fade = (easeBy <= 0.0F) ? 0.0F : Math.min(Math.max(1.0F - speedKmh / easeBy, 0.0F), 1.0F);
 +            loadPenalty *= fade;
-+            // Defence-in-depth: torque can only ever be reduced, never
-+            // amplified, regardless of what the policy table contains.
++            // Defence-in-depth: clamped to [0,1] so the delivered force can
++            // only ever be reduced, never amplified. NOT applied here -- a
++            // pre-clamp torque cut is swallowed when launch torque exceeds
++            // gripLimit and re-clamps to the identical cap. It is applied to
++            // the final engineForce after the grip clamp instead.
 +            loadPenalty = Math.max(0.0F, Math.min(1.0F, loadPenalty));
-+            wheelTorque *= (1.0F - loadPenalty);
 +         }
 +      }
 +      this.loadPenaltyOut = loadPenalty;
@@ -2147,6 +2149,12 @@ index e0cfcc2..25e7aef 100644
 -         this.vehicleObject.transmissionNumber = targetTransmissionNumber;
 -         this.vehicleObject.engineSpeed = carRpmData[this.vehicleObject.transmissionNumber.getIndex() - 1].afterGearChange;
 +      this.engineForce = wheelTorque;
++      // Load-response: bog a laden vehicle off the line by attenuating the
++      // DELIVERED force, after the grip-limit clamp so it cannot be absorbed
++      // by it. loadPenalty is 0 unless an enabled loadResponse policy and an
++      // over-threshold laden ratio set it, so the empty / no-policy / not-yet-
++      // published path stays byte-identical to stock.
++      this.engineForce *= (1.0F - loadPenalty);
 +      this.vehicleObject.engineSpeed += engineTorqueDelta / flywheelInertia * dt;
 +      this.vehicleObject.engineSpeed = Math.max(200.0, this.vehicleObject.engineSpeed);
 +      if (this.vehicleObject.engineSpeed != this.vehicleObject.engineSpeed) {
@@ -2521,7 +2529,7 @@ index e0cfcc2..25e7aef 100644
              this.vehicleObject.stopSound(this.vehicleObject.ramSound);
              this.vehicleObject.ramSound = 0L;
           }
-@@ -813,10 +1967,52 @@ public final class CarController {
+@@ -813,10 +1975,52 @@ public final class CarController {
        }
     }
  
@@ -2575,7 +2583,7 @@ index e0cfcc2..25e7aef 100644
           } else {
              this.vehicleObject.onBackMoveSignalStart();
           }
-@@ -824,7 +2020,7 @@ public final class CarController {
+@@ -824,7 +2028,7 @@ public final class CarController {
  
        if (!this.isGasR && this.vehicleObject.isBackSignalEmitting()) {
           if (GameClient.client) {
@@ -2584,7 +2592,7 @@ index e0cfcc2..25e7aef 100644
           } else {
              this.vehicleObject.onBackMoveSignalStop();
           }
-@@ -838,7 +2034,7 @@ public final class CarController {
+@@ -838,7 +2042,7 @@ public final class CarController {
           }
  
           if (GameClient.client) {
@@ -2593,7 +2601,7 @@ index e0cfcc2..25e7aef 100644
           }
  
           if (!GameServer.server) {
-@@ -850,7 +2046,7 @@ public final class CarController {
+@@ -850,7 +2054,7 @@ public final class CarController {
           }
  
           if (GameClient.client) {
@@ -2602,7 +2610,7 @@ index e0cfcc2..25e7aef 100644
           }
  
           if (!GameServer.server) {
-@@ -860,7 +2056,7 @@ public final class CarController {
+@@ -860,7 +2064,7 @@ public final class CarController {
     }
  
     private boolean delayCommandWhileDrunk(boolean command) {
@@ -2611,7 +2619,7 @@ index e0cfcc2..25e7aef 100644
        if (Rand.AdjustForFramerate(4 * this.vehicleObject.getDriver().getMoodles().getMoodleLevel(MoodleType.DRUNK)) < this.drunkDelayCommandTimer) {
           this.drunkDelayCommandTimer = 0.0F;
           return true;
-@@ -870,7 +2066,7 @@ public final class CarController {
+@@ -870,7 +2074,7 @@ public final class CarController {
     }
  
     private float delayCommandWhileDrunk(float steering) {
@@ -2620,7 +2628,7 @@ index e0cfcc2..25e7aef 100644
        if (Rand.AdjustForFramerate(4 * this.vehicleObject.getDriver().getMoodles().getMoodleLevel(MoodleType.DRUNK)) < this.drunkDelayCommandTimer) {
           this.drunkDelayCommandTimer = 0.0F;
           return steering;
-@@ -902,56 +2098,104 @@ public final class CarController {
+@@ -902,56 +2106,104 @@ public final class CarController {
     }
  
     public void updateControls() {
@@ -2763,7 +2771,7 @@ index e0cfcc2..25e7aef 100644
        }
  
        this.isGas = this.wasGas = false;
-@@ -971,12 +2215,12 @@ public final class CarController {
+@@ -971,12 +2223,12 @@ public final class CarController {
        } else if (this.isPlayerDrivenVehicleNearby()) {
           return true;
        } else {
@@ -2781,7 +2789,7 @@ index e0cfcc2..25e7aef 100644
           }
        }
     }
-@@ -990,7 +2234,7 @@ public final class CarController {
+@@ -990,7 +2242,7 @@ public final class CarController {
           this.atRestTimer = 1.0F;
        } else if (this.isEnable && this.vehicleObject.isAtRest()) {
           if (this.atRestTimer > 0.0F) {
@@ -2790,7 +2798,7 @@ index e0cfcc2..25e7aef 100644
           }
  
           if (this.atRestTimer <= 0.0F) {
-@@ -1019,11 +2263,11 @@ public final class CarController {
+@@ -1019,11 +2271,11 @@ public final class CarController {
           for (int dx = -1; dx <= 1; dx++) {
              IsoChunk chunk = IsoWorld.instance.currentCell.getChunk(chunkX + dx, chunkY + dy);
              if (chunk != null) {
@@ -2806,7 +2814,7 @@ index e0cfcc2..25e7aef 100644
                          closestDistSq = distSq;
                       }
                    }
-@@ -1045,9 +2289,10 @@ public final class CarController {
+@@ -1045,9 +2297,10 @@ public final class CarController {
        if (Core.debug && DebugOptions.instance.vehicleRenderOutline.getValue()) {
           VehicleScript script = this.vehicleObject.getScript();
           int zi = PZMath.fastfloor(this.vehicleObject.getZ());
@@ -2820,7 +2828,7 @@ index e0cfcc2..25e7aef 100644
           VehiclePoly poly = this.vehicleObject.getPoly();
           LineDrawer.addLine(poly.x1, poly.y1, zi, poly.x2, poly.y2, zi, 1.0F, 1.0F, 1.0F, null, true);
           LineDrawer.addLine(poly.x2, poly.y2, zi, poly.x3, poly.y3, zi, 1.0F, 1.0F, 1.0F, null, true);
-@@ -1067,8 +2312,8 @@ public final class CarController {
+@@ -1067,8 +2320,8 @@ public final class CarController {
           _UNIT_Y.set(0.0F, 1.0F, 0.0F);
  
           for (int i = 0; i < this.vehicleObject.getScript().getWheelCount(); i++) {
@@ -2831,7 +2839,7 @@ index e0cfcc2..25e7aef 100644
              if (script.getModel() != null) {
                 this.tempVec3f.add(script.getModelOffset());
              }
-@@ -1079,12 +2324,16 @@ public final class CarController {
+@@ -1079,12 +2332,16 @@ public final class CarController {
              this.vehicleObject.getWheelForwardVector(i, this.tempVec3f);
              LineDrawer.addLine(originX, originY, zi, originX + this.tempVec3f.x, originY + this.tempVec3f.z, zi, 1.0F, 1.0F, 1.0F, null, true);
              this.drawRect(
@@ -2850,7 +2858,7 @@ index e0cfcc2..25e7aef 100644
              this.drawCircle(this.vehicleObject.collideX, this.vehicleObject.collideY, 0.3F);
              this.vehicleObject.collideX = -1.0F;
              this.vehicleObject.collideY = -1.0F;
-@@ -1092,16 +2341,19 @@ public final class CarController {
+@@ -1092,16 +2349,19 @@ public final class CarController {
  
           int joypad = this.vehicleObject.getJoypad();
           if (joypad != -1) {
@@ -2876,7 +2884,7 @@ index e0cfcc2..25e7aef 100644
                    this.vehicleObject.getZ(),
                    1.0F,
                    1.0F,
-@@ -1150,48 +2402,47 @@ public final class CarController {
+@@ -1150,48 +2410,47 @@ public final class CarController {
        }
     }
  
@@ -2964,7 +2972,7 @@ index e0cfcc2..25e7aef 100644
     }
  
     public void drawCircle(float x, float y, float radius) {
-@@ -1209,12 +2460,12 @@ public final class CarController {
+@@ -1209,12 +2468,12 @@ public final class CarController {
     }
  
     public static final class BulletVariables {
@@ -2982,7 +2990,7 @@ index e0cfcc2..25e7aef 100644
           this.vehicle = vehicle;
           this.engineForce = engineForce;
           this.brakingForce = brakingForce;
-@@ -1230,7 +2481,7 @@ public final class CarController {
+@@ -1230,7 +2489,7 @@ public final class CarController {
        public boolean brake;
        public boolean shift;
        public boolean wasUsingParkingBrakes;
@@ -2991,7 +2999,7 @@ index e0cfcc2..25e7aef 100644
  
        public void reset() {
           this.steering = 0.0F;
-@@ -1250,15 +2501,39 @@ public final class CarController {
+@@ -1250,15 +2509,39 @@ public final class CarController {
        Reverse;
     }
  

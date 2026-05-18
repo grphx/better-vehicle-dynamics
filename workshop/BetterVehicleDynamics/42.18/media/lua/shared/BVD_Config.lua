@@ -78,6 +78,7 @@ local KEYS = {
     "ThrottleStart", "KeylessTow",
     "ShoveFoliage", "ShoveZombies", "ShoveCorpses",
     "Drift", "DriftGrip", "DriftMinSpeed", "DriftSteer", "DriftRotation",
+    "TireGripModel", "LoadAffectsHandling", "LoadAffectsFuel",
 }
 
 -- Build the effective-config table fresh. Internal — public access is via
@@ -150,6 +151,11 @@ local function buildCfg()
         DriftMinSpeed = num("DriftMinSpeed", 20),
         DriftSteer    = num("DriftSteer",    1.5),
         DriftRotation = num("DriftRotation", 2000),
+
+        -- Load dynamics
+        TireGripModel      = boolTrue("TireGripModel"),      -- default true
+        LoadAffectsHandling = boolTrue("LoadAffectsHandling"), -- default true
+        LoadAffectsFuel     = boolTrue("LoadAffectsFuel"),     -- default true
     }
 end
 
@@ -197,6 +203,27 @@ function BVD.invalidateConfigCache()
 end
 
 -- ---------------------------------------------------------------------------
+-- Load-response bridge publish
+-- ---------------------------------------------------------------------------
+-- Writes BetterVehicleDynamicsMod.loadResponse so the Java CarController can
+-- read the launch-penalty policy without knowing about BVD_Config internals.
+-- Called at module load (initial publish) and from onLiveTick whenever a
+-- sandbox change is detected (same cadence as preset re-cascade). Threshold,
+-- penalty curve, and ease constants are authoring values — only `enabled`
+-- tracks the sandbox toggle at runtime.
+
+local function publishLoadResponse()
+    BetterVehicleDynamicsMod = BetterVehicleDynamicsMod or {}
+    BetterVehicleDynamicsMod.loadResponse = {
+        enabled        = (BVD.cfg().LoadAffectsHandling ~= false),
+        threshold      = 1.05,
+        maxPenalty     = 0.35,
+        fullAt         = 1.60,
+        easeBySpeedKmh = 25.0,
+    }
+end
+
+-- ---------------------------------------------------------------------------
 -- Live re-read on the per-vehicle update tick
 -- ---------------------------------------------------------------------------
 -- Throttled so we are not concatenating a fingerprint every frame. When a
@@ -227,6 +254,9 @@ local function onLiveTick()
         -- fingerprint so we do not loop on our own writes.
         _fingerprint = fingerprint()
     end
+    -- Re-publish bridge tables so Java picks up any toggled options live.
+    publishLoadResponse()
+    if BVD and BVD.publishTireProfiles then pcall(BVD.publishTireProfiles) end
     print("[BVD] config: live sandbox change detected — cache refreshed")
 end
 
@@ -241,6 +271,10 @@ end
 if Events and Events.OnPlayerUpdate then
     Events.OnPlayerUpdate.Add(onLiveTick)
 end
+
+-- Initial publish: seed the bridge table as soon as the module loads so
+-- Java sees a valid loadResponse even before any OnPlayerUpdate fires.
+publishLoadResponse()
 
 print("[BVD] config layer loaded (cached + live re-read)")
 

@@ -191,3 +191,9 @@ option BetterVehicleDynamics.LoadAffectsFuel
     type = boolean, default = true,
     page = BetterVehicleDynamics_TiresLoad, translation = BVD_LoadAffectsFuel,
 }
+
+option BetterVehicleDynamics.LoadMaxPenalty
+{
+    type = double, min = 0.0, max = 0.9, default = 0.5,
+    page = BetterVehicleDynamics_TiresLoad, translation = BVD_LoadMaxPenalty,
+}

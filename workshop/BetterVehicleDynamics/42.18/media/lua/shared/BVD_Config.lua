@@ -78,7 +78,7 @@ local KEYS = {
     "ThrottleStart", "KeylessTow",
     "ShoveFoliage", "ShoveZombies", "ShoveCorpses",
     "Drift", "DriftGrip", "DriftMinSpeed", "DriftSteer", "DriftRotation",
-    "TireGripModel", "LoadAffectsHandling", "LoadAffectsFuel",
+    "TireGripModel", "LoadAffectsHandling", "LoadAffectsFuel", "LoadMaxPenalty",
 }
 
 -- Build the effective-config table fresh. Internal — public access is via
@@ -156,6 +156,7 @@ local function buildCfg()
         TireGripModel       = boolTrue("TireGripModel"),       -- default true
         LoadAffectsHandling = boolTrue("LoadAffectsHandling"), -- default true
         LoadAffectsFuel     = boolTrue("LoadAffectsFuel"),     -- default true
+        LoadMaxPenalty      = num("LoadMaxPenalty", 0.5),      -- 0..0.9 frac
     }
 end
 
@@ -214,15 +215,18 @@ end
 
 local function publishLoadResponse()
     BetterVehicleDynamicsMod = BetterVehicleDynamicsMod or {}
+    local c = BVD.cfg()
+    -- maxPenalty is player-tunable (sandbox BVD_LoadMaxPenalty, default
+    -- 0.50). Clamp defensively to the option's own [0, 0.9] range so a
+    -- hand-edited config can't invert or fully kill the torque.
+    local mp = tonumber(c and c.LoadMaxPenalty) or 0.5
+    if mp < 0.0 then mp = 0.0 elseif mp > 0.9 then mp = 0.9 end
     BetterVehicleDynamicsMod.loadResponse = {
-        enabled        = (BVD.cfg().LoadAffectsHandling ~= false),
-        -- AGGRESSIVE TEST VALUES (2026-05-18): exaggerated so the load
-        -- effect is unmistakable while verifying it works at all. Dial
-        -- back to shippable feel (≈0.35 / 1.60 / 25) once confirmed.
-        threshold      = 1.03,
-        maxPenalty     = 0.90,
-        fullAt         = 1.25,
-        easeBySpeedKmh = 60.0,
+        enabled        = (c and c.LoadAffectsHandling ~= false),
+        threshold      = 1.05,   -- no effect until >5% over reference mass
+        maxPenalty     = mp,     -- sandbox-driven cap on launch-force loss
+        fullAt         = 1.45,   -- mp reached by ~45% over reference mass
+        easeBySpeedKmh = 35.0,   -- fully gone by 35 km/h
     }
 end
 

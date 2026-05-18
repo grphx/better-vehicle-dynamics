@@ -34,6 +34,14 @@ local function addBvdDebugMenu(playerIndex, context, worldObjects, test)
             player:Say("[BVD] spawner UI not loaded")
         end
     end)
+
+    sub:addOption("Clear all skid marks", nil, function()
+        if BVD_ClearSkidMarks then
+            BVD_ClearSkidMarks()
+        else
+            player:Say("[BVD] skid purge not loaded")
+        end
+    end)
 end
 
 Events.OnFillWorldObjectContextMenu.Add(addBvdDebugMenu)

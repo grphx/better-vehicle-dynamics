@@ -104,5 +104,8 @@
     "Sandbox_BVD_LoadAffectsHandling_tooltip": "A heavily laden vehicle pulls away sluggishly from low speed, as if the engine is straining against the weight.",
 
     "Sandbox_BVD_LoadAffectsFuel": "Load affects fuel use",
-    "Sandbox_BVD_LoadAffectsFuel_tooltip": "Carrying a heavy load burns extra fuel while driving."
+    "Sandbox_BVD_LoadAffectsFuel_tooltip": "Carrying a heavy load burns extra fuel while driving.",
+
+    "Sandbox_BVD_LoadMaxPenalty": "Max launch penalty when fully laden",
+    "Sandbox_BVD_LoadMaxPenalty_tooltip": "Strongest possible reduction in launch force for a fully loaded vehicle (0.50 = up to 50% less force off the line). Eases off as speed builds. Requires 'Load affects handling'."
 }

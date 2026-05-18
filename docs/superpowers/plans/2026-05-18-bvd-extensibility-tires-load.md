@@ -10,7 +10,7 @@
 
 **Domain note on "tests":** there is no Lua/PZ unit harness in this environment. The objective verification gates used throughout are: `./tools/grepgate.sh` PASS (exit 0), `necroid test` = `test build OK: 5 file(s) compiled.` for Java, staged-tree structure assertions, and explicit **USER in-game acceptance** steps. Treat those as the "tests". Every task ends with grep gate + commit; Java tasks also necroid test/capture/install + mirror patch; every staging rsync uses the **mod ROOT** (`workshop/BetterVehicleDynamics/`), never a version subdir.
 
-**Clean-room rule (every task):** original code/strings only; no `RCP_`/bare `VPR`/`Realistic Car Physics`/KI5 identifiers; reading pristine PZ / vanilla for API is allowed, copying non-trivial blocks is not. The Java task is specified as a *contract*, not pre-written code (clean-room: the implementer authors from behaviour; the objective gate is grep + `necroid test` + the user parity gate — a pre-written "answer" would defeat independence).
+**Clean-room rule (every task):** original code/strings only; no banned provenance tokens — the predecessor/upstream/third-party identifiers; the authoritative banned list is `tools/grepgate.sh` and the gate enforces it. Reading pristine PZ / vanilla for API is allowed; copying non-trivial blocks is not. The Java task is specified as a *contract*, not pre-written code (clean-room: the implementer authors from behaviour; the objective gate is grep + `necroid test` + the user parity gate — a pre-written "answer" would defeat independence).
 
 ---
 

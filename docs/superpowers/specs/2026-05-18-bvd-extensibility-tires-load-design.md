@@ -8,7 +8,8 @@
 
 ## 1. Context & Why
 
-BVD is the clean-room replacement for VPR (RCP copyright takedown). Its
+BVD is the clean-room replacement for the predecessor vehicle-physics
+mod (rebuilt after an upstream copyright takedown). Its
 Java ships as a manual Necroid bundle — **not** Workshop-auto-updated — so
 every Java change forces users to redo a manual install. The user's
 priority: ship **one** more Java change that is a *generic, frozen,
@@ -26,7 +27,8 @@ Two concrete features ride on that contract for v1:
 - **Load-sensitive dynamics.** A laden vehicle should launch sluggishly
   ("engine straining") and burn more fuel.
 
-Behaviour parity with VPR/RCP is allowed; **expression must be 100%
+Behaviour parity with the predecessor/upstream mods is allowed;
+**expression must be 100%
 original**; the grep gate (`./tools/grepgate.sh`) stays PASS.
 
 ## 2. Goals / Non-Goals

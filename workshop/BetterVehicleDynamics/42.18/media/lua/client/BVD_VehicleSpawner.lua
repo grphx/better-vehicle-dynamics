@@ -177,8 +177,13 @@ function BVD_VehicleSpawnerWindow:drawRow(lb, y, item, alt)
 end
 
 function BVD_VehicleSpawnerWindow:onMouseUp(x, y)
-    -- ISScrollingListBox already calls onMouseDown on the row; we override
-    -- the click-to-spawn behavior via the list's onMouseUp.
+    -- Row click-to-spawn is handled entirely on the inner list via
+    -- patchListClick (self.list.onMouseUp), NOT here — so this window
+    -- override must not swallow the event. It previously did nothing,
+    -- which meant ISCollapsableWindow's own onMouseUp never ran and the
+    -- title-bar drag-release / resize-end / move-end logic was dead. Pass
+    -- through to the base implementation so dragging and resizing work.
+    return ISCollapsableWindow.onMouseUp(self, x, y)
 end
 
 function BVD_VehicleSpawnerWindow:onSelectRow()

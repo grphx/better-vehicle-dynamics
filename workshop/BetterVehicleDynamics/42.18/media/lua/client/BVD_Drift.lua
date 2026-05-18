@@ -8,6 +8,11 @@
 
 require "PZAPI/ModOptions"
 
+-- SECONDARY bridge-global init guard. The PRIMARY guard lives in the
+-- owning file client/BetterVehicleDynamics.lua. This `or {}` is kept here
+-- so the drift bridge is still safe in load orders where this file
+-- happens to execute before the owning file. Behaviour-identical to the
+-- previous code — same `or {}`, just now explicitly the secondary.
 BetterVehicleDynamicsMod = BetterVehicleDynamicsMod or {}
 BetterVehicleDynamicsMod.driftActive = false
 

@@ -57,6 +57,80 @@ simply disable it, enable this one, and reconfigure your preferences in
 the Vehicle Dynamics sandbox panel. There is no automatic migration of
 settings; the systems are independent.
 
+## Public data-pack API (for vehicle mod authors)
+
+If your mod adds vehicles, you can have Better Vehicle Dynamics apply
+real-world power, weight, and cargo figures to them. This is the supported,
+stable replacement for any per-vehicle string-override sandbox knob.
+
+The API lives in the global `BVD` table and is safe to call from any
+`shared/` Lua file at module load time. It never calls `error()` — a
+malformed entry is skipped with a single clear log line, so a bad data
+pack can never break your mod's load.
+
+`BVD.API_VERSION` is an integer you can branch on; it is bumped only for
+breaking changes.
+
+### Register one vehicle
+
+```lua
+-- "Mod.Type" is your PZ vehicle script full type.
+-- hp / mass_kg / cargo are each optional, but you must supply at least
+-- one, and each must be a positive finite number.
+BVD.registerVehicle("ExampleMod.FictionalRoadster", {
+    hp      = 240,
+    mass_kg = 1320,
+    cargo   = 180,
+})
+```
+
+### Register many at once
+
+```lua
+BVD.registerVehicles({
+    ["ExampleMod.FictionalRoadster"] = { hp = 240, mass_kg = 1320, cargo = 180 },
+    ["ExampleMod.HaulerRig"]         = { hp = 320, mass_kg = 7400, cargo = 2600 },
+})
+```
+
+### Register a named pack
+
+`registerPack` bundles a whole table under a name (used for logs and the
+debug spawner grouping). You can optionally gate it behind a predicate and
+set a priority (higher priority is applied last and wins on conflict):
+
+```lua
+BVD.registerPack("ExampleVehiclesPack", {
+    ["ExampleMod.FictionalRoadster"] = { hp = 240, mass_kg = 1320 },
+    ["ExampleMod.HaulerRig"]         = { hp = 320, mass_kg = 7400, cargo = 2600 },
+}, {
+    check    = function() return true end,  -- optional gate
+    priority = 10,                          -- optional; default 0
+    source   = "ExampleMod",                -- optional log tag
+})
+```
+
+### Read back
+
+```lua
+local data = BVD.getVehicleData("ExampleMod.FictionalRoadster")  -- table or nil
+local all  = BVD.getRegisteredVehicles()                          -- read-only
+```
+
+### Validation rules
+
+- `scriptName` must be a non-empty string.
+- `hp`, `mass_kg`, `cargo` are each optional; whichever you supply must be
+  a positive, finite number. At least one is required.
+- A malformed entry is rejected as a whole (no partial garbage is stored)
+  with one warning line — never an error.
+- Unknown extra keys are ignored (forward-compatible).
+- Registering a vehicle whose script the game never loads is harmless: the
+  overhaul simply does nothing for it. No error.
+
+Entries only take effect when the **HP/Weight realism** sandbox option is
+enabled; otherwise they are stored but inert.
+
 ## Compatibility
 
 Better Vehicle Dynamics patches vehicle handling data at load time through

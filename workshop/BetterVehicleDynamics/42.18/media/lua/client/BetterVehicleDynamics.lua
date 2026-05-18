@@ -1,5 +1,14 @@
 require "PZAPI/ModOptions"
 
+-- PRIMARY bridge-global init guard. This file owns the
+-- BetterVehicleDynamicsMod table — it is the file that writes the most
+-- fields into it (applyOptions below) and is the canonical owner of the
+-- Lua<->Java bridge. The guard is `or {}` (not a bare assignment) so it
+-- is load-order-safe: whoever loads first creates the table, everyone
+-- else reuses it. BVD_Drift.lua keeps a SECONDARY `or {}` guard so the
+-- drift bridge is still safe if it happens to load before this file.
+BetterVehicleDynamicsMod = BetterVehicleDynamicsMod or {}
+
 local keyOptions = PZAPI.ModOptions:create("BetterVehicleDynamics",getText("IGUI_BVD_ModOptionsName"))
 
 local Options = PZAPI.ModOptions.Options

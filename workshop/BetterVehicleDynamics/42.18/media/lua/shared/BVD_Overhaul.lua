@@ -162,6 +162,15 @@ local function applyHPWeight()
 	if not sv or sv.RealismHPWeight ~= true then return end
 	local sm = getScriptManager and getScriptManager()
 	if not sm then return end
+	-- Merge every registered data pack into our vehicle table just before
+	-- we apply. OnInitGlobalModData is late enough that all shared/ files
+	-- have loaded and any BVD.registerPack / BVD.Packs.register calls have
+	-- run. registerVehicle writes straight into vehicleData already; this
+	-- folds in the pack path too. Guarded — a broken pack must not abort
+	-- the built-in table apply below.
+	if BVD and BVD.Packs and BVD.Packs.applyAll then
+		pcall(function() BVD.Packs.applyAll(vehicleData) end)
+	end
 	local touched = 0
 	for fullType, spec in pairs(vehicleData) do
 		local v = sm:getVehicle(fullType)

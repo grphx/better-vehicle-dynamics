@@ -158,4 +158,80 @@ end
 -- patch; OnGameStart is universally available.
 Events.OnGameStart.Add(applyPreset)
 
+-- ---------------------------------------------------------------------------
+-- Live preset re-cascade (P6.3)
+-- ---------------------------------------------------------------------------
+-- Called by BVD_Config's change detector when it sees SandboxVars changed
+-- at runtime. The OnGameStart applyPreset() above uses a once-per-save
+-- ModData guard so it never re-stomps the player's per-knob tuning on
+-- reload. The LIVE path is different: a Mode change at runtime is an
+-- explicit, deliberate player action, so when (and only when) the Mode
+-- index actually differs from the last one we cascaded, we re-apply that
+-- preset's values. A pure slider edit (Mode unchanged) is intentionally
+-- NOT re-stomped here — the player is hand-tuning and we honor that, the
+-- cfg cache refresh alone surfaces their new values.
+--
+-- This does not fight Java: it only writes SandboxVars (which Java already
+-- re-reads every tick). It writes the SAME keys the OnGameStart cascade
+-- writes, so feel parity at world start is unchanged.
+local _liveLastMode = nil
+
+function BVD.reapplyPresetLive()
+    local sv = SandboxVars and SandboxVars.BetterVehicleDynamics
+    if not sv then return end
+
+    local presetIdx = sv.Mode or 1
+    if _liveLastMode == nil then
+        -- First live check this session — adopt the current Mode as the
+        -- baseline without cascading (OnGameStart already handled boot).
+        _liveLastMode = presetIdx
+        return
+    end
+    if presetIdx == _liveLastMode then
+        -- Mode unchanged: this was a slider edit. Honor the player's
+        -- hand-tuned values; nothing to cascade.
+        return
+    end
+
+    _liveLastMode = presetIdx
+    local presetName = BVD.getPresetName(presetIdx)
+    if presetName == "Custom" then
+        print("[BVD.Presets] live: Mode -> Custom; honoring per-knob values")
+        return
+    end
+
+    local values = PRESET_VALUES[presetName]
+    if not values then
+        print("[BVD.Presets] live: unknown preset index " ..
+            tostring(presetIdx))
+        return
+    end
+
+    print("[BVD.Presets] live: re-cascading preset " .. presetName)
+    local opts = getSandboxOptions and getSandboxOptions()
+    for key, val in pairs(values) do
+        sv[key] = val
+        if opts then
+            local opt = opts:getOptionByName("BetterVehicleDynamics." .. key)
+            if opt then
+                pcall(function() opt:setValue(val) end)
+            end
+        end
+    end
+    -- Refresh the once-per-save marker so a later world reload does not
+    -- re-stomp tuning the player does AFTER this live preset change.
+    local state = ModData and ModData.getOrCreate
+        and ModData.getOrCreate(PRESET_MODDATA_KEY)
+    if state then state.lastAppliedPreset = presetName end
+
+    if BVD.invalidateConfigCache then BVD.invalidateConfigCache() end
+
+    local player = getSpecificPlayer and getSpecificPlayer(0)
+    if player and player.Say then
+        pcall(function()
+            player:Say("[BVD] preset switched live: " .. presetName)
+        end)
+    end
+end
+
 return BVD

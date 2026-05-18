@@ -18,6 +18,38 @@
 -- directly; they are NOT rewired through BVD.cfg(). That would change the
 -- execution model and risk parity. cfg() is a utility, not a plumbing change.
 --
+-- LIVE RE-READ + CACHING (P6.3)
+-- ----------------------------
+-- cfg() now returns a CACHED table built once and rebuilt ONLY when the
+-- underlying SandboxVars actually change. The build allocated a fresh
+-- ~29-key table on every call; with cfg() now on a per-tick path that was
+-- needless Kahlua GC pressure. Return-shape is byte-for-byte identical to
+-- the previous implementation — only the allocation cadence changed.
+--
+-- The change detector runs on the existing per-vehicle update tick
+-- (OnPlayerUpdate, the same event the drift/skid bridges already use),
+-- throttled. When it sees the BVD sandbox values differ from the cached
+-- snapshot it (a) invalidates the cfg cache and (b) asks BVD_Presets to
+-- re-cascade for the (possibly new) Mode. This makes preset + slider
+-- changes apply at runtime WITHOUT fighting the Java side: the Java
+-- physics code re-reads SandboxVars directly every tick already, so a
+-- live SandboxVars mutation is picked up by Java natively; this module
+-- only keeps the Lua-side cache and the preset cascade in sync.
+--
+-- DELIBERATELY START-ONLY (not re-read live — would regress feel / be
+-- unsafe to toggle mid-session):
+--   * RealismHPWeight + the HP/Weight reference apply — applying it
+--     rewrites every matching vehicle script via vehicle:Load at world
+--     start; doing that on a live tick is heavy and would not cleanly
+--     revert an already-loaded session, so it stays OnGameStart-only.
+--   * TrunkScaling hook INSTALL — the ItemContainer metatable patch is a
+--     one-time install (and is skipped entirely if isoContainers loads).
+--     The patch body itself reads SandboxVars live, so the TrunkScaling
+--     toggle and the Trunk* multipliers DO take effect live once the hook
+--     is installed; only the install is start-only.
+-- Everything else (Mode preset, grip / drag / shove / drift sliders, HUD
+-- and skid toggles) is re-read live.
+--
 -- GRIPLEVEL COLLAPSE (PREDECESSOR PARITY NOTE)
 -- --------------------------------------------
 -- The predecessor mod's original two-knob model exposed two separate traction
@@ -33,12 +65,24 @@
 
 BVD = BVD or {}
 
---- Returns a table of every effective BVD option value.
--- Reads SandboxVars.BetterVehicleDynamics at call time (after any preset
--- cascade has already run), falls back to the sandbox-options.txt default for
--- any nil key. Pure read — no sandbox writes, no side effects.
--- @return table  { Mode, DriverHUD, SkidMarks, EnginePower, ... }
-function BVD.cfg()
+-- Canonical list of every SandboxVars key cfg() reads. Used both by the
+-- builder defaults and by the change-detector fingerprint so the two can
+-- never drift apart.
+local KEYS = {
+    "Mode", "DriverHUD", "SkidMarks",
+    "EnginePower", "LowSpeedGrunt", "ReverseTopSpeed",
+    "GripLevel", "WetGrip", "SnowGrip", "OffroadGrip",
+    "Drag", "RollResistance", "RollResistanceOffroad",
+    "RealismHPWeight", "TrunkScaling",
+    "TrunkCar", "TrunkVan", "TrunkTruck", "TrunkTrailer",
+    "ThrottleStart", "KeylessTow",
+    "ShoveFoliage", "ShoveZombies", "ShoveCorpses",
+    "Drift", "DriftGrip", "DriftMinSpeed", "DriftSteer", "DriftRotation",
+}
+
+-- Build the effective-config table fresh. Internal — public access is via
+-- BVD.cfg(), which caches the result of this.
+local function buildCfg()
     local sv = SandboxVars and SandboxVars.BetterVehicleDynamics
 
     -- Helper: read a numeric key with a fallback default.
@@ -109,6 +153,87 @@ function BVD.cfg()
     }
 end
 
-print("[BVD] config layer loaded")
+-- ---------------------------------------------------------------------------
+-- Cache + change detection
+-- ---------------------------------------------------------------------------
+
+local _cache = nil          -- last built cfg table (return-shape unchanged)
+local _fingerprint = nil    -- string snapshot of raw SandboxVars BVD keys
+
+-- Cheap deterministic fingerprint of the raw sandbox values. We compare
+-- this rather than diffing the built table so we detect a change before
+-- paying for a rebuild. tostring() over the fixed KEYS order is stable in
+-- Kahlua for numbers/booleans/nil and is allocation-light vs. a full build.
+local function fingerprint()
+    local sv = SandboxVars and SandboxVars.BetterVehicleDynamics
+    local parts = {}
+    for i = 1, #KEYS do
+        local v = sv and sv[KEYS[i]]
+        parts[i] = tostring(v)
+    end
+    return table.concat(parts, "|")
+end
+
+--- Returns a table of every effective BVD option value.
+-- Reads SandboxVars.BetterVehicleDynamics (after any preset cascade has
+-- run), falling back to the sandbox-options.txt default for any nil key.
+-- The result is CACHED and only rebuilt when the underlying SandboxVars
+-- change. Pure read — no sandbox writes, no side effects. The returned
+-- table shape is identical to pre-P6.3.
+-- @return table  { Mode, DriverHUD, SkidMarks, EnginePower, ... }
+function BVD.cfg()
+    if _cache == nil then
+        _fingerprint = fingerprint()
+        _cache = buildCfg()
+    end
+    return _cache
+end
+
+--- Force the next BVD.cfg() to rebuild. Called by the change detector and
+-- available to other modules that mutate SandboxVars directly.
+function BVD.invalidateConfigCache()
+    _cache = nil
+    _fingerprint = nil
+end
+
+-- ---------------------------------------------------------------------------
+-- Live re-read on the per-vehicle update tick
+-- ---------------------------------------------------------------------------
+-- Throttled so we are not concatenating a fingerprint every frame. When a
+-- change is seen we drop the cache and re-cascade the preset for the (maybe
+-- new) Mode. The Java physics side reads SandboxVars directly each tick, so
+-- live slider edits already reach Java; this only keeps the Lua cache and
+-- the preset cascade consistent — it does not push values at Java.
+
+local _tick = 0
+local function onLiveTick()
+    _tick = _tick + 1
+    -- ~ every 30 player-update ticks. OnPlayerUpdate is the same cadence
+    -- the drift/skid bridges run at; 30 is well below a human's ability
+    -- to perceive sandbox-edit latency while keeping the check cheap.
+    if (_tick % 30) ~= 0 then return end
+
+    local fp = fingerprint()
+    if fp == _fingerprint then return end
+
+    -- A BVD sandbox value changed at runtime. Invalidate the cache and ask
+    -- the preset module to re-cascade for the current Mode (no-op when
+    -- Mode == Custom). Guarded so a missing preset module is non-fatal.
+    _fingerprint = fp
+    _cache = nil
+    if BVD and type(BVD.reapplyPresetLive) == "function" then
+        pcall(BVD.reapplyPresetLive)
+        -- Re-cascade may itself have mutated SandboxVars; resync the
+        -- fingerprint so we do not loop on our own writes.
+        _fingerprint = fingerprint()
+    end
+    print("[BVD] config: live sandbox change detected — cache refreshed")
+end
+
+if Events and Events.OnPlayerUpdate then
+    Events.OnPlayerUpdate.Add(onLiveTick)
+end
+
+print("[BVD] config layer loaded (cached + live re-read)")
 
 return BVD

@@ -35,7 +35,7 @@ Better Vehicle Dynamics is split between this Workshop subscription (Lua, sandbo
 When Project Zomboid itself updates, recopy the [b]zombie[/b] folder to refresh it.
 
 [h2]Dedicated server hosts[/h2]
-Same idea server-side: copy the [b]zombie[/b] sub-folder from [code]B42.18_Manual_Install\[/code] into your server's install directory. Both the server and every connecting client need the install — a mismatch between the two causes vehicle-related packet desync.
+Server-side install is the same idea: copy the whole [b]zombie[/b] sub-folder from [code]B42.18_Manual_Install\[/code] into your dedicated server's Project Zomboid install directory. It carries the full package layout — physics, world (iso) and texture classes — so copy the entire folder, not just one sub-path. Both the server and every connecting client need the install — a bytecode mismatch between sides will cause vehicle-related packet desync warnings.
 
 [h1]For modders[/h1]
 A public Lua API lets other mods register vehicle reference data, tyre-grip profiles and content packs without touching this mod's files.

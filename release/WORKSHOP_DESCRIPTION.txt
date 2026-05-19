@@ -28,7 +28,7 @@ Better Vehicle Dynamics is split between this Workshop subscription (Lua, sandbo
 
 [olist]
 [*]Subscribe to this mod and let Steam finish downloading it.
-[*]Open the mod folder: [code]Steam\steamapps\workshop\content\108600\<WORKSHOPID>\mods\BetterVehicleDynamics\B42.18_Manual_Install\[/code]
+[*]Open the mod folder: [code]Steam\steamapps\workshop\content\108600\3728775267\mods\BetterVehicleDynamics\B42.18_Manual_Install\[/code]
 [*]Copy the [b]zombie[/b] sub-folder from there into your Project Zomboid install directory (right-click Project Zomboid in Steam → Manage → Browse local files).
 [*]Restart Project Zomboid.
 [/olist]

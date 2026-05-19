@@ -291,7 +291,6 @@ local function onLiveTick()
     publishLoadResponse()
     publishStabilityGuard()
     if BVD and BVD.publishTireProfiles then pcall(BVD.publishTireProfiles) end
-    print("[BVD] config: live sandbox change detected — cache refreshed")
 end
 
 -- OnPlayerUpdate only fires in a context that has a local player, i.e.
@@ -311,6 +310,5 @@ end
 publishLoadResponse()
 publishStabilityGuard()
 
-print("[BVD] config layer loaded (cached + live re-read)")
 
 return BVD

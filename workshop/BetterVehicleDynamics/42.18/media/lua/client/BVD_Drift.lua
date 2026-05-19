@@ -70,4 +70,3 @@ local function onPlayerUpdate(player)
 end
 
 Events.OnPlayerUpdate.Add(onPlayerUpdate)
-print("[BVD.Drift] keybind bridge installed (configurable via Mod Options)")

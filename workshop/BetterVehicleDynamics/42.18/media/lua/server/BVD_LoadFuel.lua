@@ -102,4 +102,3 @@ if Events and Events.OnPlayerUpdate then
     Events.OnPlayerUpdate.Add(onPlayerUpdate)
 end
 
-print("[BVD.LoadFuel] load-sensitive fuel drain installed (authority-gated)")

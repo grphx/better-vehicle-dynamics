@@ -82,7 +82,6 @@ local function isCargoContainer(typeStr)
 end
 
 local trunkPatched = false
-local trunkHookHitOnce = false
 
 local function patchTrunkContainers()
 	if trunkPatched then return end
@@ -105,15 +104,6 @@ local function patchTrunkContainers()
 			if isCargoContainer(self:getType()) then
 				local bucket, mult = vehicleBucket(self:getParent():getScript():getFullType(), sv)
 				if bucket and mult and mult ~= 1.0 then
-					if not trunkHookHitOnce then
-						trunkHookHitOnce = true
-						print(string.format(
-							"[BVD] TrunkScaling hit: vehicle=%s container=%s bucket=%s base=%.0f mult=%.2f -> %.0f",
-							tostring(self:getParent():getScript():getFullType()),
-							tostring(self:getType()),
-							tostring(bucket),
-							base, mult, base * mult))
-					end
 					return base * mult
 				end
 			end
@@ -138,7 +128,6 @@ local function patchTrunkContainers()
 	end
 
 	trunkPatched = true
-	print("[BVD] TrunkScaling: container hook installed.")
 end
 
 pcall(patchTrunkContainers)
@@ -224,7 +213,6 @@ local function applyHPWeight()
 			touched = touched + 1
 		end
 	end
-	print(string.format("[BVD] HPWeight applied to %d vehicles", touched))
 end
 
 Events.OnInitGlobalModData.Add(applyHPWeight)

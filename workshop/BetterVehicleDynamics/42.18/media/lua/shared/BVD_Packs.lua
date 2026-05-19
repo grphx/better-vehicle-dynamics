@@ -114,8 +114,6 @@ function BVD.Packs.applyAll(targetTable)
                 end
                 appliedSnapshot[entry.name] = snap
                 total = total + count
-                print(string.format("[BVD.Packs] %s applied: %d entries (%s)",
-                    entry.name, count, s.source or "bundled"))
             else
                 print("[BVD.Packs] " .. entry.name .. " enabled but no data resolved")
             end

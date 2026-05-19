@@ -242,4 +242,3 @@ function BVD_VehicleSpawner_open()
     end
 end
 
-print("[BVD] VehicleSpawner client loaded")

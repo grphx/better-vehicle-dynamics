@@ -427,5 +427,4 @@ if not ISVehicleMechanics.__bvdCompanionWrapped then
     if Events and Events.OnPlayerDeath then Events.OnPlayerDeath.Add(sweepCompanions) end
 
     ISVehicleMechanics.__bvdCompanionWrapped = true
-    print("[BVD] vehicle inspection companion installed (docked panel)")
 end

@@ -125,7 +125,6 @@ local function preloadTextures()
     -- Re-probe the forward-vector path each world load: a stale false
     -- from one odd vehicle must not permanently disable it.
     probedForward = nil
-    print("[BVD.Skidmarks] 4 orientation sprites registered")
 end
 
 Events.OnGameBoot.Add(preloadTextures)
@@ -248,4 +247,3 @@ local function onPlayerUpdate(player)
 end
 
 Events.OnPlayerUpdate.Add(onPlayerUpdate)
-print("[BVD.Skidmarks] tire-mark decal hook installed (4 orientations)")

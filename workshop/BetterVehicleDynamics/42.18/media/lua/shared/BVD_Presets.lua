@@ -91,7 +91,6 @@ local function applyPreset()
     local presetIdx = sv.Mode or 1
     local presetName = BVD.getPresetName(presetIdx)
     if presetName == "Custom" then
-        print("[BVD.Presets] preset=Custom — using per-knob sandbox values")
         return
     end
 
@@ -107,11 +106,9 @@ local function applyPreset()
     -- player made after the initial apply are honored.
     local state = ModData and ModData.getOrCreate and ModData.getOrCreate(PRESET_MODDATA_KEY)
     if state and state.lastAppliedPreset == presetName then
-        print("[BVD.Presets] preset=" .. presetName .. " already applied; honoring current sandbox values")
         return
     end
 
-    print("[BVD.Presets] applying preset: " .. presetName)
     local opts = getSandboxOptions and getSandboxOptions()
     local changedCount = 0
     for key, val in pairs(values) do
@@ -121,11 +118,6 @@ local function applyPreset()
             if opt then
                 pcall(function() opt:setValue(val) end)
             end
-        end
-        if type(val) == "number" then
-            print(string.format("  %s = %.2f", key, val))
-        else
-            print(string.format("  %s = %s", key, tostring(val)))
         end
         changedCount = changedCount + 1
     end
@@ -196,7 +188,6 @@ function BVD.reapplyPresetLive()
     _liveLastMode = presetIdx
     local presetName = BVD.getPresetName(presetIdx)
     if presetName == "Custom" then
-        print("[BVD.Presets] live: Mode -> Custom; honoring per-knob values")
         return
     end
 
@@ -207,7 +198,6 @@ function BVD.reapplyPresetLive()
         return
     end
 
-    print("[BVD.Presets] live: re-cascading preset " .. presetName)
     local opts = getSandboxOptions and getSandboxOptions()
     for key, val in pairs(values) do
         sv[key] = val

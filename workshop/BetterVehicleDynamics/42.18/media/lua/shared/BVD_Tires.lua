@@ -103,4 +103,3 @@ else
     bootstrap()
 end
 
-print("[BVD.Tires] tire-profile registry installed (default Old/Normal/Modern)")

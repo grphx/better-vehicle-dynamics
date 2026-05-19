@@ -134,4 +134,3 @@ Events.OnInitGlobalModData.Add(applyOptions)
 Events.OnKeyStartPressed.Add(ShiftDetect);
 Events.OnSpawnVehicleEnd.Add(BetterVehicleDynamicsVersionCheck)
 
-print("Better Vehicle Dynamics Client Side Loaded")

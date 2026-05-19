@@ -12,5 +12,4 @@ end
 
 if isServer() then
 	Events.OnSpawnVehicleEnd.Add(BetterVehicleDynamicsVersionCheckServer)
-	print("Better Vehicle Dynamics Server Side Loaded")
 end

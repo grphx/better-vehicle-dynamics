@@ -1,4 +1,3 @@
-print("Better Vehicle Dynamics Loaded")
 
 -- Load-order-safe seed of the bridge globals. The PRIMARY init guard lives
 -- in client/BetterVehicleDynamics.lua (the owning file); this shared file

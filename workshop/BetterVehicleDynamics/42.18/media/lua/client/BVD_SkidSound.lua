@@ -43,7 +43,6 @@ local BURNOUT_KPH   = 12.0   -- standing-burnout band (low speed + throttle)
 -- Per-session probe/cache state.
 local probedVolApi  = nil    -- true once setVolume(id,vol) is known usable
 local emitterMode   = nil    -- "vehicle" | "world" | "manager" once resolved
-local announced     = false  -- one-shot "[BVD-SND] path ..." print done
 
 -- Live playback state (only ever ONE instance held).
 local active        = false
@@ -226,12 +225,6 @@ local function startSkid(v)
             id = tryManagerWorldSound(v)
             if id then emitterMode = "manager" end
         end
-        if id and not announced then
-            announced = true
-            print(string.format(
-                "[BVD-SND] emitter path resolved: %s (sound id %s)",
-                tostring(emitterMode), tostring(id)))
-        end
     elseif emitterMode == "vehicle" then
         id = tryVehicleEmitter(v)
     elseif emitterMode == "world" then
@@ -248,7 +241,6 @@ local function startSkid(v)
     fading       = false
     lastVol      = 0
     nextRefireMs = nowMs() + CLIP_MS
-    print("[BVD-SND] skid loop START")
     return true
 end
 
@@ -284,7 +276,6 @@ local function stopSkid()
     heldVehicle  = nil
     heldEmitter  = nil
     nextRefireMs = 0
-    print("[BVD-SND] skid loop STOP")
 end
 
 -- ---------------------------------------------------------------------------
@@ -375,4 +366,3 @@ end
 if Events.OnPlayerDeath then Events.OnPlayerDeath.Add(onGameStop) end
 if Events.OnGameStop   then Events.OnGameStop.Add(onGameStop)   end
 
-print("[BVD.SkidSound] persistent-emitter skid loop installed")

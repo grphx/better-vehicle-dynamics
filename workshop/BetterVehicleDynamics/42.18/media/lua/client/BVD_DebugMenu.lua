@@ -38,4 +38,3 @@ end
 
 Events.OnFillWorldObjectContextMenu.Add(addBvdDebugMenu)
 
-print("[BVD] DebugMenu loaded")

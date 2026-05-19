@@ -205,7 +205,6 @@ local function registerCommunityPack()
     if kept == 0 then
         -- Everything is already covered by a more specific source. Do
         -- not register an empty pack; one info line, then silence.
-        print("[BVD] community pack: all entries already covered — nothing to add")
         return
     end
 
@@ -217,10 +216,6 @@ local function registerCommunityPack()
         priority = 0,
         source   = "bvd-community-pack",
     })
-    print(string.format(
-        "[BVD] community pack: %d reference entr%s offered (%d already covered) " ..
-        "— applies only if a target vehicle script is present",
-        kept, kept == 1 and "y" or "ies", skipped))
 end
 
 -- Defer; never register at file scope (load-order + clobber safety).

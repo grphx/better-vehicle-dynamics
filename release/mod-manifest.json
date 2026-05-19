@@ -1,0 +1,14 @@
+{
+  "$schema": "https://raw.githubusercontent.com/SirDoggyJvla/SteamUploader-rs/refs/heads/main/manifest_schema/mod-manifest-schema.json",
+  "appid": 108600,
+  "content": "./Contents",
+  "preview": "preview.gif",
+  "title": "Better Vehicle Dynamics",
+  "description": "./WORKSHOP_DESCRIPTION.txt",
+  "visibility": 0,
+  "tags": [
+    "Build 42",
+    "Vehicles",
+    "Realistic"
+  ]
+}

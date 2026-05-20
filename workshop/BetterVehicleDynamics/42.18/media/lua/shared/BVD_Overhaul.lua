@@ -181,6 +181,13 @@ local function applyHPWeight()
 	if not sv or sv.RealismHPWeight ~= true then return end
 	local sm = getScriptManager and getScriptManager()
 	if not sm then return end
+	-- EnginePower scales the researched engineForce so users can dial up top
+	-- speed / acceleration without losing the realism baseline. Clamped to
+	-- the sandbox option's documented range so a malformed sandbox file
+	-- can't write a nonsense engineForce into the script.
+	local powerScale = tonumber(sv.EnginePower) or 1.0
+	if powerScale < 0.25 then powerScale = 0.25
+	elseif powerScale > 3.0 then powerScale = 3.0 end
 	-- Merge every registered data pack into our vehicle table just before
 	-- we apply. OnInitGlobalModData is late enough that all shared/ files
 	-- have loaded and any BVD.registerPack / BVD.Packs.register calls have
@@ -204,9 +211,9 @@ local function applyHPWeight()
 			local hp = spec.hp
 			local mass = spec.mass_kg
 			if hp and mass then
-				v:Load(v:getName(), "{ engineForce = " .. (hp * 10) .. ", mass = " .. mass .. ", }")
+				v:Load(v:getName(), "{ engineForce = " .. (hp * 10 * powerScale) .. ", mass = " .. mass .. ", }")
 			elseif hp then
-				v:Load(v:getName(), "{ engineForce = " .. (hp * 10) .. ", }")
+				v:Load(v:getName(), "{ engineForce = " .. (hp * 10 * powerScale) .. ", }")
 			elseif mass then
 				v:Load(v:getName(), "{ mass = " .. mass .. ", }")
 			end

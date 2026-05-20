@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.1] — 2026-05-20 — Engine power scaler wired
+
+- Fix: the `EnginePower` sandbox option (Drivetrain page, range 0.25–3.0,
+  default 1.0) is now actually applied. The option existed since 0.1.0 but
+  wasn't multiplied into the HP/Weight overhaul's `engineForce` write —
+  changing it had no effect. Now `engineForce = hp × 10 × EnginePower`,
+  giving users a knob to dial up top-end and acceleration without losing
+  the realism baseline. Default 1.0 preserves 0.1.0 behaviour exactly.
+- Note: only takes effect with **Reference power & weight** enabled. The
+  scaler is a multiplier on the researched values; if you opt out of the
+  overhaul, vanilla engineForce is unchanged.
+- Lua-only change. No manual install update needed.
+
 ## [0.1.0] — 2026-05-19 — Initial release
 
 - Independent drivetrain & traction overhaul for B42.18.

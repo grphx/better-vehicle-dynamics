@@ -42,3 +42,9 @@ A public Lua API lets other mods register vehicle reference data, tyre-grip prof
 
 [h1]Compatibility[/h1]
 Works alongside vehicle-skin and content mods. Run only one vehicle-physics overhaul at a time. Build 42.18+.
+
+[h1]Mod info[/h1]
+[list]
+[*][b]Mod ID:[/b] BetterVehicleDynamics
+[*][b]Workshop ID:[/b] 3728775267
+[/list]

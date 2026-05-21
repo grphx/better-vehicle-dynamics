@@ -40,6 +40,9 @@
     "Sandbox_BVD_OffroadGrip": "Grip off-road",
     "Sandbox_BVD_OffroadGrip_tooltip": "Grip factor on dirt, grass and gravel versus sealed road.",
 
+    "Sandbox_BVD_OffroadFloor": "Off-road grip floor",
+    "Sandbox_BVD_OffroadFloor_tooltip": "Minimum off-road grip multiplier any tire family can fall to. Without this, sports-tire profiles can drop off-road grip so low a high-HP car barely moves on grass. Default 0.55 keeps brute-force motion possible (the car will slip and chew tires, but it moves).",
+
     "Sandbox_BVD_Drag": "Air drag",
     "Sandbox_BVD_Drag_tooltip": "Aerodynamic resistance scaling. Higher caps top speed sooner and bleeds momentum faster.",
 
@@ -99,6 +102,12 @@
 
     "Sandbox_BVD_TireGripModel": "Tire grip model",
     "Sandbox_BVD_TireGripModel_tooltip": "Different tire types (worn / standard / modern) get distinct grip on road, rain, snow and off-road instead of one flat value.",
+
+    "Sandbox_BVD_TireSlipWear": "Tires wear from wheel slip",
+    "Sandbox_BVD_TireSlipWear_tooltip": "When the engine is forcing the wheels faster than the surface can grip (e.g. flooring it on grass) tires lose condition over time. Lets you brute-force through low-grip surfaces - at the cost of bald tires later.",
+
+    "Sandbox_BVD_TireSlipWearRate": "Tire wear rate from slip",
+    "Sandbox_BVD_TireSlipWearRate_tooltip": "Multiplier on how fast tires degrade while slipping. 1.0 is the default (a few minutes of hard slipping noticeably degrades them). Set to 0 to disable wear without disabling the model.",
 
     "Sandbox_BVD_LoadAffectsHandling": "Load affects handling",
     "Sandbox_BVD_LoadAffectsHandling_tooltip": "A heavily loaded vehicle is slow to pull away from a stop, as if the engine is straining against the weight.",

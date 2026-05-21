@@ -1,6 +1,6 @@
 name=Better Vehicle Dynamics
 id=BetterVehicleDynamics
-modversion=0.1.1
+modversion=0.1.2
 description=B42 base manifest. See 42.18/ for the current build.
 pzversion=42
 versionMin=42.18

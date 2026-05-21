@@ -71,14 +71,15 @@ BVD = BVD or {}
 local KEYS = {
     "Mode", "DriverHUD", "SkidMarks",
     "EnginePower", "LowSpeedGrunt", "ReverseTopSpeed",
-    "GripLevel", "WetGrip", "SnowGrip", "OffroadGrip",
+    "GripLevel", "WetGrip", "SnowGrip", "OffroadGrip", "OffroadFloor",
     "Drag", "RollResistance", "RollResistanceOffroad",
     "RealismHPWeight", "TrunkScaling",
     "TrunkCar", "TrunkVan", "TrunkTruck", "TrunkTrailer",
     "ThrottleStart", "KeylessTow",
     "ShoveFoliage", "ShoveZombies", "ShoveCorpses",
     "Drift", "DriftGrip", "DriftMinSpeed", "DriftSteer", "DriftRotation",
-    "TireGripModel", "LoadAffectsHandling", "LoadAffectsFuel", "LoadMaxPenalty",
+    "TireGripModel", "TireSlipWear", "TireSlipWearRate",
+    "LoadAffectsHandling", "LoadAffectsFuel", "LoadMaxPenalty",
     "StabilityGuard", "StabilityGuardSinkTiles",
 }
 
@@ -123,6 +124,7 @@ local function buildCfg()
         WetGrip         = num("WetGrip",         0.7),
         SnowGrip        = num("SnowGrip",        0.45),
         OffroadGrip     = num("OffroadGrip",     0.85),
+        OffroadFloor    = num("OffroadFloor",    0.55),
 
         -- Resistance
         Drag                  = num("Drag",                  1.0),
@@ -155,6 +157,8 @@ local function buildCfg()
 
         -- Load dynamics
         TireGripModel       = boolTrue("TireGripModel"),       -- default true
+        TireSlipWear        = boolTrue("TireSlipWear"),        -- default true
+        TireSlipWearRate    = num("TireSlipWearRate",    1.0),
         LoadAffectsHandling = boolTrue("LoadAffectsHandling"), -- default true
         LoadAffectsFuel     = boolTrue("LoadAffectsFuel"),     -- default true
         LoadMaxPenalty      = num("LoadMaxPenalty", 0.5),      -- 0..0.9 frac
@@ -222,8 +226,12 @@ local function publishLoadResponse()
     -- maxPenalty is player-tunable (sandbox BVD_LoadMaxPenalty, default
     -- 0.50). Clamp defensively to the option's own [0, 0.9] range so a
     -- hand-edited config can't invert or fully kill the torque.
+    -- Cap the penalty at 0.85 (was 0.9): never let the Java multiply force
+    -- below 15% of nominal. Defensive against stacking with other mods that
+    -- also reduce force (PSC engine quality, etc.) - even worst-case the
+    -- car still moves. v0.1.2 introduced this floor.
     local mp = tonumber(c and c.LoadMaxPenalty) or 0.5
-    if mp < 0.0 then mp = 0.0 elseif mp > 0.9 then mp = 0.9 end
+    if mp < 0.0 then mp = 0.0 elseif mp > 0.85 then mp = 0.85 end
     BetterVehicleDynamicsMod.loadResponse = {
         enabled        = (c and c.LoadAffectsHandling ~= false),
         threshold      = 1.05,   -- no effect until >5% over reference mass

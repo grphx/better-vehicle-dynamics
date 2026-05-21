@@ -82,9 +82,26 @@ function BVD.publishTireProfiles()
         BetterVehicleDynamicsMod.tireProfiles = {}
         return
     end
+    -- v0.1.2: OffroadFloor clamps each profile's offroad multiplier up to a
+    -- sandbox-tunable minimum so sports-tire profiles (which may register
+    -- offroad < 0.55) don't make high-HP cars walking-speed-slow on grass.
+    -- Realism for road/wet/snow stays untouched.
+    local floor = 0.55
+    if BVD and BVD.cfg then
+        local ok, c = pcall(BVD.cfg)
+        if ok and type(c) == "table" and type(c.OffroadFloor) == "number" then
+            floor = c.OffroadFloor
+        end
+    end
+    local function clampOffroad(p)
+        if not p then return p end
+        local o = p.offroad or 1.0
+        if o < floor then o = floor end
+        return { road = p.road, wet = p.wet, snow = p.snow, offroad = o }
+    end
     local merged = {}
-    for k, v in pairs(DEFAULTS) do merged[k] = v end
-    for k, v in pairs(registry) do merged[k] = v end
+    for k, v in pairs(DEFAULTS) do merged[k] = clampOffroad(v) end
+    for k, v in pairs(registry) do merged[k] = clampOffroad(v) end
     BetterVehicleDynamicsMod.tireProfiles = merged
 end
 

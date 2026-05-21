@@ -1,20 +1,20 @@
 [h1]Better Vehicle Dynamics[/h1]
-A drivetrain and traction overhaul for Project Zomboid Build 42. Every vehicle gains a torque-curve driven engine, surface- and weather-aware grip, and a stack of optional realism systems — all sandbox-tunable, all multiplayer-safe.
+A drivetrain and traction overhaul for Project Zomboid Build 42. Every vehicle gains a torque-curve driven engine, surface- and weather-aware grip, and a stack of optional realism systems - all sandbox-tunable, all multiplayer-safe.
 
 [h1]What it changes[/h1]
 [list]
-[*][b]Torque-curve acceleration[/b] — engines pull from a real power curve instead of a flat number. Low-end grunt for shoving wrecks, a proper top end.
-[*][b]Surface & weather grip[/b] — independent traction on sealed road, rain, snow and off-road. Lose the back end if you push it.
-[*][b]Tyre-type grip model[/b] — worn / standard / modern tyres each get distinct grip per surface, not one flat value.
-[*][b]Load affects handling[/b] — a heavily loaded vehicle is slow to pull away from a stop, as if the engine is straining against the weight. Strength is a sandbox slider.
-[*][b]Load affects fuel[/b] — hauling heavy burns extra fuel while driving.
-[*][b]Configurable drag[/b] — air drag and rolling resistance (road and off-road) are separate, tunable knobs.
-[*][b]Reference power & weight[/b] (opt-in) — researched HP/mass figures for the vanilla fleet; modded vehicles can register their own.
-[*][b]Cargo-capacity rescale[/b] — per-body-type storage multipliers instead of one blanket override.
-[*][b]Drift mode[/b] (opt-in) — hold a bindable key to break the rear loose for an arcade slide. Off by default.
-[*][b]Tyre marks[/b] — vehicles leave a ground decal when a tyre breaks loose; marks fade out on their own.
-[*][b]Vehicle info panel[/b] — a docked readout beside the mechanics window showing the active profile, per-surface grip, tyre type and cargo load.
-[*][b]Ground-clip guard[/b] — a server-side safety net that snaps a vehicle back onto its floor if it ever sinks into the ground (a multiplayer desync class). Only ever acts on an impossible state, so normal driving, ramps and basements are unaffected.
+[*][b]Torque-curve acceleration[/b] - engines pull from a real power curve instead of a flat number. Low-end grunt for shoving wrecks, a proper top end.
+[*][b]Surface & weather grip[/b] - independent traction on sealed road, rain, snow and off-road. Lose the back end if you push it.
+[*][b]Tyre-type grip model[/b] - worn / standard / modern tyres each get distinct grip per surface, not one flat value.
+[*][b]Load affects handling[/b] - a heavily loaded vehicle is slow to pull away from a stop, as if the engine is straining against the weight. Strength is a sandbox slider.
+[*][b]Load affects fuel[/b] - hauling heavy burns extra fuel while driving.
+[*][b]Configurable drag[/b] - air drag and rolling resistance (road and off-road) are separate, tunable knobs.
+[*][b]Reference power & weight[/b] (opt-in) - researched HP/mass figures for the vanilla fleet; modded vehicles can register their own.
+[*][b]Cargo-capacity rescale[/b] - per-body-type storage multipliers instead of one blanket override.
+[*][b]Drift mode[/b] (opt-in) - hold a bindable key to break the rear loose for an arcade slide. Off by default.
+[*][b]Tyre marks[/b] - vehicles leave a ground decal when a tyre breaks loose; marks fade out on their own.
+[*][b]Vehicle info panel[/b] - a docked readout beside the mechanics window showing the active profile, per-surface grip, tyre type and cargo load.
+[*][b]Ground-clip guard[/b] - a server-side safety net that snaps a vehicle back onto its floor if it ever sinks into the ground (a multiplayer desync class). Only ever acts on an impossible state, so normal driving, ramps and basements are unaffected.
 [/list]
 
 [h1]Tuning[/h1]
@@ -24,7 +24,7 @@ Everything is exposed in Sandbox Options, grouped into [b]Handling[/b], [b]Tyres
 Built for dedicated servers and co-op. Load-sensitive fuel and the ground-clip guard are server-authoritative so they behave consistently for everyone.
 
 [h2]Installation (players)[/h2]
-Better Vehicle Dynamics is split between this Workshop subscription (Lua, sandbox options, UI) and a small one-time Java-side install (the deep physics — engine code Steam Workshop cannot patch). [b]The subscription alone is not enough[/b]; do the manual step once and you are set. Tuning, tyre and guard updates after that are pure Workshop updates with no further manual install.
+Better Vehicle Dynamics is split between this Workshop subscription (Lua, sandbox options, UI) and a small one-time Java-side install (the deep physics - engine code Steam Workshop cannot patch). [b]The subscription alone is not enough[/b]; do the manual step once and you are set. Tuning, tyre and guard updates after that are pure Workshop updates with no further manual install.
 
 [olist]
 [*]Subscribe to this mod and let Steam finish downloading it.
@@ -35,10 +35,10 @@ Better Vehicle Dynamics is split between this Workshop subscription (Lua, sandbo
 When Project Zomboid itself updates, recopy the [b]zombie[/b] folder to refresh it.
 
 [h2]Dedicated server hosts[/h2]
-Server-side install is the same idea: copy the whole [b]zombie[/b] sub-folder from [code]B42.18_Manual_Install\[/code] into your server's [code]<server>/java/zombie/[/code] directory (merge it into the existing tree). It carries the full package layout — physics, world (iso) and texture classes — so copy the entire folder, not just one sub-path. Both the server and every connecting client need the install — a bytecode mismatch between sides will cause vehicle-related packet desync warnings.
+Server-side install is the same idea: copy the whole [b]zombie[/b] sub-folder from [code]B42.18_Manual_Install\[/code] into your server's [code]<server>/java/zombie/[/code] directory (merge it into the existing tree). It carries the full package layout - physics, world (iso) and texture classes - so copy the entire folder, not just one sub-path. Both the server and every connecting client need the install - a bytecode mismatch between sides will cause vehicle-related packet desync warnings.
 
 [h1]For modders[/h1]
-A public Lua API lets other mods register vehicle reference data, tyre-grip profiles and content packs without touching this mod's files. Full reference: [url=https://branched-almanac-460.notion.site/Better-Vehicle-Dynamics-Public-Lua-API-36542ef13d238106a7afda59a82181f6]Better Vehicle Dynamics — Public Lua API[/url]
+A public Lua API lets other mods register vehicle reference data, tyre-grip profiles and content packs without touching this mod's files. Full reference: [url=https://branched-almanac-460.notion.site/Better-Vehicle-Dynamics-Public-Lua-API-36542ef13d238106a7afda59a82181f6]Better Vehicle Dynamics - Public Lua API[/url]
 
 [h1]Compatibility[/h1]
 Works alongside vehicle-skin and content mods. Run only one vehicle-physics overhaul at a time. Build 42.18+.

@@ -60,6 +60,12 @@ option BetterVehicleDynamics.OffroadGrip
     page = BetterVehicleDynamics_Handling, translation = BVD_OffroadGrip,
 }
 
+option BetterVehicleDynamics.OffroadFloor
+{
+    type = double, min = 0.3, max = 1.0, default = 0.55,
+    page = BetterVehicleDynamics_Handling, translation = BVD_OffroadFloor,
+}
+
 option BetterVehicleDynamics.StabilityGuard
 {
     type = boolean, default = true,
@@ -190,6 +196,18 @@ option BetterVehicleDynamics.TireGripModel
 {
     type = boolean, default = true,
     page = BetterVehicleDynamics_TiresLoad, translation = BVD_TireGripModel,
+}
+
+option BetterVehicleDynamics.TireSlipWear
+{
+    type = boolean, default = true,
+    page = BetterVehicleDynamics_TiresLoad, translation = BVD_TireSlipWear,
+}
+
+option BetterVehicleDynamics.TireSlipWearRate
+{
+    type = double, min = 0.0, max = 2.0, default = 1.0,
+    page = BetterVehicleDynamics_TiresLoad, translation = BVD_TireSlipWearRate,
 }
 
 option BetterVehicleDynamics.LoadAffectsHandling

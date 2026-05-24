@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.1.3] - 2026-05-21 - Skid sound MP fix + Skid Sound sandbox toggle
+
+- Fix: in MP, the tire-skid sound played forever on other clients when
+  a remote driver finished skidding (PZ's positional-sound stop does
+  not reliably replicate). Refactored to a per-vehicle heartbeat model:
+  the driver sends Start/Tick/Stop commands; every client plays its
+  OWN local sound on receipt and stops via explicit Stop or a 700ms
+  watchdog timeout if heartbeats stop arriving (handles driver
+  disconnect mid-skid).
+- Same fix resolves "skid sound plays while my vehicle is off or while
+  I'm not in it" - that was the same bug from another angle.
+- New sandbox option **Tire skid sound** (Readout page, default ON).
+  Independent of **Tire marks** so a player can keep the visual decals
+  and mute the sound (or vice versa). Set to OFF if a sound mod
+  conflicts.
+- New server-side file `BVD_SkidSync_Server.lua` relays the heartbeat
+  to all online clients.
+- Lua-only change. No manual install update needed.
+
 ## [0.1.2] - 2026-05-21 - Off-road floor + tire wear from slip + stuck diagnostics
 
 - New sandbox option **Off-road grip floor** (Handling, default 0.55,

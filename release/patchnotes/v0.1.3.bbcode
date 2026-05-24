@@ -1,0 +1,7 @@
+[h1]v0.1.3 - Skid sound MP fix + Skid Sound sandbox toggle[/h1]
+
+[b]Fix:[/b] in multiplayer the tire-skid sound looped forever on remote clients after a driver stopped skidding. PZ's positional-sound stop does not reliably replicate, so v0.1.3 refactors to a per-vehicle heartbeat: the driver sends Start/Tick/Stop, every client plays its OWN local sound on receipt and stops on explicit Stop or a 700ms watchdog timeout if the heartbeat dies. Also resolves the "skid sound plays while my engine is off / I'm not in the car" case (same bug, different angle).
+
+[b]New sandbox option Tire skid sound[/b] (Readout page, default ON). Independent of Tire marks - you can keep the visual decals and mute the sound (or the other way round).
+
+[b]Lua-only.[/b] No manual install update.

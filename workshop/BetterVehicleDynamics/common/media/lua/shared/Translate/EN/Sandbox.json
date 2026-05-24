@@ -19,6 +19,9 @@
     "Sandbox_BVD_SkidMarks": "Tire marks",
     "Sandbox_BVD_SkidMarks_tooltip": "Leaves a ground decal when a tire breaks loose under power or hard braking.",
 
+    "Sandbox_BVD_SkidSound": "Tire skid sound",
+    "Sandbox_BVD_SkidSound_tooltip": "Plays a tire-screech sound when a vehicle is sliding. Independent of the tire-marks visual. Disable if the sound is bothering you or if a sound mod conflicts.",
+
     "Sandbox_BVD_EnginePower": "Engine output",
     "Sandbox_BVD_EnginePower_tooltip": "Scales how much pulling force every engine makes. Below 1 feels gutless; above 1 makes hills and ramming trivial.",
 

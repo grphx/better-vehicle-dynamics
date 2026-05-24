@@ -69,7 +69,7 @@ BVD = BVD or {}
 -- builder defaults and by the change-detector fingerprint so the two can
 -- never drift apart.
 local KEYS = {
-    "Mode", "DriverHUD", "SkidMarks",
+    "Mode", "DriverHUD", "SkidMarks", "SkidSound",
     "EnginePower", "LowSpeedGrunt", "ReverseTopSpeed",
     "GripLevel", "WetGrip", "SnowGrip", "OffroadGrip", "OffroadFloor",
     "Drag", "RollResistance", "RollResistanceOffroad",
@@ -110,6 +110,7 @@ local function buildCfg()
         Mode            = num("Mode", 1),           -- enum 1..4; 1 = Custom
         DriverHUD       = boolTrue("DriverHUD"),    -- default true
         SkidMarks       = boolTrue("SkidMarks"),    -- default true
+        SkidSound       = boolTrue("SkidSound"),    -- default true
 
         -- Drivetrain
         EnginePower     = num("EnginePower",    1.0),

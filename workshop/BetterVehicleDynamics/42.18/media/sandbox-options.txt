@@ -18,6 +18,12 @@ option BetterVehicleDynamics.SkidMarks
     page = BetterVehicleDynamics_Readout, translation = BVD_SkidMarks,
 }
 
+option BetterVehicleDynamics.SkidSound
+{
+    type = boolean, default = true,
+    page = BetterVehicleDynamics_Readout, translation = BVD_SkidSound,
+}
+
 option BetterVehicleDynamics.EnginePower
 {
     type = double, min = 0.25, max = 3.0, default = 1.0,

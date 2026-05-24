@@ -1,60 +1,65 @@
 -- ===========================================================================
--- BVD_SkidSound.lua
+-- BVD_SkidSound.lua  (client; v0.1.3 - heartbeat-synced per-vehicle)
 --
--- A sustained tyre-slide sound that HOLDS one looping instance for as long
--- as the driver is sliding, instead of re-triggering a one-shot. The clip
--- (media/sound/BVD_skid_loop.ogg) is authored to loop natively and the
--- script event BVD_SkidLoop carries loop=true, so the right approach is to
--- start exactly ONE instance on a positional emitter that travels with the
--- vehicle, ride its volume per tick, and stop it when the slide ends.
+-- v0.1.2 and earlier started ONE sound on the driver's vehicle emitter and
+-- relied on PZ's positional propagation. The bug: stopSound did not always
+-- propagate, leaving the sound looping forever on remote clients. v0.1.3
+-- refactors to a heartbeat model:
+--   - Driver client computes skid intensity (existing math, unchanged).
+--   - Driver sends "BVD-Skid" {Start, Tick, Stop} commands per-vehicle.
+--   - Server relays (BVD_SkidSync_Server.lua) to all online clients.
+--   - Every client (driver included) plays its OWN local sound on receipt
+--     and stops it on a Stop command OR a watchdog timeout if heartbeats
+--     stop arriving (defensive against driver disconnect mid-skid).
 --
--- This module is intentionally independent of the skid-MARK decal code:
--- the visual marks and the audio are separate concerns and must not share
--- state. It reuses the SAME sandbox switch the decals read so a player who
--- turns the feature off gets neither marks nor sound.
---
--- Java getters that may or may not exist on this exact build are probed
--- ONCE and the verdict cached (Kahlua re-logs every caught Java exception,
--- so call-and-hope every tick would spam the log and cost frames).
+-- A per-vehicle (vid -> state) map replaces the single-active-sound globals
+-- so multiple players can skid simultaneously.
 -- ===========================================================================
 
 local EVENT_NAME = "BVD_SkidLoop"
+local CLIP_MS    = 2000   -- manager fallback re-arm cadence
 
--- Clip length in ms (gen_skid_loop.py emits exactly 2.0 s). Used only by
--- the world-sound fallback to re-arm a fresh instance the instant the old
--- one ends, so the tiles butt together with no gap and no overlap.
-local CLIP_MS = 2000
-
--- Intensity gating.
-local START_AT      = 0.18   -- rise above this (and silent) -> start
-local STOP_AT       = 0.04   -- fall to/below this -> begin fade-out
-local MASTER_SCALE  = 0.95   -- overall ceiling applied to per-tick volume
-
--- A real tyre slide trails off; it does not blink out. When the slide
--- ends we keep the held instance playing and ramp its volume to zero
--- over FADE_MS, then actually stop. Renewed sliding mid-fade cancels it.
+local START_AT      = 0.18
+local STOP_AT       = 0.04
+local MASTER_SCALE  = 0.95
 local FADE_MS       = 600
 
--- Speeds that shape the intensity curve (km/h).
-local SLIDE_MIN_KPH = 14.0   -- below this, no meaningful slide noise
-local SLIDE_REF_KPH = 70.0   -- speed at which the speed term saturates
-local BURNOUT_KPH   = 12.0   -- standing-burnout band (low speed + throttle)
+local SLIDE_MIN_KPH = 14.0
+local SLIDE_REF_KPH = 70.0
+local BURNOUT_KPH   = 12.0
 
--- Per-session probe/cache state.
-local probedVolApi  = nil    -- true once setVolume(id,vol) is known usable
-local emitterMode   = nil    -- "vehicle" | "world" | "manager" once resolved
+-- Heartbeat cadence (driver side) and watchdog window (every client).
+-- Driver sends at TICK_SEND_MS; receivers force-stop if no heartbeat
+-- for WATCHDOG_MS (3x to absorb packet jitter).
+local TICK_SEND_MS  = 200
+local WATCHDOG_MS   = 700
 
--- Live playback state (only ever ONE instance held).
-local active        = false
-local soundId       = nil
-local heldVehicle   = nil
-local heldEmitter   = nil    -- for the world-emitter path: keep & reposition
-local nextRefireMs  = 0      -- world-sound fallback re-arm clock
-local lastVol       = 0      -- last per-tick volume actually applied
-local fading        = false  -- in the post-slide fade-out tail?
-local fadeFromVol   = 0      -- volume the fade ramps down FROM
-local fadeUntilMs   = 0      -- wall-clock end of the fade
+-- ---------------------------------------------------------------------------
+-- Probed caches (per session). Each branch is tested once; the verdict
+-- sticks so we don't pay pcall cost every tick.
+-- ---------------------------------------------------------------------------
+local probedVolApi  = nil
+local emitterMode   = nil     -- "vehicle" | "world" | "manager"
 
+-- vid -> {
+--   vehicle,        -- IsoVehicle reference (looked up on each command)
+--   soundId,
+--   heldEmitter,    -- "world" emitter handle when applicable
+--   nextRefireMs,   -- manager fallback re-arm clock
+--   lastTickMs,     -- last incoming heartbeat (for watchdog)
+--   currentVol,
+--   fading, fadeFromVol, fadeUntilMs,
+-- }
+local skids = {}
+
+-- Driver-side state (tracks what we last broadcast for our own vehicle)
+local lastDriverVid       = nil
+local lastSentTickMs      = 0
+local driverActive        = false
+
+-- ---------------------------------------------------------------------------
+-- helpers
+-- ---------------------------------------------------------------------------
 local function clamp01(x)
     if x < 0 then return 0 end
     if x > 1 then return 1 end
@@ -65,14 +70,15 @@ local function nowMs()
     return (getTimestampMs and getTimestampMs()) or 0
 end
 
+local function skidSoundEnabled()
+    local sv = SandboxVars and SandboxVars.BetterVehicleDynamics
+    return not (sv and sv.SkidSound == false)
+end
+
 -- ---------------------------------------------------------------------------
--- Intensity: 0 (no slide) .. 1 (full slide). This deliberately does NOT try
--- to reconstruct engine-physics slip; it just has to track "the player is
--- sliding" robustly. Speed sets the ceiling; hard braking, the handbrake,
--- arcade drift, and a standing burnout each open that ceiling up.
+-- intensity (unchanged from v0.1.2)
 -- ---------------------------------------------------------------------------
 local probedHandbrake = nil
-
 local function vehicleHandbrakeOn(v)
     if probedHandbrake == false then return false end
     local ok, res = pcall(function()
@@ -90,51 +96,28 @@ end
 local function skidIntensity(v)
     local speed = v:getCurrentSpeedKmHour() or 0
     if speed < 0 then speed = -speed end
-
     local gas    = v:isGasPedalPressed() == true
     local brake  = v:isBrakePedalPressed() == true
     local hand   = vehicleHandbrakeOn(v)
     local drift  = BetterVehicleDynamicsMod
                    and BetterVehicleDynamicsMod.driftActive == true
-
-    -- Standing burnout: flooring the throttle while the car is HELD in
-    -- place (foot-brake line-lock or handbrake) so the tyres spin without
-    -- moving. Requiring the car to be held is what distinguishes a burnout
-    -- from ordinary accelerating away from a stop -- plain (gas, no brake)
-    -- at low speed must NOT make skid noise.
     if speed < BURNOUT_KPH and gas and (brake or hand) then
-        -- Stronger the closer to a dead stop (max scrub at 0 km/h).
         return clamp01(0.55 + 0.35 * (1.0 - speed / BURNOUT_KPH))
     end
-
     if speed < SLIDE_MIN_KPH then return 0.0 end
-
-    -- Speed term: 0 at SLIDE_MIN_KPH, ~1 by SLIDE_REF_KPH.
     local spd = clamp01((speed - SLIDE_MIN_KPH)
                         / (SLIDE_REF_KPH - SLIDE_MIN_KPH))
-
     local cause = 0.0
-    if hand  then cause = cause + 0.85 end   -- handbrake = strongest cue
+    if hand  then cause = cause + 0.85 end
     if drift then cause = cause + 0.70 end
-    if brake then cause = cause + 0.55 end    -- hard braking -> lock-up scrub
+    if brake then cause = cause + 0.55 end
     if cause <= 0.0 then return 0.0 end
     cause = clamp01(cause)
-
-    -- Slide noise grows with how fast you are AND how hard you provoke it.
     return clamp01(0.25 + 0.75 * spd * cause)
 end
 
 -- ---------------------------------------------------------------------------
--- Emitter resolution. The first approach that actually returns a usable
--- sound id wins and is cached in emitterMode; subsequent ticks take that
--- branch directly. Every uncertain Java call is pcall-guarded.
---   "vehicle" : vehicle:getEmitter():playSound(EVENT) -- positional, rides
---               with the vehicle for free (preferred).
---   "world"   : getWorld():getFreeEmitter(x,y,z):playSound(EVENT) -- we
---               must reposition this emitter ourselves each tick.
---   "manager" : getSoundManager():PlayWorldSound(EVENT, square, ...) --
---               proven to emit audibly; no sustained handle, so it is
---               re-armed exactly every CLIP_MS to tile the loop.
+-- emitter resolution (unchanged - probes once)
 -- ---------------------------------------------------------------------------
 local function tryVehicleEmitter(v)
     local ok, id = pcall(function()
@@ -169,23 +152,20 @@ local function tryManagerWorldSound(v)
         local sm = getSoundManager and getSoundManager()
         local sq = v:getCurrentSquare()
         if not sm or not sq or not sm.PlayWorldSound then return nil end
-        -- (event, square, loopOverride, volume, radius, fade)
         return sm:PlayWorldSound(EVENT_NAME, sq, false, 1.0, 1.0, true)
     end)
     if ok and id and id ~= 0 then return id end
-    -- Some builds return 0/nil but still emit; treat the call succeeding
-    -- as "this path works" and let the re-arm clock drive it.
     if ok then return -1 end
     return nil
 end
 
-local function setEmitterVolume(v, id, vol)
+local function setVehicleEmitterVolume(v, id, vol, mode, heldEmitter)
     if probedVolApi == false or id == nil or id == -1 then return end
     local ok = pcall(function()
         local em
-        if emitterMode == "vehicle" then
-            em = v.getEmitter and v:getEmitter()
-        elseif emitterMode == "world" then
+        if mode == "vehicle" then
+            em = v and v.getEmitter and v:getEmitter()
+        elseif mode == "world" then
             em = heldEmitter
         end
         if em and em.setVolume then
@@ -198,28 +178,55 @@ local function setEmitterVolume(v, id, vol)
     elseif (not ok) and probedVolApi == nil then probedVolApi = false end
 end
 
-local function repositionWorldEmitter(v)
-    if emitterMode ~= "world" or not heldEmitter then return end
+local function repositionWorldEmitterFor(state, v)
+    if emitterMode ~= "world" or not state.heldEmitter then return end
     pcall(function()
-        if heldEmitter.setPos then
-            heldEmitter:setPos(v:getX(), v:getY(), v:getZ())
+        if state.heldEmitter.setPos then
+            state.heldEmitter:setPos(v:getX(), v:getY(), v:getZ())
         end
     end)
 end
 
 -- ---------------------------------------------------------------------------
--- Start / stop. Exactly one instance is ever live; start/stop are one-shot
--- logged so a single test run is conclusive.
+-- vehicle lookup by id (cell-walk; called on each command)
 -- ---------------------------------------------------------------------------
-local function startSkid(v)
-    local id, em
+local function findVehicleByVid(vid)
+    local cell = getCell and getCell()
+    if not cell or not cell.getVehicles then return nil end
+    local list = cell:getVehicles()
+    if not list then return nil end
+    if list.iterator then
+        local it = list:iterator()
+        while it and it.hasNext and it:hasNext() do
+            local v = it.next and it:next() or nil
+            if v and v.getKeyId and v:getKeyId() == vid then return v end
+        end
+        return nil
+    end
+    if list.size and list.get then
+        for i = 0, list:size() - 1 do
+            local v = list:get(i)
+            if v and v.getKeyId and v:getKeyId() == vid then return v end
+        end
+    end
+    return nil
+end
 
+-- ---------------------------------------------------------------------------
+-- start / stop / refresh for a single vid
+-- ---------------------------------------------------------------------------
+local function startSkidFor(vid, vehicle)
+    if skids[vid] then return end                       -- already playing
+    if not skidSoundEnabled() then return end
+    local v = vehicle or findVehicleByVid(vid)
+    if not v then return end
+
+    local id, em
     if emitterMode == nil then
-        id = tryVehicleEmitter(v)
-        if id then emitterMode = "vehicle" end
+        id = tryVehicleEmitter(v); if id then emitterMode = "vehicle" end
         if not id then
             id, em = tryWorldEmitter(v)
-            if id then emitterMode = "world"; heldEmitter = em end
+            if id then emitterMode = "world" end
         end
         if not id then
             id = tryManagerWorldSound(v)
@@ -229,140 +236,207 @@ local function startSkid(v)
         id = tryVehicleEmitter(v)
     elseif emitterMode == "world" then
         id, em = tryWorldEmitter(v)
-        heldEmitter = em
-    else -- "manager"
+    else
         id = tryManagerWorldSound(v)
     end
+    if not id then return end
 
-    if not id then return false end
-    soundId      = id
-    heldVehicle  = v
-    active       = true
-    fading       = false
-    lastVol      = 0
-    nextRefireMs = nowMs() + CLIP_MS
-    return true
+    skids[vid] = {
+        vehicle      = v,
+        soundId      = id,
+        heldEmitter  = em,
+        nextRefireMs = nowMs() + CLIP_MS,
+        lastTickMs   = nowMs(),
+        currentVol   = 0,
+        fading       = false,
+        fadeFromVol  = 0,
+        fadeUntilMs  = 0,
+    }
 end
 
-local function stopSkid()
-    if not active then return end
-    local v = heldVehicle
+local function stopSkidFor(vid)
+    local s = skids[vid]
+    if not s then return end
     pcall(function()
         if emitterMode == "vehicle" then
+            local v = s.vehicle
             local em = v and v.getEmitter and v:getEmitter()
             if em then
-                if soundId and em.stopSound then em:stopSound(soundId)
+                if s.soundId and em.stopSound then em:stopSound(s.soundId)
                 elseif em.stopAll then em:stopAll() end
             end
         elseif emitterMode == "world" then
-            if heldEmitter then
-                if soundId and heldEmitter.stopSound then
-                    heldEmitter:stopSound(soundId)
-                elseif heldEmitter.stopOrTriggerSound then
-                    heldEmitter:stopOrTriggerSound(soundId)
+            if s.heldEmitter then
+                if s.soundId and s.heldEmitter.stopSound then
+                    s.heldEmitter:stopSound(s.soundId)
+                elseif s.heldEmitter.stopOrTriggerSound then
+                    s.heldEmitter:stopOrTriggerSound(s.soundId)
                 end
             end
         elseif emitterMode == "manager" then
             local sm = getSoundManager and getSoundManager()
-            if sm and soundId and soundId ~= -1 and sm.StopSound then
-                sm:StopSound(soundId)
+            if sm and s.soundId and s.soundId ~= -1 and sm.StopSound then
+                sm:StopSound(s.soundId)
             end
         end
     end)
-    active       = false
-    fading       = false
-    lastVol      = 0
-    soundId      = nil
-    heldVehicle  = nil
-    heldEmitter  = nil
-    nextRefireMs = 0
+    skids[vid] = nil
 end
 
--- ---------------------------------------------------------------------------
--- Per-tick driver.
--- ---------------------------------------------------------------------------
-local function onPlayerUpdate(player)
-    if not player or player:isDead() then
-        if active then stopSkid() end
+local function tickSkidFor(vid, intensity)
+    local s = skids[vid]
+    if not s then return end
+    s.lastTickMs = nowMs()
+    local v = s.vehicle
+    if not v then return end
+
+    -- fade tail
+    if intensity <= STOP_AT then
+        if not s.fading then
+            s.fading      = true
+            s.fadeFromVol = (s.currentVol > 0) and s.currentVol
+                             or (clamp01(intensity) * MASTER_SCALE)
+            s.fadeUntilMs = nowMs() + FADE_MS
+        end
+        local remain = s.fadeUntilMs - nowMs()
+        if remain <= 0 then
+            stopSkidFor(vid)
+            return
+        end
+        local vol = s.fadeFromVol * (remain / FADE_MS)
+        s.currentVol = vol
+        setVehicleEmitterVolume(v, s.soundId, vol, emitterMode, s.heldEmitter)
+        repositionWorldEmitterFor(s, v)
         return
     end
 
-    local sv = SandboxVars and SandboxVars.BetterVehicleDynamics
-    if sv and sv.SkidMarks == false then
-        if active then stopSkid() end
+    s.fading = false
+    local vol = clamp01(intensity) * MASTER_SCALE
+    s.currentVol = vol
+    setVehicleEmitterVolume(v, s.soundId, vol, emitterMode, s.heldEmitter)
+    repositionWorldEmitterFor(s, v)
+
+    -- manager re-arm to tile the loop seamlessly
+    if emitterMode == "manager" then
+        local t = nowMs()
+        if t >= s.nextRefireMs then
+            local id = tryManagerWorldSound(v)
+            if id then s.soundId = id end
+            s.nextRefireMs = t + CLIP_MS
+        end
+    end
+end
+
+-- ---------------------------------------------------------------------------
+-- network event handlers
+-- ---------------------------------------------------------------------------
+local function onServerCommand(module, command, args)
+    if module ~= "BVD-Skid" then return end
+    if not args or not args.vid then return end
+    if command == "Start" then
+        startSkidFor(args.vid, nil)
+    elseif command == "Tick" then
+        local intensity = tonumber(args.intensity) or 0
+        if not skids[args.vid] then startSkidFor(args.vid, nil) end
+        tickSkidFor(args.vid, intensity)
+    elseif command == "Stop" then
+        stopSkidFor(args.vid)
+    end
+end
+
+-- ---------------------------------------------------------------------------
+-- driver-side detector: send Start / Tick / Stop
+-- ---------------------------------------------------------------------------
+local function onPlayerUpdate(player)
+    -- watchdog: per-tick check, gc stale receivers regardless of role
+    local t = nowMs()
+    for vid, s in pairs(skids) do
+        if (t - s.lastTickMs) > WATCHDOG_MS then
+            stopSkidFor(vid)
+        end
+    end
+
+    if not player or player:isDead() then
+        if driverActive and lastDriverVid then
+            pcall(sendClientCommand, "BVD-Skid", "Stop", { vid = lastDriverVid })
+            driverActive = false; lastDriverVid = nil
+        end
+        return
+    end
+    if not skidSoundEnabled() then
+        if driverActive and lastDriverVid then
+            pcall(sendClientCommand, "BVD-Skid", "Stop", { vid = lastDriverVid })
+            driverActive = false; lastDriverVid = nil
+        end
         return
     end
 
     local v = player:getVehicle()
-    if not v or v:getDriver() ~= player then
-        if active then stopSkid() end
+    if not v or (v.getDriver and v:getDriver()) ~= player then
+        if driverActive and lastDriverVid then
+            pcall(sendClientCommand, "BVD-Skid", "Stop", { vid = lastDriverVid })
+            driverActive = false; lastDriverVid = nil
+        end
         return
     end
 
-    -- Vehicle swapped under us (entered a different car without an
-    -- intervening !driver tick) -> drop the old instance cleanly.
-    if active and heldVehicle and heldVehicle ~= v then
-        stopSkid()
+    local vid = v.getKeyId and v:getKeyId() or nil
+    if not vid then return end
+
+    -- swapped vehicles under us: stop the old, fall through
+    if driverActive and lastDriverVid and lastDriverVid ~= vid then
+        pcall(sendClientCommand, "BVD-Skid", "Stop", { vid = lastDriverVid })
+        driverActive = false
     end
 
     local intensity = skidIntensity(v)
-
-    if active then
-        if intensity <= STOP_AT then
-            -- Slide ended: trail off instead of a hard cut. Start the
-            -- fade on the first such tick, ramping from whatever volume
-            -- was last playing down to zero over FADE_MS, then stop.
-            if not fading then
-                fading      = true
-                fadeFromVol = (lastVol > 0) and lastVol
-                              or (clamp01(intensity) * MASTER_SCALE)
-                fadeUntilMs = nowMs() + FADE_MS
-            end
-            local remain = fadeUntilMs - nowMs()
-            if remain <= 0 then
-                stopSkid()
-                return
-            end
-            local vol = fadeFromVol * (remain / FADE_MS)
-            lastVol = vol
-            setEmitterVolume(v, soundId, vol)
-            repositionWorldEmitter(v)
-            -- Do NOT re-arm the manager fallback while fading: let the
-            -- current instance wind down rather than tile a fresh one.
-            return
-        end
-
-        -- Sliding (again): cancel any in-progress fade and ride normally.
-        fading = false
-        local vol = clamp01(intensity) * MASTER_SCALE
-        lastVol = vol
-        setEmitterVolume(v, soundId, vol)
-        repositionWorldEmitter(v)
-
-        -- World-sound fallback has no sustained handle: re-arm a fresh
-        -- instance exactly when the previous clip ends so the loop tiles
-        -- seamlessly (re-firing EARLY was the old "weird" stutter bug).
-        if emitterMode == "manager" then
-            local t = nowMs()
-            if t >= nextRefireMs then
-                local id = tryManagerWorldSound(v)
-                if id then soundId = id end
-                nextRefireMs = t + CLIP_MS
-            end
+    if not driverActive then
+        if intensity >= START_AT then
+            pcall(sendClientCommand, "BVD-Skid", "Start", { vid = vid })
+            driverActive = true
+            lastDriverVid = vid
+            lastSentTickMs = 0   -- force immediate Tick after Start
         end
     else
-        if intensity >= START_AT then
-            startSkid(v)
+        -- Throttle Tick sends so we don't spam the network
+        if (t - lastSentTickMs) >= TICK_SEND_MS then
+            pcall(sendClientCommand, "BVD-Skid", "Tick",
+                  { vid = vid, intensity = intensity })
+            lastSentTickMs = t
+        end
+        -- End: send Stop once the fade has run its course locally
+        if intensity <= STOP_AT then
+            -- Let the fade run on the local copy; remote clients also fade
+            -- once their own intensity goes below STOP_AT via the Tick they
+            -- just received. The actual Stop is sent when fade is done.
+            local s = skids[vid]
+            if s and not s.fading then
+                -- mark for stop after FADE_MS via the next-tick logic below
+            end
+            -- Defensive: if our local skid record is gone (fade completed),
+            -- send the Stop so remote receivers don't have to wait for
+            -- their watchdog to time out.
+            if not skids[vid] then
+                pcall(sendClientCommand, "BVD-Skid", "Stop", { vid = vid })
+                driverActive = false
+                lastDriverVid = nil
+            end
         end
     end
 end
 
-Events.OnPlayerUpdate.Add(onPlayerUpdate)
+if Events and Events.OnPlayerUpdate then
+    Events.OnPlayerUpdate.Add(onPlayerUpdate)
+end
+if Events and Events.OnServerCommand then
+    Events.OnServerCommand.Add(onServerCommand)
+end
 
--- Make sure nothing is left ringing on world unload / game stop.
+-- Clean up on world unload / game stop.
 local function onGameStop()
-    if active then stopSkid() end
+    for vid, _ in pairs(skids) do stopSkidFor(vid) end
+    driverActive = false
+    lastDriverVid = nil
 end
 if Events.OnPlayerDeath then Events.OnPlayerDeath.Add(onGameStop) end
 if Events.OnGameStop   then Events.OnGameStop.Add(onGameStop)   end
-

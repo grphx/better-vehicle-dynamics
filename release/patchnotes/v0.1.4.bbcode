@@ -1,0 +1,9 @@
+[h1]v0.1.4 - Skid sound: fix endless looping + N^2 duplication[/h1]
+
+Fixes a regression in 0.1.3. Two bugs in that refactor:
+
+1. [b]vehicle:getEmitter():playSound() propagates positionally.[/b] Combined with the per-client heartbeat model this caused N^2 duplication - every client received the Start command, called the vehicle emitter, and each call broadcast the sound to OTHER clients too. Dropped the vehicle-emitter path entirely; the per-client model now only uses local-only world or manager emitters.
+
+2. [b]Manager-fallback re-arm leaked sounds.[/b] The re-arm logic started a new sound every 2 seconds and overwrote the soundId without stopping the old one - so old positional sounds kept playing at their original world position forever ("loops endlessly at the point where you skidded"). Now we stop the previous sound before each re-arm.
+
+[b]Lua-only.[/b] No manual install update.

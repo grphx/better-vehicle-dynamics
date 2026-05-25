@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.1.4] - 2026-05-21 - Skid sound: drop vehicle-emitter path + fix manager re-arm leak
+
+- Fix (regression from 0.1.3): in MP the skid sound still looped
+  endlessly at the point in the world where the skid happened, and
+  multiple sounds could be heard at once.
+- Two bugs in the 0.1.3 refactor:
+  1. `vehicle:getEmitter():playSound()` propagates positionally to
+     nearby clients. Combined with the per-client heartbeat model
+     this caused N^2 duplication: every client received the Start
+     command, called the vehicle emitter, and each call broadcast
+     the sound to OTHER clients too. Dropped the vehicle-emitter
+     code path entirely; the heartbeat model only uses world or
+     manager emitters which are local to the calling client.
+  2. The manager-fallback re-arm logic overwrote `soundId` with the
+     new id without stopping the old one. Old positional sounds kept
+     playing at their original world positions forever. Now we stop
+     the previous sound before each re-arm.
+- Lua-only. No manual install update needed.
+
 ## [0.1.3] - 2026-05-21 - Skid sound MP fix + Skid Sound sandbox toggle
 
 - Fix: in MP, the tire-skid sound played forever on other clients when

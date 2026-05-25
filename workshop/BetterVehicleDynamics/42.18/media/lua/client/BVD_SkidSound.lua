@@ -163,9 +163,7 @@ local function setVehicleEmitterVolume(v, id, vol, mode, heldEmitter)
     if probedVolApi == false or id == nil or id == -1 then return end
     local ok = pcall(function()
         local em
-        if mode == "vehicle" then
-            em = v and v.getEmitter and v:getEmitter()
-        elseif mode == "world" then
+        if mode == "world" then
             em = heldEmitter
         end
         if em and em.setVolume then
@@ -221,19 +219,19 @@ local function startSkidFor(vid, vehicle)
     local v = vehicle or findVehicleByVid(vid)
     if not v then return end
 
+    -- IMPORTANT: do NOT use vehicle:getEmitter() in the heartbeat model.
+    -- It propagates positionally to nearby clients, so each client's call
+    -- would broadcast a fresh sound to others -> N^2 duplication. World /
+    -- manager emitters are local to the calling client only, which is what
+    -- we want now that every client owns its own copy via heartbeats.
     local id, em
     if emitterMode == nil then
-        id = tryVehicleEmitter(v); if id then emitterMode = "vehicle" end
-        if not id then
-            id, em = tryWorldEmitter(v)
-            if id then emitterMode = "world" end
-        end
+        id, em = tryWorldEmitter(v)
+        if id then emitterMode = "world" end
         if not id then
             id = tryManagerWorldSound(v)
             if id then emitterMode = "manager" end
         end
-    elseif emitterMode == "vehicle" then
-        id = tryVehicleEmitter(v)
     elseif emitterMode == "world" then
         id, em = tryWorldEmitter(v)
     else
@@ -258,14 +256,7 @@ local function stopSkidFor(vid)
     local s = skids[vid]
     if not s then return end
     pcall(function()
-        if emitterMode == "vehicle" then
-            local v = s.vehicle
-            local em = v and v.getEmitter and v:getEmitter()
-            if em then
-                if s.soundId and em.stopSound then em:stopSound(s.soundId)
-                elseif em.stopAll then em:stopAll() end
-            end
-        elseif emitterMode == "world" then
+        if emitterMode == "world" then
             if s.heldEmitter then
                 if s.soundId and s.heldEmitter.stopSound then
                     s.heldEmitter:stopSound(s.soundId)
@@ -316,10 +307,16 @@ local function tickSkidFor(vid, intensity)
     setVehicleEmitterVolume(v, s.soundId, vol, emitterMode, s.heldEmitter)
     repositionWorldEmitterFor(s, v)
 
-    -- manager re-arm to tile the loop seamlessly
+    -- manager re-arm to tile the loop seamlessly. CRITICAL: stop the old
+    -- sound before starting the new one or it leaks at the previous world
+    -- position forever ("skid sound loops endlessly where you skidded").
     if emitterMode == "manager" then
         local t = nowMs()
         if t >= s.nextRefireMs then
+            local sm = getSoundManager and getSoundManager()
+            if sm and s.soundId and s.soundId ~= -1 and sm.StopSound then
+                pcall(function() sm:StopSound(s.soundId) end)
+            end
             local id = tryManagerWorldSound(v)
             if id then s.soundId = id end
             s.nextRefireMs = t + CLIP_MS

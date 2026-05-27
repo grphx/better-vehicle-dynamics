@@ -1,0 +1,7 @@
+[h1]v0.1.6 - Skid sound: rename event to flush cached loop=true[/h1]
+
+v0.1.5 changed the sound script to loop=false but reports of the looping skid sound kept coming in. Root cause: PZ's audio engine caches sound-script registrations across world loads. Flipping loop=true -> false on the SAME event name does not reliably flush the cached loop=true property in the FMOD runtime.
+
+Fix: renamed the event from BVD_SkidLoop to BVD_SkidTile. PZ has no choice but to register the new name fresh, picking up loop=false from scratch. The old BVD_SkidLoop registration is no longer referenced by anything and becomes harmless dead state.
+
+[b]Lua + script change.[/b] No manual install update.

@@ -1,6 +1,12 @@
 module Base
 {
-    sound BVD_SkidLoop
+    // v0.1.6: renamed from BVD_SkidLoop -> BVD_SkidTile. PZ's audio engine
+    // caches sound-script registrations across world loads; a script-only
+    // change from loop=true to loop=false on the SAME event name often does
+    // NOT flush the cached loop=true property, leaving heartbeat re-arms
+    // permanently looping at each world position. A new event name forces
+    // fresh registration with the correct loop=false from the start.
+    sound BVD_SkidTile
     {
         category = Object,
         loop = false,

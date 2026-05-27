@@ -16,7 +16,11 @@
 -- so multiple players can skid simultaneously.
 -- ===========================================================================
 
-local EVENT_NAME = "BVD_SkidLoop"
+-- v0.1.6: renamed BVD_SkidLoop -> BVD_SkidTile to force fresh FMOD
+-- registration with loop=false. Old BVD_SkidLoop registration (which PZ
+-- may have cached with loop=true from before the v0.1.5 script change)
+-- is no longer referenced anywhere; it becomes harmless dead state.
+local EVENT_NAME = "BVD_SkidTile"
 -- Clip length in ms. BVD_skid_loop.ogg is 2.0 s; script now declares
 -- loop=false so each play is one short tile that expires naturally.
 -- v0.1.4 left loop=true which caused N stacked permanent loops at each

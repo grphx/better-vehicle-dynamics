@@ -1,0 +1,7 @@
+[h1]v0.1.5 - Skid sound: the real fix[/h1]
+
+After 0.1.3 and 0.1.4 still left the skid sound looping at fixed points on the map, finally found the root cause: the sound script itself was declared loop=true, so PZ's engine looped each instance natively. Every re-arm in the heartbeat model started ANOTHER permanent loop that we could not reliably stop.
+
+[b]Fix:[/b] switched BVD_SkidLoop to loop=false. Each play is a single ~2 s clip that expires naturally. The driver client re-arms every 1.8 s to tile consecutive clips with no audible seam. When the driver stops sliding, re-arms stop, the last clip plays out, sound dies organically - no stopSound dependency anywhere.
+
+[b]Lua-only.[/b] No manual install update.

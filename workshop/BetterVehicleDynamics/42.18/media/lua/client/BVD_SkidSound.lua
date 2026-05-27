@@ -17,7 +17,16 @@
 -- ===========================================================================
 
 local EVENT_NAME = "BVD_SkidLoop"
-local CLIP_MS    = 2000   -- manager fallback re-arm cadence
+-- Clip length in ms. BVD_skid_loop.ogg is 2.0 s; script now declares
+-- loop=false so each play is one short tile that expires naturally.
+-- v0.1.4 left loop=true which caused N stacked permanent loops at each
+-- re-arm world position. v0.1.5 fixes by switching to non-looping clip +
+-- continuous re-arm.
+local CLIP_MS    = 2000
+
+-- Re-arm slightly before the clip ends so consecutive tiles butt
+-- together without a perceptible gap or overlap.
+local REFIRE_MS  = 1800
 
 local START_AT      = 0.18
 local STOP_AT       = 0.04
@@ -28,11 +37,11 @@ local SLIDE_MIN_KPH = 14.0
 local SLIDE_REF_KPH = 70.0
 local BURNOUT_KPH   = 12.0
 
--- Heartbeat cadence (driver side) and watchdog window (every client).
--- Driver sends at TICK_SEND_MS; receivers force-stop if no heartbeat
--- for WATCHDOG_MS (3x to absorb packet jitter).
+-- Heartbeat cadence (driver) and watchdog window (every client).
+-- Watchdog must be wider than one clip so the last-fired clip can play
+-- to completion if the driver disconnects mid-skid.
 local TICK_SEND_MS  = 200
-local WATCHDOG_MS   = 700
+local WATCHDOG_MS   = 2200
 
 -- ---------------------------------------------------------------------------
 -- Probed caches (per session). Each branch is tested once; the verdict
@@ -243,7 +252,7 @@ local function startSkidFor(vid, vehicle)
         vehicle      = v,
         soundId      = id,
         heldEmitter  = em,
-        nextRefireMs = nowMs() + CLIP_MS,
+        nextRefireMs = nowMs() + REFIRE_MS,
         lastTickMs   = nowMs(),
         currentVol   = 0,
         fading       = false,
@@ -307,20 +316,23 @@ local function tickSkidFor(vid, intensity)
     setVehicleEmitterVolume(v, s.soundId, vol, emitterMode, s.heldEmitter)
     repositionWorldEmitterFor(s, v)
 
-    -- manager re-arm to tile the loop seamlessly. CRITICAL: stop the old
-    -- sound before starting the new one or it leaks at the previous world
-    -- position forever ("skid sound loops endlessly where you skidded").
-    if emitterMode == "manager" then
-        local t = nowMs()
-        if t >= s.nextRefireMs then
-            local sm = getSoundManager and getSoundManager()
-            if sm and s.soundId and s.soundId ~= -1 and sm.StopSound then
-                pcall(function() sm:StopSound(s.soundId) end)
-            end
-            local id = tryManagerWorldSound(v)
-            if id then s.soundId = id end
-            s.nextRefireMs = t + CLIP_MS
+    -- Non-looping clip model (loop=false in BVD_Sounds.txt). Re-arm at
+    -- REFIRE_MS to tile consecutive clips with no audible seam. Old
+    -- instances expire on their own ~CLIP_MS after they started, so we
+    -- do NOT call stopSound on the previous id - that was the v0.1.4
+    -- bug where stop didn't work for manager-mode and zero-id sentinels.
+    local t = nowMs()
+    if t >= s.nextRefireMs then
+        local id
+        if emitterMode == "world" then
+            local nid, nem = tryWorldEmitter(v)
+            id = nid
+            if nid and nem then s.heldEmitter = nem end
+        else
+            id = tryManagerWorldSound(v)
         end
+        if id then s.soundId = id end
+        s.nextRefireMs = t + REFIRE_MS
     end
 end
 

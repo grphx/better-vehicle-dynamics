@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.1.5] - 2026-05-21 - Skid sound: non-looping clip (real fix)
+
+- Fix (regression chain from 0.1.3 / 0.1.4): in MP the skid sound kept
+  looping at fixed points on the map even after the per-client refactor.
+- Root cause finally diagnosed: BVD_Sounds.txt declared the sound with
+  loop=true, so PZ's engine looped each instance natively. Every re-arm
+  in the heartbeat model started ANOTHER permanent loop without being
+  able to reliably stop the previous one (PlayWorldSound returns 0/nil
+  in some paths, so the stop handle is invalid). Result: stacking
+  loops at successive world positions.
+- Fix: changed BVD_SkidLoop sound script to loop=false. Each play is
+  one ~2 s tile that expires naturally. The Lua heartbeat code re-arms
+  at REFIRE_MS (1.8 s) to tile consecutive clips with no audible seam.
+  No stopSound dependency anywhere - when the driver stops sending
+  heartbeats, re-arms stop, the last clip plays out, sound dies.
+- Lua + media script change. No manual install update needed.
+
 ## [0.1.4] - 2026-05-21 - Skid sound: drop vehicle-emitter path + fix manager re-arm leak
 
 - Fix (regression from 0.1.3): in MP the skid sound still looped

@@ -1,0 +1,29 @@
+[h1]v0.1.7 - Bundled KI5 reference pack (458 entries)[/h1]
+
+New: BVD now ships a comprehensive [b]KI5 reference pack[/b] covering every drivable KI5 vehicle in the canonical [url=https://steamcommunity.com/workshop/filedetails/?id=2490220997]KI5's vehicle collection[/url] - 458 script entries across 85 KI5 mods, with real-world hp / mass / cargo per car.
+
+Mechanically-distinct variants get their own values: F150 vs F250 vs F350 (and dually), K10 vs K20 vs K30, Defender 90 vs 110 vs 130, Hilux SC/XC/XCS, Charger R/T vs 500 vs Daytona vs Hemi, '92 CV vs CVPI, E30 base vs M3 vs touring, and so on. Cosmetic skin variants (the 60+ E150 liveries, the 30+ Step-Van shops, every police/fire/SWAT skin) share the base car's specs.
+
+[h2]Coverage highlights[/h2]
+[list]
+[*][b]Compacts:[/b] Beetle, Mini, Escort, S10, Hilux, Caravan, Trooper, Volvo 240, E30, Geo Metro, Taurus, Saturn, Touran
+[*][b]Sport / muscle:[/b] '69 Camaro / Charger, '70 Challenger / 'Cuda / Road Runner, Countach LP400S, '77/'82 Trans Am, '81 DeLorean, '82 Porsche 911 (SC / turbo / RWB / targa), C4 Corvette, MR2, 240SX, R32 GT-R, Fox Mustang (GT / SVT Cobra / SSP), STI, Evo IV, Stagea
+[*][b]Sedans / wagons:[/b] Miller-Meteor / ECTO-1, '73 Falcon XB, '75 Grand Prix, '76 New Yorker, '84 Electra / DeVille / Olds 98, '85 Caprice / LeSabre / Parisienne / Delta 88, '87 Buick Regal (incl. GNX), Crown Vic LTD / 4.6 / CVPI / P71, Town Car / Limo
+[*][b]Trucks / utility:[/b] Power Wagon, K10 / K20 / K30 (and wreckers), J10, Mercedes W460, XJ Cherokee, Step-Van, E150, Suburban (K20 / K1500), B/F700, Bronco, Defender (90 / 110 / 130 / Wolf), Ranger, Range Rover, YJ Wrangler, Silverado CC, F150 / F250 / F350 (incl. dually + utility variants)
+[*][b]Heavy / military:[/b] M35 (incl. M50A3 fuel tanker / M62 wrecker), M911, M923, CUCV (incl. M1010 ambulance / M1031 maint), P19A ARFF, Pierce Pumper, HMMWV, CF8000 Sweeper, Bushmaster, MAN KAT1, Gage Commando, M540, M577, MUTT
+[*][b]Misc:[/b] Halo Warthog, KZ1000, Brough Superior, Vino 125 / PizzaBoy, '49 Ford 8N tractor, golf cart
+[*][b]Trailers:[/b] all 4 campers (Scamp, Bambi, Flying Cloud) + KI5's 7 utility/cargo/livestock trailers
+[/list]
+
+[h2]Gating[/h2]
+[list]
+[*]The whole pack is silently skipped when no KI5 vehicle script is present
+[*]Priority 5 (under the existing community pack at 10) - user overrides via [b]BVD.registerVehicle[/b] still win
+[*]Entries already covered by a higher-priority pack are skipped (no log spam)
+[*]Burnt-out variants are not registered (no engine to apply HP to)
+[/list]
+
+To override any value yourself:
+    BVD.registerVehicle("Base.92fordCVPI", { hp=200, mass_kg=1800, cargo=480 })
+
+[b]Lua-only change.[/b] No Java update needed.

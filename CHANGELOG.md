@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.1.7] - 2026-05-29 - Bundled KI5 reference pack (458 entries)
+
+- New `BVD_Pack_KI5.lua` covers every drivable KI5 vehicle in the
+  canonical "KI5's vehicle collection" (Steam Workshop 2490220997):
+  **458 unique script entries** across 85 KI5 mods, with real-world
+  hp / mass / cargo for the base car AND mechanically-distinct
+  variants (F150 vs F250 vs F350, K10 vs K20 vs K30, Defender 90 vs
+  110 vs 130, Hilux SC/XC/XCS, R/T vs Hemi 'Cuda, etc.).
+- Cosmetic skin variants (e.g. the 60+ E150 liveries, the 30+
+  Step-Van shops, the police skins) share the base car's specs.
+- Burnt-out variants are skipped.
+- Auto-registers via OnGameBoot, gated by:
+  - `targetScriptPresent` predicate -> no KI5 installed = no-op
+  - Priority 5 (under community pack's 10) so user overrides win
+  - Existing-key skip avoids "replacing existing" log spam
+- Net effect: with HP/Weight Realism enabled, every drivable KI5
+  vehicle now gets a sensible real-world performance baseline
+  without per-mod configuration.
+- Pure Lua addition. No Java change, no manifest change.
+
 ## [0.1.6] - 2026-05-21 - Skid sound: rename event to flush cached loop=true
 
 - v0.1.5 changed BVD_SkidLoop to loop=false at the script level, but

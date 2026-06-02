@@ -179,6 +179,83 @@ local function placeSplatAt(wx, wy, wz, t, now)
     end
 end
 
+-- v0.1.8: per-wheel stamping. Previously a single decal at the vehicle
+-- centerline approximated both tracks; the sprite had two parallel streaks
+-- baked in at a fixed pixel spacing so it read correctly for sedans whose
+-- wheelbase happened to match. Anything wider (pickups, vans, trucks) or
+-- narrower (compacts, motorcycles) showed the marks at the wrong place
+-- relative to the wheels, and on tight curves the four oriented sprites
+-- turned a donut into a polygon.
+--
+-- v0.1.8 reads each vehicle script's wheel offsets, transforms them per-tick
+-- to each wheel's world position via the vehicle's yaw, and stamps one
+-- omnidirectional soft blob at every wheel. Wide pickups get wide tracks,
+-- compacts get narrow tracks, circles trace as actual circles, and the
+-- marks visually anchor where the rubber actually is.
+
+-- Probe cache for the wheel-offset path. Probe once per vehicle script id
+-- (cheap to lookup, never re-probes after first success).
+local probedWheels = {}      -- [scriptName] = true (ok) | false (no API)
+
+-- Per-wheel lastDrop, keyed by vehicle id + wheel index. Replaces the
+-- single global lastDrop so each wheel's streak interpolates independently
+-- (otherwise switching from the left wheel's last drop to the right
+-- wheel's would stitch across the vehicle on every tick).
+local lastDropPerWheel = {}
+
+-- Returns a list of { x = wx, y = wy } for each wheel in world space, or
+-- nil if the script API isn't usable (motorcycles missing wheels, vehicles
+-- with no script). Falls back to centerline (single entry) on probe failure.
+local function getWheelWorldPositions(v, vx, vy, headingDeg)
+    if not v.getScript then return nil end
+    local script = v:getScript()
+    if not script or not script.getWheelCount then return nil end
+
+    -- Probe-cache the wheel API per script name.
+    local scriptName = (script.getName and script:getName()) or "?"
+    local probed = probedWheels[scriptName]
+    if probed == false then return nil end
+
+    local ok, n = pcall(function() return script:getWheelCount() end)
+    if not ok or not n or n < 1 then
+        probedWheels[scriptName] = false
+        return nil
+    end
+
+    local r = math.rad(headingDeg or 0)
+    local cosT, sinT = math.cos(r), math.sin(r)
+
+    -- Local frame in PZ vehicle scripts:
+    --   .z() = longitudinal (positive = forward of origin)
+    --   .x() = lateral (positive = vehicle's right side)
+    --   .y() = vertical (height), not used here
+    -- World frame: +x = east, +y = south. Heading 0 = east-facing forward.
+    --   Forward unit in world: (cos h, sin h)
+    --   Right unit in world (90 deg CCW in this frame): (-sin h, cos h)
+    -- Wheel world = origin + oz * Forward + ox * Right.
+    local out = {}
+    for i = 0, n - 1 do
+        local ok2, w = pcall(function() return script:getWheel(i) end)
+        if ok2 and w and w.getOffset then
+            local ok3, off = pcall(function() return w:getOffset() end)
+            if ok3 and off then
+                local ox = off.x and off:x() or 0
+                local oz = off.z and off:z() or 0
+                local wx = vx + oz * cosT + ox * (-sinT)
+                local wy = vy + oz * sinT + ox * cosT
+                out[#out + 1] = { x = wx, y = wy, idx = i }
+            end
+        end
+    end
+
+    if #out == 0 then
+        probedWheels[scriptName] = false
+        return nil
+    end
+    probedWheels[scriptName] = true
+    return out
+end
+
 local function dropMark(v, sq)
     if not sq then return end
 
@@ -189,6 +266,7 @@ local function dropMark(v, sq)
     local vz = v:getZ() or sq:getZ()
     local t  = typeForVehicle(v)
     local now = getTimestampMs and getTimestampMs() or 0
+    local vid = (v.getId and v:getId()) or tostring(v)
 
     if (now % 8000) < 50 then
         for k, ts in pairs(recentTiles) do
@@ -199,27 +277,49 @@ local function dropMark(v, sq)
         for k, p in pairs(lastPos) do
             if p.ts and (now - p.ts) > 60000 then lastPos[k] = nil end
         end
+        -- Same GC for the per-wheel drop cache; entries naturally age out
+        -- once the vehicle stops feeding new positions.
+        for k, p in pairs(lastDropPerWheel) do
+            if p.ts and (now - p.ts) > 60000 then lastDropPerWheel[k] = nil end
+        end
     end
 
-    -- Connect to the previous drop in this streak: fill every ~half-tile
-    -- between them so there are no gaps even at high speed. A fresh streak
-    -- (lastDrop == nil) or a level change just stamps the current point.
-    if lastDrop and lastDrop.z == vz then
-        local dx, dy = vx - lastDrop.x, vy - lastDrop.y
-        local dist = math.sqrt(dx * dx + dy * dy)
-        if dist > 0.0 and dist <= MAX_FILL_DIST then
-            local steps = math.ceil(dist / CELL_TILES)
-            for i = 1, steps do
-                local f = i / steps
-                placeSplatAt(lastDrop.x + dx * f, lastDrop.y + dy * f, vz, t, now)
+    -- Resolve each wheel's world position via the vehicle script + yaw.
+    -- Falls back to centerline if the wheel API isn't usable for this
+    -- vehicle (e.g. exotic scripts with no wheel data) so we never silently
+    -- stop drawing.
+    local heading = vehicleHeadingDeg(v)
+    local wheels = getWheelWorldPositions(v, vx, vy, heading)
+    if not wheels then
+        wheels = { { x = vx, y = vy, idx = -1 } }
+    end
+
+    -- Per-wheel streak: each wheel's interpolation chain is independent so
+    -- successive drops form a coherent track along that wheel's path. A
+    -- level change resets the chain to a fresh single point.
+    for _, p in ipairs(wheels) do
+        local key  = vid .. ":" .. p.idx
+        local prev = lastDropPerWheel[key]
+        if prev and prev.z == vz then
+            local dx, dy = p.x - prev.x, p.y - prev.y
+            local dist = math.sqrt(dx * dx + dy * dy)
+            if dist > 0.0 and dist <= MAX_FILL_DIST then
+                local steps = math.ceil(dist / CELL_TILES)
+                for i = 1, steps do
+                    local f = i / steps
+                    placeSplatAt(prev.x + dx * f, prev.y + dy * f, vz, t, now)
+                end
+            else
+                placeSplatAt(p.x, p.y, vz, t, now)
             end
         else
-            placeSplatAt(vx, vy, vz, t, now)
+            placeSplatAt(p.x, p.y, vz, t, now)
         end
-    else
-        placeSplatAt(vx, vy, vz, t, now)
+        lastDropPerWheel[key] = { x = p.x, y = p.y, z = vz, ts = now }
     end
 
+    -- lastDrop retained for any other consumers, kept centerline-aligned
+    -- so existing behaviour (level-change reset) still hangs off it.
     lastDrop = { x = vx, y = vy, z = vz }
 end
 

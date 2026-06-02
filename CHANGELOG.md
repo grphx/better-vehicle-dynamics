@@ -1,6 +1,29 @@
 # Changelog
 
-## [0.1.8] - 2026-06-02 - B42.19 rebase + off-road drag fix
+## [0.1.8] - 2026-06-02 - B42.19 rebase + off-road drag + per-wheel skid marks
+
+- **Skid marks now come from the actual rear wheels.** Previously a
+  single sprite at the vehicle centerline approximated both tracks
+  via a dual-streak texture; with anything wider (pickups, vans,
+  trucks) or narrower than a sedan that approximation read wrong,
+  and on curves the four fixed sprite orientations turned a donut
+  into a polygon. v0.1.8 reads each vehicle script's wheel offsets,
+  transforms them per-tick to each wheel's world position via the
+  vehicle's yaw, and stamps an omnidirectional soft mark at every
+  wheel. Wide pickups get wide tracks, compacts get narrow tracks,
+  circles trace as actual circles, and the marks visually anchor
+  where the rubber actually is.
+- **Sprite asset replaced** with a single omnidirectional soft dark
+  blob. All four sprite-type IDs are written from the same blob
+  image so heading no longer affects the look (the per-wheel
+  placement carries the orientation now). Existing saves keep their
+  sprite-id references unchanged.
+- **Per-wheel interpolation continuity:** each wheel maintains its
+  own streak chain so consecutive drops form coherent tracks. A
+  level change still resets all chains to a fresh single stamp.
+- **Graceful fallback:** vehicles whose script lacks usable wheel
+  data fall back to a single centerline mark (no silent stoppage).
+
 
 - **B42.19 compatibility:** Necroid Java patches rebased onto the
   42.19 pristine. All 5 patches (CarController, WorldSimulation,

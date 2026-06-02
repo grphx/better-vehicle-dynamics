@@ -1,0 +1,27 @@
+[h1]v0.1.8 - B42.19 rebase + off-road drag fix[/h1]
+
+[b]Compatible with PZ B42.19.[/b] Necroid Java patches rebased onto the 42.19 pristine - all 5 patches applied cleanly.
+
+[h2]Off-road drag fix[/h2]
+
+User report: trucks and SUVs would barely get past ~40 km/h in 2nd gear off-road, with maxed OffroadGrip / OffroadFloor and minimum RollResistanceOffroad only helping a little.
+
+Root cause: the off-road drag formula in [b]CarController[/b] had a speed-dependent term ([i]0.01F * absSpeed[/i]) that was [b]10x its on-road counterpart[/b]. Combined with the [i]mass * 1/eff[/i] multiplier for low-OffroadEfficiency vehicles (trucks, SUVs), drag compounded quadratically with speed and ate most of the engine torque past ~40 km/h on grass. Grip was not the bottleneck; drag was.
+
+[b]Fix:[/b] halved the speed-dependent off-road drag ([i]0.01F[/i] -> [i]0.005F[/i]). The base term + mass + 1/eff multipliers still encode "off-road resists motion" - this just tames the per-km/h compounding so trucks and SUVs can cruise.
+
+[h2]Surface-grip floor[/h2]
+
+Belt-and-braces clamp: surfaceGrip is now clamped to >= 0.05F before being folded into gripFactor. Protects against a misconfigured published tire profile or sandbox combination pushing the value <= 0 (which would have inverted the gripLimit feed and pulled the car backwards). No effect under default configuration - defensive only.
+
+[h2]Off-road grip tooltip rewrite[/h2]
+
+The previous "Grip off-road" tooltip didn't say HIGHER = more grip, so users raising it weren't sure it was actually helping. New tooltip is explicit:
+
+[i]"Off-road grip strength. HIGHER = more grip (less tire slip) on dirt, grass and gravel. Default 0.85 = moderate slip; 1.5 = near-paved feel. Does not change rolling drag - tune that via Rolling drag off-road."[/i]
+
+[h2]Manual install[/h2]
+
+The manual-install bundle is renamed [b]B42.19_Manual_Install/[/b] with freshly-compiled 42.19 .class files. Dedicated-server users must redo the manual install once for the 42.19 update. This single re-install carries both the version rebase AND the off-road drag fix - bundled deliberately so it's only one install dance, not two in the same week.
+
+Single-player Workshop subscribers: nothing to do, just update.

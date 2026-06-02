@@ -1,5 +1,38 @@
 # Changelog
 
+## [0.1.8] - 2026-06-02 - B42.19 rebase + off-road drag fix
+
+- **B42.19 compatibility:** Necroid Java patches rebased onto the
+  42.19 pristine. All 5 patches (CarController, WorldSimulation,
+  Texture, IsoChunkMap, IsoFloorBloodSplat) applied cleanly against
+  the new vanilla bytes - no behaviour-affecting decompiler drift.
+- **Off-road drag halved (Java).** User report: "trucks and SUVs
+  barely 40 mph in 2nd gear off-road, max OffroadGrip / OffroadFloor
+  do not help, RollResistanceOffroad to min only helps a little."
+  Root cause: the off-road drag formula in CarController had a
+  speed-dependent term (`0.01F * absSpeed`) that was 10x the on-road
+  counterpart. Combined with `mass * 1/eff` for low-OffroadEfficiency
+  vehicles (trucks, SUVs), drag compounded quadratically with speed
+  and ate most engine torque past ~40 km/h on grass. Halved to
+  `0.005F * absSpeed`. Grip was not the bottleneck; drag was.
+- **Surface-grip floor (Java).** Belt-and-braces clamp: surfaceGrip
+  is now clamped to >= 0.05F before being folded into gripFactor.
+  Protects against a published tire profile or misconfigured sandbox
+  pushing the value <= 0 (which would have inverted the gripLimit
+  feed and pulled the car backwards). No effect under default
+  configuration; defensive only.
+- **OffroadGrip tooltip rewrite (Lua).** Old tooltip didn't say
+  "HIGHER = more grip", so users raising it expecting better
+  behavior weren't sure it was actually helping. New tooltip is
+  explicit: "HIGHER = more grip (less tire slip)" + a reference
+  point ("default 0.85 = moderate slip; 1.5 = near-paved feel") +
+  a pointer to Rolling drag off-road for drag tuning.
+- **Manual install bundle renamed** B42.18_Manual_Install ->
+  B42.19_Manual_Install with freshly-compiled 42.19 .class files.
+  Users on dedicated servers must redo the manual install once for
+  the 42.19 update; this single re-install carries both the version
+  rebase AND the off-road drag fix.
+
 ## [0.1.7] - 2026-05-29 - Bundled KI5 reference pack (458 entries)
 
 - New `BVD_Pack_KI5.lua` covers every drivable KI5 vehicle in the

@@ -4,9 +4,9 @@
   "description": "Java side for Better Vehicle Dynamics. Patches the vehicle physics, world-simulation impulse and tyre-mark rendering paths so the Lua sandbox options take effect. Pairs with the BetterVehicleDynamics Workshop mod (Lua side: sandbox options + per-vehicle reference data).",
   "category": "mechanics",
   "version": "1.0.0",
-  "expectedVersion": "42.18.0",
+  "expectedVersion": "42.19.0",
   "createdAt": "2026-05-16T05:57:48.402959Z",
-  "updatedAt": "2026-05-16T05:57:48.402959Z",
+  "updatedAt": "2026-06-02T02:08:48.357596Z",
   "pristineSnapshot": "488e45e1879bb24102c5c00402c7c2a6528ca8cf121c07642f5431a59e69b465",
   "dependencies": [],
   "incompatibleWith": []

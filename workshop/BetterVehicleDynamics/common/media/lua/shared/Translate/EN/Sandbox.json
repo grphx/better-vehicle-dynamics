@@ -41,7 +41,7 @@
     "Sandbox_BVD_SnowGrip_tooltip": "Fraction of normal grip on snow-covered ground.",
 
     "Sandbox_BVD_OffroadGrip": "Grip off-road",
-    "Sandbox_BVD_OffroadGrip_tooltip": "Grip factor on dirt, grass and gravel versus sealed road.",
+    "Sandbox_BVD_OffroadGrip_tooltip": "Off-road grip strength. HIGHER = more grip (less tire slip) on dirt, grass and gravel. Default 0.85 = moderate slip; 1.5 = near-paved feel. Does not change rolling drag - tune that via Rolling drag off-road.",
 
     "Sandbox_BVD_OffroadFloor": "Off-road grip floor",
     "Sandbox_BVD_OffroadFloor_tooltip": "Minimum off-road grip multiplier any tire family can fall to. Without this, sports-tire profiles can drop off-road grip so low a high-HP car barely moves on grass. Default 0.55 keeps brute-force motion possible (the car will slip and chew tires, but it moves).",

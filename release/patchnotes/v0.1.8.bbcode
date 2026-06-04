@@ -1,8 +1,4 @@
-[h1]v0.1.8 - B42.19 rebase + off-road drag + per-wheel skid marks[/h1]
-
-[h2]Per-wheel skid marks[/h2]
-
-Skid marks now come from the actual rear wheels. Previously a single sprite at the vehicle centerline approximated both tracks via a dual-streak texture; with anything wider (pickups, vans, trucks) or narrower than a sedan that approximation read wrong, and on curves the four fixed sprite orientations turned a donut into a polygon. v0.1.8 reads each vehicle script's wheel offsets, transforms them per-tick to each wheel's world position via the vehicle's yaw, and stamps an omnidirectional soft mark at every wheel. Wide pickups get wide tracks, compacts get narrow tracks, circles trace as actual circles, and the marks visually anchor where the rubber actually is.
+[h1]v0.1.8 - B42.19 rebase + off-road drag fix[/h1]
 
 
 

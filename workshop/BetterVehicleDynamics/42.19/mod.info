@@ -3,4 +3,4 @@ id=BetterVehicleDynamics
 modversion=0.1.8
 description=Better Vehicle Dynamics - drivetrain & traction overhaul (Lua side). Java via Necroid better-vehicle-dynamics-42.
 pzversion=42
-versionMin=42.18
+versionMin=42.19

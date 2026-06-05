@@ -3,4 +3,4 @@ id=BetterVehicleDynamics
 modversion=0.1.8
 description=A drivetrain and traction overhaul: torque-curve driven acceleration, surface- and weather-aware grip, configurable rolling drag, an opt-in reference power/weight table, cargo-capacity rescaling, an arcade drift mode, tyre marks, and a driver readout. All values are sandbox-tunable. Java side ships separately via Necroid (better-vehicle-dynamics-42).
 pzversion=42
-versionMin=42.18
+versionMin=42.19

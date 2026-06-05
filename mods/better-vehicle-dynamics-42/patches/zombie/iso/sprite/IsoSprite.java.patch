@@ -1,0 +1,77 @@
+diff --git a/zombie/iso/sprite/IsoSprite.java b/zombie/iso/sprite/IsoSprite.java
+index f5ef239..91901ef 100644
+--- a/zombie/iso/sprite/IsoSprite.java
++++ b/zombie/iso/sprite/IsoSprite.java
+@@ -1695,6 +1695,72 @@ public final class IsoSprite {
+       }
+    }
+ 
++   // BVD: scaled + sub-pixel tyre-mark render. Identical to
++   // renderBloodSplat below EXCEPT (1) screen coords are NOT cast to int
++   // so consecutive overlapping stamps don't snap to the same pixel grid,
++   // and (2) the sprite is drawn at Core.tileScale-scaled size so it
++   // matches the current zoom — vanilla renderBloodSplat draws at the
++   // texture's native pixel size, which at non-1x zoom leaves the decal
++   // visually undersized relative to the tile and breaks the
++   // overlap-into-a-line illusion that BVD's per-wheel stamping relies on.
++   // Used only for BVD tyre-mark types (21..24); vanilla blood splats keep
++   // the original render path below unchanged.
++   public void BVD_renderTireMark(float x, float y, float z, ColorInfo info2) {
++      Texture texture = this.getTextureForCurrentFrame(IsoDirections.N);
++      if (texture != null) {
++         try {
++            if (globalOffsetX == -1.0F) {
++               globalOffsetX = -IsoCamera.frameState.offX;
++               globalOffsetY = -IsoCamera.frameState.offY;
++            }
++
++            float goX = globalOffsetX;
++            float goY = globalOffsetY;
++            if (FBORenderChunkManager.instance.isCaching()) {
++               goX = FBORenderChunkManager.instance.getXOffset();
++               goY = FBORenderChunkManager.instance.getYOffset();
++               x -= FBORenderChunkManager.instance.renderChunk.chunk.wx * 8;
++               y -= FBORenderChunkManager.instance.renderChunk.chunk.wy * 8;
++            }
++
++            float scale = Core.tileScale;
++            float w = texture.getWidth() * scale;
++            float h = texture.getHeight() * scale;
++            float sx = IsoUtils.XToScreen(x, y, z, 0);
++            float sy = IsoUtils.YToScreen(x, y, z, 0);
++            // NOTE: no (int) cast — preserves sub-pixel position so dense
++            // overlapping stamps form a smooth line instead of stair-stepping.
++            sx -= w / 2.0F;
++            sy -= h / 2.0F;
++            sx += goX;
++            sy += goY;
++            label39:
++            if (!PerformanceSettings.fboRenderChunk) {
++               if (!(sx >= IsoCamera.frameState.offscreenWidth) && !(sx + w <= 0.0F)) {
++                  if (!(sy >= IsoCamera.frameState.offscreenHeight) && !(sy + h <= 0.0F)) {
++                     break label39;
++                  }
++
++                  return;
++               }
++
++               return;
++            }
++
++            info.r = info2.r;
++            info.g = info2.g;
++            info.b = info2.b;
++            info.a = info2.a;
++            SpriteRenderer.instance.StartShader(SceneShaderStore.defaultShaderId, IsoCamera.frameState.playerIndex);
++            zombie.IndieGL.disableDepthTest();
++            zombie.IndieGL.glBlendFuncSeparate(770, 771, 773, 1);
++            texture.render(sx, sy, w, h, info.r, info.g, info.b, info.a, TileDepthModifier.instance);
++         } catch (Exception var10) {
++            Logger.getLogger(zombie.GameWindow.class.getName()).log(Level.SEVERE, null, var10);
++         }
++      }
++   }
++
+    public void renderBloodSplat(float x, float y, float z, ColorInfo info2) {
+       Texture texture = this.getTextureForCurrentFrame(IsoDirections.N);
+       if (texture != null) {

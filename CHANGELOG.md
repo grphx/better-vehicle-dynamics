@@ -1,6 +1,56 @@
 # Changelog
 
-## [0.1.8] - 2026-06-02 - B42.19 rebase + off-road drag fix
+## [0.1.8] - 2026-06-06 - B42.19 rebase + off-road drag + per-wheel skids + MP skid sound
+
+- **Per-wheel skid marks (Lua + Java).** The marks now anchor to each
+  vehicle's actual rear-wheel positions instead of a single sprite at
+  the centerline. Lua reads the vehicle script's wheel offsets and
+  transforms them per-tick to world coords; sprite is an omnidirectional
+  soft blob so curves trace as actual curves instead of polygons from
+  the four-bucket orientation system. New Java patch on IsoSprite (BVD-
+  scoped `BVD_renderTireMark` method) bypasses the integer-pixel snap
+  and scales the sprite by tile scale so consecutive blob stamps blend
+  into a smooth continuous line at any zoom level.
+- **Permanent MP skid-sound fix (Java).** Replaced the entire Lua
+  heartbeat model (`BVD_SkidSound.lua`, `BVD_SkidSync_Server.lua` —
+  both deleted) with a per-client Java path in `CarController.update-
+  Skidding`. Each client computes its own `wheelInfo[i].skidInfo` from
+  local physics and drives its own emitter start/stop — no Start/Tick/
+  Stop commands cross the network, no watchdog, no shared state. The
+  looping bugs that v0.1.3 → v0.1.6 each patched a different symptom
+  of are now structurally extinct: there is nothing for two clients
+  to disagree on. Sound script renamed `BVD_SkidTile` → `BVD_SkidMP`
+  with `loop=true` to force a clean FMOD re-registration.
+- **Off-road drag halved (Java).** User report: "trucks and SUVs barely
+  40 mph in 2nd gear off-road, max OffroadGrip / OffroadFloor do not
+  help, RollResistanceOffroad to min only helps a little." Root cause:
+  the off-road drag formula in CarController had a speed-dependent term
+  (`0.01F * absSpeed`) that was 10x its on-road counterpart. Combined
+  with the `mass * 1/eff` multiplier for low-OffroadEfficiency vehicles
+  (trucks, SUVs), drag compounded quadratically with speed and ate
+  most of the engine torque past ~40 km/h on grass. Halved to
+  `0.005F * absSpeed`. Grip was not the bottleneck; drag was.
+- **Surface-grip safety clamp (Java).** Defensive `if (surfaceGrip <
+  0.05F) surfaceGrip = 0.05F` in the off-road branch of `updateTire-
+  Stats`. Protects against a misconfigured tire profile or sandbox
+  combination producing negative grip (which would invert the
+  gripLimit feed and pull the car backwards). No effect under default
+  settings.
+- **OffroadGrip tooltip rewrite (Lua).** Old tooltip didn't say
+  "HIGHER = more grip", so users raising it weren't sure it was
+  actually helping. New tooltip is explicit: "HIGHER = more grip (less
+  tire slip) on dirt, grass and gravel. Default 0.85 = moderate slip;
+  1.5 = near-paved feel. Does not change rolling drag — tune that via
+  Rolling drag off-road."
+- **B42.19 rebase.** Necroid Java patches rebased onto the 42.19
+  pristine. All BVD patches (CarController, WorldSimulation, Texture,
+  IsoChunkMap, IsoFloorBloodSplat, IsoSprite) applied cleanly — no
+  behaviour-affecting decompiler drift from TIS's 42.19 changes.
+- **Manual install bundle renamed** `B42.18_Manual_Install/` →
+  `B42.19_Manual_Install/` with freshly-compiled 42.19 .class files.
+  Dedicated-server users redo the manual install once for this update,
+  which covers the rebase AND all the changes above — a single install
+  dance instead of one per fix.
 
 
 - **B42.19 compatibility:** Necroid Java patches rebased onto the

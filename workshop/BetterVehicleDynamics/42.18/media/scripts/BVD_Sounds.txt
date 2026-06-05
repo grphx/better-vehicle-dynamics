@@ -1,15 +1,17 @@
 module Base
 {
-    // v0.1.6: renamed from BVD_SkidLoop -> BVD_SkidTile. PZ's audio engine
-    // caches sound-script registrations across world loads; a script-only
-    // change from loop=true to loop=false on the SAME event name often does
-    // NOT flush the cached loop=true property, leaving heartbeat re-arms
-    // permanently looping at each world position. A new event name forces
-    // fresh registration with the correct loop=false from the start.
-    sound BVD_SkidTile
+    // v0.1.8: renamed from BVD_SkidTile -> BVD_SkidMP and switched back to
+    // loop=true. Driven directly by Java (CarController.updateSkidding) on
+    // each client from local physics state — no Lua heartbeat, no network
+    // commands. PZ caches FMOD sound-script properties across world loads,
+    // so a loop=true ↔ loop=false transition on the same event name does
+    // not reliably re-register; the rename forces a clean registration.
+    // The previous BVD_SkidTile and BVD_SkidLoop event names are no longer
+    // referenced anywhere and become harmless dead state.
+    sound BVD_SkidMP
     {
         category = Object,
-        loop = false,
+        loop = true,
         is3D = true,
         master = VehicleEngine,
         clip { file = media/sound/BVD_skid_loop.ogg, distanceMin = 8, distanceMax = 35, volume = 1.0, }

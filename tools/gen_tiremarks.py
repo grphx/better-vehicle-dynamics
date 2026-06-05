@@ -21,13 +21,24 @@ from PIL import Image
 # ---------------------------------------------------------------------------
 RNG_SEED   = 20240516          # fixed — reproducible art
 SIZE       = 64                # pixels per side (64x64 decal sprite)
-CORE_ALPHA = 155               # central streak opacity (0-255)
-EDGE_FADE  = 0.18              # fraction of half-width used for soft feather
-TREAD_STRENGTH = 28            # peak extra alpha for tread ribs
-TREAD_LINES    = 2             # number of tread ribs per tyre track
-TREAD_SPACING  = 6             # pixels between rib centres (in streak local-x)
-TRACK_WIDTH    = 12            # pixel width of a single tyre track
-TRACK_GAP      = 8             # pixel gap between left/right tracks (center)
+CORE_ALPHA = 70                # per-blob opacity (0-255). Calibrated for
+                               # the flat-disk shape + sub-pixel-render
+                               # combo: low enough that overlap blends to
+                               # a smooth gradient (no visible centres),
+                               # high enough that a single pass actually
+                               # reads as a dark mark on asphalt.
+EDGE_FADE  = 0.30              # fraction of half-width used for soft feather.
+                               # Wider feather = crisper-looking thin line
+                               # instead of a fuzzy wide blob.
+TREAD_STRENGTH = 0             # tread ribs disabled — they read as noise on
+                               # a thin streak. Set >0 to bring them back.
+TREAD_LINES    = 1
+TREAD_SPACING  = 6
+TRACK_WIDTH    = 9             # pixel width of a single tyre track. 6 read
+                               # too anemic, 12 (original dual-streak) was
+                               # heavy. 9 is the visible middle.
+TRACK_GAP      = 0             # single-streak sprite (per-wheel placement
+                               # carries the lateral spacing now).
 DARK_VALUE     = 30            # RGB grey value of the skid mark (near-black)
 # ---------------------------------------------------------------------------
 
@@ -132,23 +143,36 @@ def _render(direction_deg, label):
 
     cx = SIZE / 2.0
     cy = SIZE / 2.0
-    half_gap = (TRACK_GAP + TRACK_WIDTH) / 2.0
 
-    # Perpendicular direction
-    perp_dx = cos_a   # perpendicular to along-axis
-    perp_dy = -sin_a
-
-    # Left and right track centres
-    for sign in (-1, +1):
-        tcx = cx + sign * half_gap * perp_dx
-        tcy = cy + sign * half_gap * perp_dy
-        _splat_track(
-            canvas, tcx, tcy,
-            length=SIZE * 0.90,
-            width=TRACK_WIDTH,
-            direction_deg=direction_deg,
-            noise_map=noise,
-        )
+    # v0.1.8: omnidirectional blob (NOT a directional streak). Reason: a
+    # per-wheel single-streak sprite must rotate with vehicle heading, but
+    # PZ only ships 4 floor-decal orientation buckets (h/v/d1/d2). The
+    # bucket snap is invisible on the original dual-track sprite (symmetric
+    # under 180-flip and softened by both lines) but VERY visible on a
+    # single thin streak during a curve - each stamp visibly snaps to a
+    # different angle. Using an omnidirectional blob removes the snap
+    # entirely; consecutive quarter-tile stamps overlap into a smooth
+    # tracking line at any heading.
+    yy, xx = np.mgrid[0:SIZE, 0:SIZE].astype(np.float32)
+    dist = np.sqrt((xx - cx) ** 2 + (yy - cy) ** 2)
+    blob_radius = TRACK_WIDTH * 1.6    # solid core radius in pixels. Slimmer
+                                       # tyre-mark feel; still wider than the
+                                       # per-stamp world spacing so adjacent
+                                       # stamps overlap into a smooth line.
+    blob_feather = TRACK_WIDTH * 0.65  # generous gaussian sigma. Soft edges
+                                       # let consecutive disks fade INTO each
+                                       # other instead of having a visible
+                                       # disk perimeter where coverage drops.
+    intensity = np.where(
+        dist <= blob_radius,
+        1.0,
+        np.exp(-0.5 * ((dist - blob_radius) / blob_feather) ** 2),
+    )
+    alpha = np.clip(intensity * (CORE_ALPHA / 255.0), 0.0, 1.0)
+    canvas[:, :, 0] = np.maximum(canvas[:, :, 0], DARK_VALUE / 255.0)
+    canvas[:, :, 1] = np.maximum(canvas[:, :, 1], DARK_VALUE / 255.0)
+    canvas[:, :, 2] = np.maximum(canvas[:, :, 2], DARK_VALUE / 255.0)
+    canvas[:, :, 3] = np.maximum(canvas[:, :, 3], alpha)
 
     return _canvas_to_image(canvas)
 

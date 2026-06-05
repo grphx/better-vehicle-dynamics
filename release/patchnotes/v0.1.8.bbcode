@@ -1,8 +1,14 @@
-[h1]v0.1.8 - B42.19 rebase + off-road drag fix[/h1]
+[h1]v0.1.8 - B42.19 rebase + per-wheel skids + MP skid sound fix + off-road drag fix[/h1]
 
+[b]Compatible with PZ B42.19.[/b] Necroid Java patches rebased onto the 42.19 pristine - all patches applied cleanly.
 
+[h2]Per-wheel skid marks[/h2]
 
-[b]Compatible with PZ B42.19.[/b] Necroid Java patches rebased onto the 42.19 pristine - all 5 patches applied cleanly.
+Skid marks now anchor to each vehicle's actual rear-wheel positions instead of approximating both tracks with a single sprite at the centerline. Pickups and trucks now show wide tracks at their actual wheels (not a centered smudge), compacts show narrow tracks, and circles trace as actual circles. New Java patch on the floor-decal renderer (BVD-scoped, vanilla blood splats untouched) bypasses the integer-pixel snap and scales the sprite by tile scale so consecutive stamps blend into a smooth continuous line at any zoom.
+
+[h2]Permanent MP skid-sound fix[/h2]
+
+The "skid sound that won't stop looping in MP" reports stretching from v0.1.3 through v0.1.6 are now structurally extinct. The previous fix chain (heartbeat model -> N^2 dup -> loop=false -> rename event) was patching a different symptom each time of the same underlying problem: cross-client shared state. v0.1.8 deletes the entire Lua heartbeat (BVD_SkidSound.lua, BVD_SkidSync_Server.lua) and moves the trigger into Java. Each client computes its own wheel-slip from local physics and drives its own emitter start/stop independently - no Start/Tick/Stop commands cross the network, no watchdog timeouts, no orphaned sounds when a remote driver disconnects mid-skid. There is nothing for two clients to disagree on because there is no shared state to disagree about.
 
 [h2]Off-road drag fix[/h2]
 
@@ -12,7 +18,7 @@ Root cause: the off-road drag formula in [b]CarController[/b] had a speed-depend
 
 [b]Fix:[/b] halved the speed-dependent off-road drag ([i]0.01F[/i] -> [i]0.005F[/i]). The base term + mass + 1/eff multipliers still encode "off-road resists motion" - this just tames the per-km/h compounding so trucks and SUVs can cruise.
 
-[h2]Surface-grip floor[/h2]
+[h2]Surface-grip safety clamp[/h2]
 
 Belt-and-braces clamp: surfaceGrip is now clamped to >= 0.05F before being folded into gripFactor. Protects against a misconfigured published tire profile or sandbox combination pushing the value <= 0 (which would have inverted the gripLimit feed and pulled the car backwards). No effect under default configuration - defensive only.
 
@@ -24,6 +30,6 @@ The previous "Grip off-road" tooltip didn't say HIGHER = more grip, so users rai
 
 [h2]Manual install[/h2]
 
-The manual-install bundle is renamed [b]B42.19_Manual_Install/[/b] with freshly-compiled 42.19 .class files. Dedicated-server users must redo the manual install once for the 42.19 update. This single re-install carries both the version rebase AND the off-road drag fix - bundled deliberately so it's only one install dance, not two in the same week.
+The manual-install bundle is renamed [b]B42.19_Manual_Install/[/b] with freshly-compiled 42.19 .class files. Dedicated-server users redo the manual install once for this update - it covers the B42.19 rebase AND all the changes above (off-road drag, per-wheel skid render path, MP skid sound). Single install dance instead of one per fix.
 
 Single-player Workshop subscribers: nothing to do, just update.

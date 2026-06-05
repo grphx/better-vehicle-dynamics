@@ -1,5 +1,5 @@
 diff --git a/zombie/iso/IsoChunkMap.java b/zombie/iso/IsoChunkMap.java
-index d60a94c..4fd1a92 100644
+index d60a94c..c551c75 100644
 --- a/zombie/iso/IsoChunkMap.java
 +++ b/zombie/iso/IsoChunkMap.java
 @@ -1116,13 +1116,36 @@ public final class IsoChunkMap {
@@ -41,3 +41,22 @@ index d60a94c..4fd1a92 100644
                             inf.r *= 0.2F;
                             inf.g *= 0.2F;
                             inf.b *= 0.2F;
+@@ -1159,7 +1182,17 @@ public final class IsoChunkMap {
+                            inf.b *= (b0 + b1 + b2 + b3) / 4.0F;
+                         }
+ 
+-                        use.renderBloodSplat(b.chunk.wx * 8 + b.x, b.chunk.wy * 8 + b.y, b.z, inf);
++                        // BVD: tyre marks use the scaled + sub-pixel render
++                        // path so per-wheel overlapping stamps fuse into a
++                        // smooth line rather than reading as discrete blob
++                        // centres at non-1x zoom. Vanilla blood splats keep
++                        // the integer-snapped path (no behaviour change).
++                        if (b.type >= zombie.iso.IsoFloorBloodSplat.BVD_TIREMARK_TYPE_MIN
++                              && b.type <= zombie.iso.IsoFloorBloodSplat.BVD_TIREMARK_TYPE_MAX) {
++                           use.BVD_renderTireMark(b.chunk.wx * 8 + b.x, b.chunk.wy * 8 + b.y, b.z, inf);
++                        } else {
++                           use.renderBloodSplat(b.chunk.wx * 8 + b.x, b.chunk.wy * 8 + b.y, b.z, inf);
++                        }
+                      }
+                   }
+                }

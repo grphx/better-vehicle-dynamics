@@ -1,5 +1,42 @@
 # Changelog
 
+## [0.1.9] - 2026-06-09 - User-feedback fixes: cargo capacity, HP/Weight floor, spawner UX
+
+- **Vehicle spawner: right-click DROPPED, console command added (#1).**
+  The "Better Vehicle Dynamics > Open Vehicle Spawner" right-click
+  menu cluttered every world-object context for admins / SP /
+  -debug sessions. Opening the spawner is now done from the in-game
+  chat (T key): `/bvd-spawn`. Lua-console (` key) callers can use
+  the global aliases `bvdSpawn()` or `BVD_VehicleSpawner_open()`.
+  Auth gate is identical to the old menu (admin / moderator / SP /
+  -debug); silent-fail for non-admins in MP.
+- **Cargo capacity: multiplier actually enforced now (#2 + #4).**
+  User reports said the trunk would *display* the scaled capacity
+  (e.g. 520 kg) but stop accepting items at the vanilla cap (130 kg),
+  and that bags placed INSIDE the trunk showed a red "won't fit"
+  background even when the trunk was near-empty. Root cause: the old
+  metatable hook only overrode `ItemContainer:getEffectiveCapacity`
+  (display) and `hasRoomFor`, but PZ B42's transfer code enforces on
+  the part-script-backing capacity (`setCapacity` runtime-caps at
+  100 anyway). v0.1.9 rewrites the path entirely: at world start
+  and on a throttled OnPlayerUpdate scan we walk the cell's vehicle
+  list via the `iterator()` API, find each cargo container, and call
+  `VehiclePart:setContainerCapacity()` (not the container-level
+  `setCapacity`) to lift the script-backing limit. A
+  `BVD_TrunkScaled` ModData flag dedupes — a vehicle is only scaled
+  once per save. Compatible with isoContainers — falls back to a
+  no-op when that mod is loaded, exactly as before.
+- **HP/Weight overhaul: vanilla floor (#3).** Reports said
+  "Reference power and weight" made some cars stop running. Root
+  cause: for small / older vehicles, vanilla PZ compresses the
+  HP-to-engineForce curve (a 15 hp scooter has engineForce ~400,
+  not 150), so writing realistic `hp * 10` UNDER vanilla left them
+  too sluggish to overcome rolling drag. v0.1.9 reads vanilla
+  engineForce + mass via the script API and never writes a value
+  below vanilla — only ever INCREASES. Also integer-formats the
+  values via `string.format("%d", ...)` to dodge a parser quirk
+  where float literals with trailing zeros could silently fail.
+
 ## [0.1.8] - 2026-06-06 - B42.19 rebase + off-road drag + per-wheel skids + MP skid sound
 
 - **Per-wheel skid marks (Lua + Java).** The marks now anchor to each

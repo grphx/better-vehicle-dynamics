@@ -1,0 +1,37 @@
+[h1]v0.1.9 - Cargo capacity fix + HP/Weight floor + spawner UX[/h1]
+
+Three user-reported bug fixes from the v0.1.8 Workshop comments. Lua-only release - no Necroid Java change, no manual install update needed for dedicated servers.
+
+[h2]Cargo capacity actually enforces the multiplier[/h2]
+
+Reports: "trunk shows 520 kg but stops accepting items at 130 kg", and "bags placed inside the trunk show a red 'won't fit' background even when the trunk is empty".
+
+Root cause: the old metatable hook only overrode the [b]display[/b] side ([i]getEffectiveCapacity[/i]) and [i]hasRoomFor[/i], but PZ B42's transfer code enforces on the part-script-backing capacity at gate time. Container-level [i]setCapacity[/i] also silently caps at 100. v0.1.9 rewrites the path entirely: at world start and on a throttled OnPlayerUpdate scan we walk the cell's vehicle list via the [i]iterator()[/i] API, find each cargo container, and call [i]VehiclePart:setContainerCapacity()[/i] (the script-backing setter, no 100 cap) to actually lift the limit. A [i]BVD_TrunkScaled[/i] ModData flag dedupes so we never double-scale on world reload.
+
+Compatible with isoContainers - falls back to a no-op when that mod is loaded.
+
+[h2]HP/Weight overhaul: vanilla floor[/h2]
+
+Report: "Reference power and weight makes my cars stop running."
+
+Root cause: for small / older vehicles, vanilla PZ compresses the HP-to-engineForce curve (a 15 hp scooter has engineForce ~400, not 150), so writing the realistic [i]hp * 10[/i] value UNDER vanilla left them too sluggish to overcome rolling drag. v0.1.9 reads vanilla engineForce + mass via the script API and never writes a value below vanilla - only ever INCREASES. Also integer-formats the values to dodge a parser quirk where float literals could silently fail.
+
+[h2]Vehicle spawner: right-click dropped, console command added[/h2]
+
+Report: "the Better Vehicle Dynamics > Open Vehicle Spawner option clutters every right-click."
+
+The right-click context-menu hook is removed. The spawner opens via the in-game chat (T key):
+
+[i]/bvd-spawn[/i]
+
+Or from the Lua debug console (' key) via the alias [i]bvdSpawn()[/i] (or the full [i]BVD_VehicleSpawner_open()[/i]).
+
+Auth gate is unchanged: admin / moderator / SP / -debug only. Silent-fail for non-admins in MP so it can't be discovered by accident.
+
+[h2]Single-player Workshop subscribers[/h2]
+
+Nothing to do, just update. The new cargo path auto-applies on world load and to any vehicle that spawns afterward.
+
+[h2]Dedicated-server admins[/h2]
+
+[b]No manual install update needed.[/b] All v0.1.9 changes are Lua-only; the Necroid Java side is byte-identical to v0.1.8.

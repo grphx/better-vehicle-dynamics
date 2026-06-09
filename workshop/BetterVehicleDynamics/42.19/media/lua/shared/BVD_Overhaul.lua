@@ -81,57 +81,191 @@ local function isCargoContainer(typeStr)
 	return false
 end
 
-local trunkPatched = false
+-- v0.1.9: TrunkScaling fully rewritten.
+--
+-- The previous metatable-hook approach (ItemContainer.hasRoomFor +
+-- getEffectiveCapacity overrides) had two real bugs surfaced by users:
+--
+--   1. Nested containers (a bag inside the trunk) had self:getParent()
+--      equal to the BAG, not the BaseVehicle — so the scaling never
+--      applied recursively, and drag/drop into the bag showed a red
+--      "won't fit" background even when the trunk was empty.
+--   2. PZ B42's inventory transfer system reads the container's actual
+--      capacity (setCapacity / getCapacity) at gate time, NOT just
+--      getEffectiveCapacity. The hook updated the displayed value but
+--      not the enforcement value — so trunks showed 520kg but stopped
+--      loading at vanilla 130kg.
+--
+-- The new approach modifies each spawned vehicle's cargo containers
+-- DIRECTLY at vehicle-creation time, calling setCapacity on every
+-- TrunkDef/TruckBedDef/VanSeatDef container with the per-class multiplier.
+-- A flag in ModData prevents double-scaling on subsequent world loads.
+-- isoContainers compatibility: skip entirely if that mod is loaded
+-- (parity with the old behaviour).
 
-local function patchTrunkContainers()
-	if trunkPatched then return end
-	if isModLoaded("isoContainers") then
-		print("[BVD] TrunkScaling: skipped install — isoContainers loaded.")
-		return
-	end
-	if not ItemContainer then return end
-	local mt = __classmetatables and __classmetatables[ItemContainer.class]
-	if not mt or not mt.__index then return end
+local SCALED_FLAG = "BVD_TrunkScaled"
 
-	local index = mt.__index
-	local originalHasRoomFor = index.hasRoomFor
-	local originalgetEffectiveCapacity = index.getEffectiveCapacity
+local function scaleVehicleCargo(vehicle)
+	if not vehicle or not vehicle.getScript then return end
 
-	function index:getEffectiveCapacity(chr)
-		local base = originalgetEffectiveCapacity(self, chr)
-		local sv = SandboxVars and SandboxVars.BetterVehicleDynamics
-		if sv and sv.TrunkScaling and self:getParent() and instanceof(self:getParent(),"BaseVehicle") then
-			if isCargoContainer(self:getType()) then
-				local bucket, mult = vehicleBucket(self:getParent():getScript():getFullType(), sv)
-				if bucket and mult and mult ~= 1.0 then
-					return base * mult
-				end
-			end
-		end
-		return base
-	end
+	local sv = SandboxVars and SandboxVars.BetterVehicleDynamics
+	if not sv or not sv.TrunkScaling then return end
+	if isModLoaded("isoContainers") then return end
 
-	function index:hasRoomFor(chr, item)
-		local sv = SandboxVars and SandboxVars.BetterVehicleDynamics
-		if sv and sv.TrunkScaling and self:getParent() and instanceof(self:getParent(),"BaseVehicle") then
-			if isCargoContainer(self:getType()) then
-				local bucket, mult = vehicleBucket(self:getParent():getScript():getFullType(), sv)
-				if bucket and mult and mult ~= 1.0 then
-					if type(item) ~= "number" then
-						item = item:getWeight()
+	local ok, script = pcall(function() return vehicle:getScript() end)
+	if not ok or not script then return end
+	local fullType
+	pcall(function() fullType = script:getFullType() end)
+	if not fullType then return end
+
+	local bucket, mult = vehicleBucket(fullType, sv)
+	if not mult or mult == 1.0 then return end
+
+	-- Idempotency: tag this vehicle once scaled so re-applying on world
+	-- reload doesn't compound (a 2x bucket would become 4x on second load,
+	-- 8x on third, etc).
+	local modData = vehicle:getModData()
+	if modData[SCALED_FLAG] then return end
+
+	-- Walk every part and look for an attached cargo container. Use
+	-- part:setContainerCapacity (not container:setCapacity) — the
+	-- container-level setter is silently capped at 100 by PZ B42 (see
+	-- "Attempting to set capacity over maximum capacity of 100" warning
+	-- in the engine log), while the part-level setter writes the script-
+	-- backing field that the transfer gate actually checks.
+	local partCount = 0
+	pcall(function() partCount = vehicle:getPartCount() or 0 end)
+	local scaledAny = false
+	for i = 0, partCount - 1 do
+		local part
+		pcall(function() part = vehicle:getPartByIndex(i) end)
+		if part then
+			local container
+			pcall(function() container = part:getItemContainer() end)
+			if container then
+				local cType
+				pcall(function() cType = container:getType() end)
+				if isCargoContainer(cType) then
+					local baseCap = 0
+					pcall(function()
+						baseCap = part.getContainerCapacity
+							and part:getContainerCapacity()
+							or container:getCapacity()
+					end)
+					if baseCap and baseCap > 0 then
+						local target = baseCap * mult
+						if part.setContainerCapacity then
+							pcall(function() part:setContainerCapacity(target) end)
+						else
+							-- Fallback: older B42 patch levels may only expose the
+							-- container-level setter (which caps at 100). Better
+							-- than nothing.
+							pcall(function() container:setCapacity(target) end)
+						end
+						scaledAny = true
 					end
-					return (self:getCapacityWeight() + item) <= self:getEffectiveCapacity(chr)
 				end
 			end
 		end
-		return originalHasRoomFor(self, chr, item)
 	end
 
-	trunkPatched = true
+	if scaledAny then
+		modData[SCALED_FLAG] = true
+	end
 end
 
-pcall(patchTrunkContainers)
-Events.OnGameStart.Add(function() pcall(patchTrunkContainers) end)
+-- Apply to all existing world vehicles at world load. New vehicles that
+-- spawn later catch the OnVehicleCreated hook below.
+local function scaleAllWorldVehicles()
+	local sv = SandboxVars and SandboxVars.BetterVehicleDynamics
+	if not sv or not sv.TrunkScaling then return end
+	if isModLoaded("isoContainers") then
+		print("[BVD] TrunkScaling: skipped — isoContainers loaded.")
+		return
+	end
+
+	local cell = getCell and getCell()
+	if not cell then return end
+	local vehicles
+	pcall(function() vehicles = cell:getVehicles() end)
+	if not vehicles then return end
+
+	local n = 0
+	pcall(function() n = vehicles:size() end)
+	for i = 0, n - 1 do
+		local v
+		pcall(function() v = vehicles:get(i) end)
+		if v then pcall(scaleVehicleCargo, v) end
+	end
+end
+
+Events.OnGameStart.Add(scaleAllWorldVehicles)
+
+-- PZ raises OnVehicleCreated for every fresh spawn (admin spawner,
+-- distribution, mod-side spawns, etc.). The hook runs once per vehicle
+-- and is scoped to that single instance, so the idempotency flag in
+-- ModData (above) catches the case where OnGameStart already scaled it
+-- and the engine re-fires the create event during chunk reload.
+if Events then
+	-- B42 may surface the event under either name depending on patch
+	-- level; register both if present and let the ModData flag dedupe.
+	if Events.OnVehicleCreated then
+		Events.OnVehicleCreated.Add(scaleVehicleCargo)
+	end
+	if Events.OnNewVehicleCreated then
+		Events.OnNewVehicleCreated.Add(scaleVehicleCargo)
+	end
+end
+
+-- Expose as a global so other modules / the Lua console can call it.
+_G.BVD_scaleVehicleCargo = scaleVehicleCargo
+
+-- v0.1.9: throttled scanner. The previous scanner crashed because it
+-- used cell:getVehicles():get(i) — that method doesn't exist on PZ's
+-- vehicle list (probed via BVD_probeVehicleList; only size, isEmpty,
+-- iterator, stream, toArray exist). The correct pattern is the Java
+-- iterator: iterator() -> hasNext() / next().
+--
+-- Walks the cell's vehicle list every ~2 seconds, scales any vehicle
+-- whose ModData flag isn't set. The flag dedupes — already-scaled
+-- vehicles short-circuit. This catches every spawn path automatically
+-- (admin spawner, distribution, horde, mod spawns) without needing
+-- the player to enter the vehicle first.
+local _lastScanMs = 0
+local _SCAN_INTERVAL_MS = 2000
+
+if Events and Events.OnPlayerUpdate then
+	Events.OnPlayerUpdate.Add(function()
+		local now = getTimestampMs and getTimestampMs() or 0
+		if now - _lastScanMs < _SCAN_INTERVAL_MS then return end
+		_lastScanMs = now
+
+		local sv = SandboxVars and SandboxVars.BetterVehicleDynamics
+		if not sv or not sv.TrunkScaling then return end
+		if isModLoaded("isoContainers") then return end
+
+		local cell = getCell and getCell()
+		if not cell then return end
+		local list = cell:getVehicles()
+		if not list then return end
+
+		local iter = list:iterator()
+		if not iter then return end
+
+		local fn = _G.BVD_scaleVehicleCargo
+		if not fn then return end
+
+		while iter:hasNext() do
+			local v = iter:next()
+			if v then
+				local md = v:getModData()
+				if md and not md[SCALED_FLAG] then
+					pcall(fn, v)
+				end
+			end
+		end
+	end)
+end
 
 -- Spec-generation token. PZ recreates the Lua state per world load, so the
 -- `or 0` baseline is fresh each session; bumping on every world load yields a
@@ -210,12 +344,42 @@ local function applyHPWeight()
 		if v ~= nil then
 			local hp = spec.hp
 			local mass = spec.mass_kg
-			if hp and mass then
-				v:Load(v:getName(), "{ engineForce = " .. (hp * 10 * powerScale) .. ", mass = " .. mass .. ", }")
-			elseif hp then
-				v:Load(v:getName(), "{ engineForce = " .. (hp * 10 * powerScale) .. ", }")
-			elseif mass then
-				v:Load(v:getName(), "{ mass = " .. mass .. ", }")
+			-- v0.1.9: vanilla floors. PZ's vanilla balance compresses the
+			-- HP <-> engineForce curve for small vehicles (a 15hp scooter
+			-- still has engineForce ~400, not 150). Writing the realistic
+			-- 10*hp on top would underpower them below vanilla and the
+			-- car becomes too sluggish to move. Same logic for mass: if
+			-- we'd write a LIGHTER mass than vanilla, the car becomes
+			-- floaty and breaks physics expectations. We only ever
+			-- increase from vanilla here, never decrease.
+			local vanillaEngineForce, vanillaMass
+			pcall(function() vanillaEngineForce = v:getEngineForce() end)
+			pcall(function() vanillaMass = v:getMass() end)
+			local newEngineForce, newMass
+			if hp then
+				newEngineForce = hp * 10 * powerScale
+				if vanillaEngineForce and newEngineForce < vanillaEngineForce then
+					newEngineForce = vanillaEngineForce
+				end
+			end
+			if mass then
+				newMass = mass
+				if vanillaMass and newMass < vanillaMass then
+					newMass = vanillaMass
+				end
+			end
+			-- Integer-format (PZ's vehicle-script parser dislikes floats with
+			-- trailing zeros in some locales) and drop the trailing comma.
+			if newEngineForce and newMass then
+				v:Load(v:getName(), string.format("{ engineForce = %d, mass = %d }",
+					math.floor(newEngineForce + 0.5),
+					math.floor(newMass + 0.5)))
+			elseif newEngineForce then
+				v:Load(v:getName(), string.format("{ engineForce = %d }",
+					math.floor(newEngineForce + 0.5)))
+			elseif newMass then
+				v:Load(v:getName(), string.format("{ mass = %d }",
+					math.floor(newMass + 0.5)))
 			end
 			touched = touched + 1
 		end

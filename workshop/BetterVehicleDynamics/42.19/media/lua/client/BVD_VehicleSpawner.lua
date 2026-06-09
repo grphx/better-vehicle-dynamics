@@ -78,6 +78,10 @@ local function spawnVehicleAtPlayer(fullType)
         addVehicleDebug(fullType, IsoDirections.N, nil, square)
     end)
     if not ok then return false, tostring(err) end
+    -- Trunk scaling is handled by BVD_Overhaul's OnEnterVehicle hook —
+    -- the moment the player gets in, scaleVehicleCargo fires once. No
+    -- post-spawn lookup needed here (and attempting one was crashing on
+    -- PZ's list:get API).
     return true
 end
 
@@ -239,6 +243,70 @@ function BVD_VehicleSpawner_open()
     else
         _instance:setVisible(true)
         _instance:addToUIManager()
+    end
+end
+
+-- v0.1.9: short aliases for Lua-console use. The chat /bvd-spawn handler
+-- below works from the T-key in-game chat, but users typing into the
+-- ' Lua debug console get "unexpected symbol '/'" because Lua doesn't
+-- parse slash-commands. These globals give the same entry point a
+-- console-friendly call signature:
+--   bvdSpawn()       -- short
+--   BVDSpawner()     -- pascal-case
+_G.bvdSpawn   = BVD_VehicleSpawner_open
+_G.BVDSpawner = BVD_VehicleSpawner_open
+
+-- ---------------------------------------------------------------------------
+-- v0.1.9: console command replaces right-click. Type "/bvd-spawn" in chat
+-- to open the spawner. Authorisation gate is identical to the old menu
+-- (admin / moderator / SP / -debug); silent-fail in MP for non-admins so
+-- it can't be discovered by accident.
+-- ---------------------------------------------------------------------------
+
+local function spawnerAuthorised(player)
+    if not player then return false end
+    if not isClient() then return true end
+    local ok, isAdm = pcall(isAdmin)
+    if ok and isAdm then return true end
+    local lvl
+    pcall(function() lvl = player:getAccessLevel() end)
+    if lvl == "Admin" or lvl == "admin"
+        or lvl == "Moderator" or lvl == "moderator" then
+        return true
+    end
+    local okDbg, dbg = pcall(function() return getCore():getDebug() end)
+    if okDbg and dbg then return true end
+    return false
+end
+
+local function onTypeChatHandler(text)
+    if type(text) ~= "string" then return end
+    -- Match "/bvd-spawn" optionally followed by trailing whitespace.
+    -- Case-insensitive so users typing "/BVD-SPAWN" still work.
+    if not text:lower():match("^/bvd%-spawn%s*$") then return end
+    local player = getSpecificPlayer(0)
+    if not spawnerAuthorised(player) then return end
+    BVD_VehicleSpawner_open()
+end
+
+Events.OnPreFillInventoryObjectContextMenu = Events.OnPreFillInventoryObjectContextMenu
+if Events and Events.OnSendCommandToServer then
+    -- Type chat hook: PZ B42 emits this when the user enters /command text.
+    Events.OnSendCommandToServer.Add(onTypeChatHandler)
+end
+-- Fallback path: hook ISChat directly for SP and any client where the
+-- command-to-server event isn't raised (offline games).
+if ISChat and ISChat.sendMessage then
+    local _originalSend = ISChat.sendMessage
+    ISChat.sendMessage = function(self, msg)
+        if type(msg) == "string" and msg:lower():match("^/bvd%-spawn%s*$") then
+            local player = getSpecificPlayer(0)
+            if spawnerAuthorised(player) then
+                BVD_VehicleSpawner_open()
+            end
+            return  -- swallow the message; never go to chat history / server
+        end
+        return _originalSend(self, msg)
     end
 end
 

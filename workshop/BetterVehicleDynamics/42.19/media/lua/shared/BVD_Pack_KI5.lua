@@ -501,9 +501,13 @@ local function registerKI5Pack()
     end
     if kept == 0 then return end
     BVD.registerPack("BVD KI5 Reference", pack, {
-        check    = targetScriptPresent,
-        priority = 5,
-        source   = "bvd-bundled-ki5 (KI5 collection 2490220997, scan 2026-05-29)",
+        check         = targetScriptPresent,
+        priority      = 5,
+        source        = "bvd-bundled-ki5 (KI5 collection 2490220997, scan 2026-05-29)",
+        -- KI5 cars ship pre-tuned with high engineForce values; this pack
+        -- carries real-world reference figures that should overwrite KI5's
+        -- baseline, NOT be floored by it.
+        authoritative = true,
     })
 end
 

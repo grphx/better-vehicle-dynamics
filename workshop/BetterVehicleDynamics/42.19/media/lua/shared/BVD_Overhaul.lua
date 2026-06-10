@@ -352,19 +352,27 @@ local function applyHPWeight()
 			-- we'd write a LIGHTER mass than vanilla, the car becomes
 			-- floaty and breaks physics expectations. We only ever
 			-- increase from vanilla here, never decrease.
+			--
+			-- v0.1.10: authoritative packs (KI5, Community) opt out of
+			-- the floor - those entries carry curated real-world data
+			-- and are meant to REBASELINE scripts that other mods ship
+			-- with their own pre-tuned (often over-tuned) engineForce.
+			local skipFloor = BVD.Packs and BVD.Packs.isAuthoritative
+				and BVD.Packs.isAuthoritative(fullType)
 			local vanillaEngineForce, vanillaMass
 			pcall(function() vanillaEngineForce = v:getEngineForce() end)
 			pcall(function() vanillaMass = v:getMass() end)
 			local newEngineForce, newMass
 			if hp then
 				newEngineForce = hp * 10 * powerScale
-				if vanillaEngineForce and newEngineForce < vanillaEngineForce then
+				if not skipFloor and vanillaEngineForce
+						and newEngineForce < vanillaEngineForce then
 					newEngineForce = vanillaEngineForce
 				end
 			end
 			if mass then
 				newMass = mass
-				if vanillaMass and newMass < vanillaMass then
+				if not skipFloor and vanillaMass and newMass < vanillaMass then
 					newMass = vanillaMass
 				end
 			end

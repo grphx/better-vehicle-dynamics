@@ -219,10 +219,11 @@ function BVD.registerPack(name, tbl, opts)
     end
     if BVD.Packs and BVD.Packs.register then
         BVD.Packs.register(name, {
-            data     = clean,
-            check    = opts.check,
-            priority = opts.priority,
-            source   = opts.source or "external",
+            data          = clean,
+            check         = opts.check,
+            priority      = opts.priority,
+            source        = opts.source or "external",
+            authoritative = opts.authoritative == true,
         })
         print(string.format(
             "[BVD.API] registerPack('%s'): %d entries accepted, %d dropped",

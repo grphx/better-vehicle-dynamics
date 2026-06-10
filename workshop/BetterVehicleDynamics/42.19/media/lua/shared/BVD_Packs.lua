@@ -19,6 +19,13 @@ local registry = {}
 -- so other code (e.g. the spawner UI) can list entries per pack without
 -- guessing data-module names.
 local appliedSnapshot = {}
+-- Per-fullType authoritative flag. An "authoritative" pack supplies real-
+-- world reference data that should override whatever the loaded vehicle
+-- script declares - useful when another mod (e.g. KI5) ships its own
+-- pre-tuned engineForce/mass and BVD's pack is meant to rebalance it.
+-- Non-authoritative packs (the default) let the overhaul's vanilla floor
+-- protect small cars from being downscaled below vanilla.
+local authoritativeEntries = {}
 
 --- Register a pack. Idempotent on `name`.
 -- @param name   string identifier (e.g. "acme_trucks", "examplePack")
@@ -80,6 +87,7 @@ function BVD.Packs.applyAll(targetTable)
     end)
 
     appliedSnapshot = {}
+    authoritativeEntries = {}
 
     local total = 0
     for _, entry in ipairs(ordered) do
@@ -107,9 +115,11 @@ function BVD.Packs.applyAll(targetTable)
             if data then
                 local snap = {}
                 local count = 0
+                local isAuth = s.authoritative == true
                 for fullType, vehicleData in pairs(data) do
                     targetTable[fullType] = vehicleData
                     snap[fullType] = vehicleData
+                    if isAuth then authoritativeEntries[fullType] = true end
                     count = count + 1
                 end
                 appliedSnapshot[entry.name] = snap
@@ -126,6 +136,13 @@ end
 -- recent applyAll. Used by the spawner panel to group rows by pack.
 function BVD.Packs.getAppliedSnapshot()
     return appliedSnapshot
+end
+
+--- True if `fullType` came from a pack registered as authoritative on
+-- the most recent applyAll. Used by the HP/Weight overhaul to decide
+-- whether to apply the vanilla floor (off when authoritative).
+function BVD.Packs.isAuthoritative(fullType)
+    return authoritativeEntries[fullType] == true
 end
 
 --- For introspection / debugging — return a list of {name, active} entries.

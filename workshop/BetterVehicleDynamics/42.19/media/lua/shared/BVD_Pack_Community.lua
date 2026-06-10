@@ -212,9 +212,13 @@ local function registerCommunityPack()
     -- whole pack a silent no-op unless a targeted script is present;
     -- default priority (0) lets any higher-priority pack still win.
     BVD.registerPack("BVD Community Reference", pack, {
-        check    = anyTargetScriptPresent,
-        priority = 0,
-        source   = "bvd-community-pack",
+        check         = anyTargetScriptPresent,
+        priority      = 0,
+        source        = "bvd-community-pack",
+        -- Community-pack vehicles often ship pre-tuned by their authors;
+        -- these curated real-world figures should overwrite, not be
+        -- floored by, whatever the script already declares.
+        authoritative = true,
     })
 end
 

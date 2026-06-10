@@ -1,6 +1,23 @@
 # Changelog
 
-## [0.1.9] - 2026-06-09 - User-feedback fixes: cargo capacity, HP/Weight floor, spawner UX
+## [0.1.10] - 2026-06-10 - Authoritative packs: KI5 + Community rebaseline through vanilla floor
+
+- **Pack `authoritative` flag (KI5 + Community pack fix).** v0.1.9
+  added a "never write below vanilla engineForce/mass" floor to fix
+  small-car stalling (#3). Side-effect: vehicles shipped by other mods
+  with their own pre-tuned (often over-tuned) `engineForce` were now
+  protected by that floor, so BVD's KI5 + Community reference packs
+  could no longer rebaseline them to real-world values - to users it
+  looked like "KI5 compatibility no longer applies." Pack spec now
+  accepts `authoritative = true`; entries from authoritative packs
+  bypass the floor and write through as-published. BVD's built-in
+  vanilla table stays non-authoritative, so the small-car fix is
+  preserved. Pack authors who want the same write-through behaviour
+  pass `{ authoritative = true }` in their `BVD.registerPack` opts.
+- KI5 reference pack and Community reference pack both ship marked
+  `authoritative = true` in this release.
+
+
 
 - **Vehicle spawner: right-click DROPPED, console command added (#1).**
   The "Better Vehicle Dynamics > Open Vehicle Spawner" right-click

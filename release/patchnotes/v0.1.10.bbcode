@@ -1,0 +1,30 @@
+[h1]v0.1.10 - Authoritative packs: KI5 + Community rebaseline through the vanilla floor[/h1]
+
+Single-issue fix from a Workshop comment after v0.1.9: "BVD KI5 compatibility no longer applies to vehicles on my end." Lua-only release - no Necroid Java change, no manual install update needed for dedicated servers.
+
+[h2]What happened in v0.1.9[/h2]
+
+v0.1.9 added a "never write below vanilla engineForce/mass" floor to fix small vanilla cars from being downscaled by the realistic [i]hp * 10[/i] formula (a 15 hp scooter's vanilla engineForce of ~400 was being clobbered to 150 and the car couldn't move).
+
+Side effect: vehicle mods that ship pre-tuned with their own high [i]engineForce[/i] values (KI5 is the most notable; many community vehicle authors do the same) were now protected by that same floor. BVD's KI5 reference pack and Community pack could no longer rebaseline those mods to real-world figures - the pack's [i]hp * 10[/i] was below the modded script's [i]engineForce[/i], so the floor kept the modded value and BVD's number never wrote through. To users this looked like "BVD KI5 compatibility stopped applying."
+
+[h2]The fix: per-pack [i]authoritative[/i] opt-in[/h2]
+
+The pack-registration API now accepts an [i]authoritative[/i] flag. Authoritative packs carry curated real-world reference data that should overwrite whatever the loaded vehicle script declares, NOT be floored by it. Non-authoritative packs (the default) still get the vanilla floor protection.
+
+[list]
+[*][b]KI5 reference pack[/b] (458 entries) ships marked [i]authoritative = true[/i].
+[*][b]Community reference pack[/b] (7 entries) ships marked [i]authoritative = true[/i].
+[*][b]BVD's built-in vanilla table[/b] stays non-authoritative, so the small-car fix from v0.1.9 is preserved for vanilla CDDA vehicles.
+[/list]
+
+Net behavior on next world load:
+[list]
+[*]KI5 cars will write through to BVD's [i]hp * 10[/i] target even when KI5's shipped [i]engineForce[/i] is higher.
+[*]Community-pack vehicles same.
+[*]Small vanilla cars still get the floor - no regression.
+[/list]
+
+[h2]For pack authors[/h2]
+
+If you publish your own [i]BVD.registerPack(...)[/i] data pack and your real-world figures should override whatever the script declares, pass [i]{ authoritative = true }[/i] in your opts table. If you want the floor protection (the default), omit the flag.

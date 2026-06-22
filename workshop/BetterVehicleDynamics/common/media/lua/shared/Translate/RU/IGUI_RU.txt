@@ -1,0 +1,36 @@
+IGUI_RU = {
+    BVD_ModOptionsName = "Better Vehicle Dynamics",
+
+    BVD_SkidVolume = "Громкость звука заноса",
+
+    BVD_TowedSkidding = "Звук заноса у буксируемых",
+    BVD_TowedSkidding_Tooltip = "Включает звук заноса у буксируемых транспортных средств.",
+
+    BVD_ModOptionHeaderTransmission = "Трансмиссия",
+
+    BVD_ManualShift = "Ручная трансмиссия",
+    BVD_ManualShift_Tooltip = "Включает ручное переключение передач.",
+
+    BVD_AutomaticReverse = "Автоматический задний ход",
+    BVD_AutomaticReverse_Tooltip = "Включает заднюю передачу автоматически при нажатии клавиши тормоза.",
+
+    BVD_ModOptionHeaderKeybinds = "Назначение клавиш",
+
+    BVD_AnalogThrottle = "Аналоговый акселератор",
+    BVD_AnalogThrottle_Tooltip = "Включает плавное нажатие педали газа.",
+
+    BVD_JoystickThrottle = "Джойстиковый акселератор",
+    BVD_JoystickThrottle_Tooltip = "Включает плавное нажатие педали газа для джойстиков.",
+
+    BVD_ShiftUp = "Передача вверх",
+    BVD_ShiftUp_Tooltip = "Клавиша для переключения передачи вверх.",
+
+    BVD_ShiftDown = "Передача вниз",
+    BVD_ShiftDown_Tooltip = "Клавиша для переключения передачи вниз.",
+
+    BVD_DriftKey = "Клавиша дрифта",
+    BVD_DriftKey_Tooltip = "Клавиша для включения режима дрифта, необходимо удерживать.",
+
+    BVD_CustomizableSteering = "Пользовательская настройка рулевого управления",
+    BVD_CustomizableSteering_Tooltip = "Включить пользовательские настройки рулевого управления.",
+}

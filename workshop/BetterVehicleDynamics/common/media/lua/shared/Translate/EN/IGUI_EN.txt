@@ -1,0 +1,41 @@
+IGUI_EN = {
+    BVD_ModOptionsName = "Better Vehicle Dynamics",
+
+    BVD_SkidVolume = "Tire skid sound volume",
+    BVD_SkidVolume_Tooltip = "Volume of the tire-screech sound when a vehicle is sliding.",
+
+    BVD_TowedSkidding = "Skid sound on towed vehicles",
+    BVD_TowedSkidding_Tooltip = "Also play the tire-screech sound for vehicles being towed.",
+
+    BVD_ModOptionHeaderTransmission = "Transmission",
+
+    BVD_ManualShift = "Manual transmission",
+    BVD_ManualShift_Tooltip = "Shift gears manually using the keybinds below.",
+
+    BVD_AutomaticReverse = "Automatic reverse",
+    BVD_AutomaticReverse_Tooltip = "Engage reverse automatically when the brake key is pressed at a stop.",
+
+    BVD_ModOptionHeaderKeybinds = "Keybinds",
+
+    BVD_AnalogThrottle = "Analog throttle",
+    BVD_AnalogThrottle_Tooltip = "Enable progressive throttle input instead of full-on / full-off.",
+
+    BVD_JoystickThrottle = "Joystick throttle",
+    BVD_JoystickThrottle_Tooltip = "Enable progressive throttle input for gamepads / joysticks.",
+
+    BVD_ShiftUp = "Shift up",
+    BVD_ShiftUp_Tooltip = "Key to shift up one gear.",
+
+    BVD_ShiftDown = "Shift down",
+    BVD_ShiftDown_Tooltip = "Key to shift down one gear.",
+
+    BVD_DriftKey = "Drift key",
+    BVD_DriftKey_Tooltip = "Hold this key while cornering at speed to enter drift mode.",
+
+    BVD_CustomizableSteering = "Customizable steering",
+    BVD_CustomizableSteering_Tooltip = "Use the steering response sliders below instead of the default steering feel.",
+
+    BVD_NotProperlyInstalled = "Better Vehicle Dynamics is missing its Java component. Subscribe to 'better-vehicle-dynamics-42' (the Java side) and restart the game.",
+
+    BVD_Outdated = "Better Vehicle Dynamics: the Java side is out of date. Update 'better-vehicle-dynamics-42' to the latest version and restart the game.",
+}

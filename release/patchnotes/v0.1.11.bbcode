@@ -1,0 +1,24 @@
+[h1]v0.1.11 - Russian translation + EN backfill[/h1]
+
+Translations-only release. No code, behaviour or balance changes.
+
+[h2]Russian (RU) added[/h2]
+
+Full Russian translation of the BVD sandbox options and Mod Options panel. Submitted by [b]phxntom1213[/b] - thank you.
+
+[h2]English (EN) backfill[/h2]
+
+The Mod Options panel was showing raw translation keys ([i]IGUI_BVD_ModOptionsName[/i], [i]IGUI_BVD_ShiftUp[/i], ...) because the EN IGUI translation file had never actually been authored. This was a pre-existing bug; the RU submission incidentally surfaced it. EN/IGUI_EN.txt is now in place, so the Mod Options panel reads in proper English instead of raw keys.
+
+The Sandbox panel also picks up the 12 missing [i]Sandbox_BVD_Steering*[/i] keys (the customizable-steering block had been shipped in code without matching translations).
+
+[h2]For translators[/h2]
+
+Two EN keys are currently authored only by me and could use a native-speaker pass: [i]IGUI_BVD_NotProperlyInstalled[/i] and [i]IGUI_BVD_Outdated[/i] (the modal messages that pop up when the Java side is missing or out of date). If anyone wants to submit additional languages, the canonical files now live at:
+
+[list]
+[*][i]common/media/lua/shared/Translate/EN/Sandbox.json[/i]
+[*][i]common/media/lua/shared/Translate/EN/IGUI_EN.txt[/i]
+[/list]
+
+Drop a [i]Translate/<LANG>/Sandbox.json[/i] + [i]Translate/<LANG>/IGUI_<LANG>.txt[/i] pair and PZ will route the strings automatically.

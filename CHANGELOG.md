@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.11] - 2026-06-22 - Russian translation + EN backfill
+
+- **Russian (RU) translation added.** Full RU sandbox-options block
+  and mod-options panel covered. Submitted by phxntom1213 - thank you.
+- **EN backfill (pre-existing bug).** The mod's Mod Options panel
+  was showing raw keys (`IGUI_BVD_ModOptionsName`, `IGUI_BVD_ShiftUp`,
+  ...) because `IGUI_EN.txt` had never been authored. The new RU
+  submission incidentally surfaced the gap. EN/IGUI_EN.txt is now
+  authored, and EN/Sandbox.json picks up the 12 missing
+  `Sandbox_BVD_Steering*` keys (the customizable-steering block was
+  shipped in code but not in translations).
+- No code, behaviour or balance changes - translations only.
+
 ## [0.1.10] - 2026-06-10 - Authoritative packs: KI5 + Community rebaseline through vanilla floor
 
 - **Pack `authoritative` flag (KI5 + Community pack fix).** v0.1.9

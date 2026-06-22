@@ -125,5 +125,23 @@
     "Sandbox_BVD_StabilityGuard_tooltip": "Safety net for multiplayer: if a vehicle sinks far below the floor of the level it is on (the 'sucked into the ground' desync), it is snapped back onto that floor. Only acts on a state that is never reached by normal driving, so ramps, basements and multi-level parking are unaffected.",
 
     "Sandbox_BVD_StabilityGuardSinkTiles": "Ground-clip trigger depth (levels)",
-    "Sandbox_BVD_StabilityGuardSinkTiles_tooltip": "How far below its own level's floor a vehicle must sink before the guard re-seats it, measured in floor levels (0.75 = three-quarters of one level). Lower reacts sooner; raise it if a custom map ever triggers it wrongly. Requires 'Vehicle ground-clip guard'."
+    "Sandbox_BVD_StabilityGuardSinkTiles_tooltip": "How far below its own level's floor a vehicle must sink before the guard re-seats it, measured in floor levels (0.75 = three-quarters of one level). Lower reacts sooner; raise it if a custom map ever triggers it wrongly. Requires 'Vehicle ground-clip guard'.",
+
+    "Sandbox_BVD_SteeringFactorLowSpeed": "Steering response (low speed)",
+    "Sandbox_BVD_SteeringFactorLowSpeed_tooltip": "Multiplier on how quickly the wheels turn at low speed.",
+
+    "Sandbox_BVD_SteeringFactorHighSpeed": "Steering response (high speed)",
+    "Sandbox_BVD_SteeringFactorHighSpeed_tooltip": "Multiplier on how quickly the wheels turn at high speed.",
+
+    "Sandbox_BVD_SteeringCenteringLowSpeed": "Steering self-centering (low speed)",
+    "Sandbox_BVD_SteeringCenteringLowSpeed_tooltip": "Multiplier on how quickly the wheels return to center at low speed.",
+
+    "Sandbox_BVD_SteeringCenteringHighSpeed": "Steering self-centering (high speed)",
+    "Sandbox_BVD_SteeringCenteringHighSpeed_tooltip": "Multiplier on how quickly the wheels return to center at high speed.",
+
+    "Sandbox_BVD_SteeringSnapback": "Steering response while drifting",
+    "Sandbox_BVD_SteeringSnapback_tooltip": "Multiplier on how quickly the wheels turn while a drift is held.",
+
+    "Sandbox_BVD_SteeringHighSpeed": "High-speed threshold (km/h)",
+    "Sandbox_BVD_SteeringHighSpeed_tooltip": "Speed (km/h) at which steering uses the high-speed response and centering values instead of the low-speed ones."
 }

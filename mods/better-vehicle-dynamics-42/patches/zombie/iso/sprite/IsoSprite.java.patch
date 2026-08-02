@@ -1,8 +1,8 @@
 diff --git a/zombie/iso/sprite/IsoSprite.java b/zombie/iso/sprite/IsoSprite.java
-index f5ef239..91901ef 100644
+index 85feec6..e022f70 100644
 --- a/zombie/iso/sprite/IsoSprite.java
 +++ b/zombie/iso/sprite/IsoSprite.java
-@@ -1695,6 +1695,72 @@ public final class IsoSprite {
+@@ -1700,6 +1700,72 @@ public final class IsoSprite {
        }
     }
  

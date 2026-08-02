@@ -1,0 +1,20 @@
+[h1]v0.1.12 - Build 42.20 (B42 stable) rebase[/h1]
+
+BVD is now built for [b]Build 42.20[/b], the stable release of Build 42. Pure rebase - no behaviour, balance or tuning changes.
+
+[h2]What you need to do[/h2]
+
+[list]
+[*][b]Workshop side:[/b] nothing - Steam updates this automatically.
+[*][b]Java side (manual step):[/b] redo the one-time copy using the new [code]B42.20_Manual_Install\[/code] folder that ships with this update. Your existing 42.19-era files are expected to keep working on 42.20, but refreshing them keeps your install matched to the published build. Same steps as before: copy the whole [b]zombie[/b] sub-folder into your PZ install directory (and your server's java directory for dedicated servers - both sides need matching files).
+[*]If you use Necroid: re-run Set Up / Update from Game once so the pristine rebases to 42.20, then reinstall the mod.
+[/list]
+
+[h2]Details[/h2]
+
+[list]
+[*]All six engine patches applied cleanly to the 42.20 sources and compiled with zero changes - the vanilla update did not touch the vehicle physics, world-simulation or tyre-mark render paths BVD modifies.
+[*]The v0.1.8 off-road drag fix and grip safety clamp carry through unchanged.
+[*]Version gate moved to 42.20 (42.19 saves are not compatible with 42.20 anyway, per the vanilla update).
+[*]42.20 adds vanilla ragdolls for zombies struck by vehicles. That is a separate system from the impulse scaling BVD applies (Shove settings still work), so both coexist - expect livelier zombie launches than on 42.19.
+[/list]

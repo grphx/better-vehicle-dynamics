@@ -1,4 +1,10 @@
-# Queued fixes — deferred to B42.19 bundle
+# Queued fixes — deferred to B42.19 bundle [SHIPPED in v0.1.8, 2026-06-06]
+
+> **Historical.** Everything below shipped with the v0.1.8 B42.19 rebase
+> (Fix A: 0.005F off-road drag, Fix B: 0.05F surfaceGrip clamp, Fix C:
+> OffroadGrip tooltip). Verified still present in the 42.20 rebase
+> (v0.1.12). Nothing in this file is pending. Kept for the diagnosis
+> write-up.
 
 Changes that are designed and reviewed but intentionally held back so they
 land alongside the B42.19 rebase, sparing users a second manual Necroid

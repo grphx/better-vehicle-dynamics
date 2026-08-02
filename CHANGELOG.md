@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.1.12] - 2026-08-02 - B42.20 stable rebase
+
+- **Rebased onto Project Zomboid Build 42.20** (the Build 42 stable
+  release, 2026-07-29). The Necroid pristine was regenerated from the
+  42.20 jar; all six Java patches applied cleanly and compiled with no
+  source changes - vanilla did not touch the patched regions, and the
+  BaseVehicle impulse fields/methods BVD reflects into are unchanged.
+  `expectedVersion` is now 42.20.0.
+- **No behaviour, balance or code changes.** Pure rebase release. The
+  v0.1.8 off-road drag fix and grip clamp are carried through verbatim.
+- **Workshop version gate moved to 42.20** (bucket dir renamed
+  `42.19/` -> `42.20/`, `versionMin=42.20`) since 42.19 saves are not
+  compatible with 42.20 anyway (new map content).
+- **Manual-install payload rebuilt**: `B42.19_Manual_Install/` is now
+  `B42.20_Manual_Install/` with classes compiled against 42.20.
+  Existing manual installs from 42.19 are expected to keep working
+  (bytecode contracts verified unchanged) but redoing the copy is
+  recommended so installed files match the published build. Workshop
+  description updated - it had still pointed at the stale
+  `B42.18_Manual_Install` path.
+- **42.20 ragdoll note**: vanilla now ragdolls zombies struck by
+  vehicles. That system is separate from the impulse paths BVD scales
+  (ShoveZombies/ShoveCorpses still act on the vehicle-side reaction),
+  so both coexist; expect more dramatic zombie launches than on 42.19.
+
 ## [0.1.11] - 2026-06-22 - Russian translation + EN backfill
 
 - **Russian (RU) translation added.** Full RU sandbox-options block

@@ -20,10 +20,17 @@
   recommended so installed files match the published build. Workshop
   description updated - it had still pointed at the stale
   `B42.18_Manual_Install` path.
-- **42.20 ragdoll note**: vanilla now ragdolls zombies struck by
-  vehicles. That system is separate from the impulse paths BVD scales
-  (ShoveZombies/ShoveCorpses still act on the vehicle-side reaction),
-  so both coexist; expect more dramatic zombie launches than on 42.19.
+- **Correction (post-release)**: this entry (and the shipped Workshop
+  change note) originally claimed 42.20 added vehicle-strike ragdolls.
+  Wrong - ragdolls predate 42.20 (B42 unstable feature); the official
+  42.19->42.20 notes list no ragdoll change. The claim came from a
+  B41->B42 feature-highlights article misread as the 42.20 delta.
+- **Behaviour shifts inherited from vanilla 42.20** (not BVD changes):
+  (a) vanilla fixed engine power to use the calculated value instead of
+  the max script value - BVD's torque model reads getEnginePower(), so
+  worn/low-quality engines now genuinely pull weaker under BVD too;
+  (b) vanilla rebalanced towing and trailers can now detach on
+  sharp/fast turns, which composes with BVD's higher realistic speeds.
 
 ## [0.1.11] - 2026-06-22 - Russian translation + EN backfill
 

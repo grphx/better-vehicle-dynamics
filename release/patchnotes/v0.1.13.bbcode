@@ -1,0 +1,19 @@
+[h1]v0.1.13 - Build 42.20.3 rebase[/h1]
+
+BVD is now built for [b]Build 42.20.3[/b]. Pure rebase - no behaviour, balance or tuning changes.
+
+[h2]What you need to do[/h2]
+
+[list]
+[*][b]Workshop side:[/b] nothing - Steam updates this automatically.
+[*][b]Java side (manual step) - please do redo this one:[/b] copy the [code]B42.20_Manual_Install\zombie[/code] folder from the updated mod into your PZ install directory again (and into your server's java directory for dedicated servers - both sides need matching files). Vanilla 42.20.3 changed one of the classes BVD ships (IsoChunkMap - the chunk pool is now capped). If you keep the old v0.1.12 copy of that file on 42.20.3 it overrides the jar and quietly undoes that vanilla change, so refreshing is required this time, not just recommended.
+[*]If you use Necroid: re-run Set Up / Update from Game so the pristine rebases to 42.20.3, then reinstall the mod.
+[/list]
+
+[h2]Details[/h2]
+
+[list]
+[*]All six engine patches applied cleanly to the 42.20.3 sources and compiled with zero source changes.
+[*]17 of the 18 shipped class files are byte-identical to v0.1.12; only IsoChunkMap.class is rebuilt (vanilla change outside BVD's edits, see above).
+[*]The v0.1.8 off-road drag fix and grip safety clamp carry through unchanged.
+[/list]

@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.1.13] - 2026-08-18 - B42.20.3 rebase
+
+- **Rebased onto Project Zomboid Build 42.20.3.** The Necroid pristine
+  was regenerated from the 42.20.3 jar; all six Java patches applied
+  cleanly and compiled with no source changes. `expectedVersion` is now
+  42.20.3.
+- **No behaviour, balance or code changes.** Pure rebase release.
+- **Manual-install payload rebuilt** (`B42.20_Manual_Install/`, still
+  the same folder name). 17 of the 18 class files are byte-identical to
+  v0.1.12; `zombie/iso/IsoChunkMap.class` is new. Vanilla 42.20.3
+  changed that class outside BVD's hunks (`chunkStore` is now a
+  `CappedConcurrentQueue` and a `releaseChunkBeingLoaded` helper was
+  added). **Refreshing the manual install is required, not optional:**
+  a v0.1.12 `IsoChunkMap.class` left in place on 42.20.3 shadows the
+  jar's class and silently reverts that vanilla chunk-store change.
+- **Tooling note (for maintainers):** Necroid 0.8.1 runs Vineflower with
+  `-Xmx2g`; on the 42.20.3 `zombie/` tree (5,080 classes) that heap
+  fills, the decompiler's worker threads die and `resync-pristine`
+  hangs forever at ~0% CPU. Run it with `_JAVA_OPTIONS=-Xmx8g`
+  (`WSLENV=PYTHONUTF8:_JAVA_OPTIONS` from WSL) - the resync then takes
+  ~3 minutes.
+
 ## [0.1.12] - 2026-08-02 - B42.20 stable rebase
 
 - **Rebased onto Project Zomboid Build 42.20** (the Build 42 stable

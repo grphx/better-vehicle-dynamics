@@ -1,0 +1,15 @@
+[h1]v0.1.14 - Mod Options labels fix + Build 42.20.4[/h1]
+
+[h2]Fixed[/h2]
+[list]
+[*][b]Mod Options showed raw IGUI_BVD_* keys instead of text[/b] (reported here since the 42.20 port - thank you). Build 42.20 stopped reading the old .txt translation format; BVD's Mod Options strings only existed in that format, so every label, tooltip and the "Java side not installed / outdated" warnings showed as key names. The English and Russian strings are now shipped as JSON and display correctly again.
+[/list]
+
+[h2]Build 42.20.4[/h2]
+[list]
+[*]Checked against 42.20.4: all engine patches apply and compile with zero changes, and every shipped class file is byte-identical to v0.1.13.
+[*][b]Manual-install users: nothing to do.[/b] Your existing B42.20_Manual_Install files are already correct for 42.20.4.
+[*]Necroid users: the bundle's expected game version is now 42.20.4, so Set Up / Update from Game will no longer flag a mismatch.
+[/list]
+
+No behaviour, balance or tuning changes.

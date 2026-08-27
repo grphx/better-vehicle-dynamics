@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.1.14] - 2026-08-27 - Mod Options labels fix + B42.20.4 confirmed
+
+- **Fixed: Mod Options labels showing raw `IGUI_BVD_*` keys** (Steam
+  reports since the 42.20 port). Build 42.20 dropped the legacy Lua-table
+  `_EN.txt` translation loader - `Translator` now reads only
+  `<Namespace>.json` (confirmed in the 42.20.4 sources). BVD's IGUI
+  strings lived only in `common/.../Translate/EN/IGUI_EN.txt` (and
+  `RU/IGUI_RU.txt`), so every Mod Options label, tooltip and the
+  not-installed / outdated warnings rendered as key names. Both files are
+  converted to `IG_UI.json` (25 EN / 22 RU keys, unchanged text); the
+  `.txt` files are removed. `Sandbox.json` was already JSON and unaffected.
+- **Build 42.20.4 confirmed.** Necroid pristine resynced; all six Java
+  patches apply and compile with zero source changes and all 18 shipped
+  class files are byte-identical to v0.1.13. `expectedVersion` bumped to
+  42.20.4 for the Necroid bundle. **Manual-install users need no action.**
+
 ## [0.1.13] - 2026-08-18 - B42.20.3 rebase
 
 - **Rebased onto Project Zomboid Build 42.20.3.** The Necroid pristine

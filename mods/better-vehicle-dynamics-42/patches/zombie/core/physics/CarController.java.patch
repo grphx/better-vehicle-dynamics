@@ -1,8 +1,8 @@
 diff --git a/zombie/core/physics/CarController.java b/zombie/core/physics/CarController.java
-index 7cc64cc..3c69c76 100644
+index e82625b..7a4b2ff 100644
 --- a/zombie/core/physics/CarController.java
 +++ b/zombie/core/physics/CarController.java
-@@ -1,839 +1,2136 @@
+@@ -1,840 +1,2137 @@
  package zombie.core.physics;
  
 +import java.util.ArrayList;
@@ -28,6 +28,7 @@ index 7cc64cc..3c69c76 100644
  import zombie.debug.LineDrawer;
  import zombie.input.GameKeyboard;
  import zombie.input.JoypadManager;
+ import zombie.input.KeybindId;
 +import zombie.inventory.InventoryItem;
 +import zombie.inventory.ItemContainer;
  import zombie.iso.IsoCamera;
@@ -2722,7 +2723,7 @@ index 7cc64cc..3c69c76 100644
              this.vehicleObject.stopSound(this.vehicleObject.ramSound);
              this.vehicleObject.ramSound = 0L;
           }
-@@ -843,6 +2140,55 @@ public final class CarController {
+@@ -844,6 +2141,55 @@ public final class CarController {
        }
     }
  
@@ -2778,18 +2779,18 @@ index 7cc64cc..3c69c76 100644
     private void updateBackSignal() {
        if (this.isGasR && this.vehicleObject.isEngineRunning() && this.vehicleObject.hasBackSignal() && !this.vehicleObject.isBackSignalEmitting()) {
           if (GameClient.client) {
-@@ -932,56 +2278,106 @@ public final class CarController {
+@@ -933,56 +2279,106 @@ public final class CarController {
     }
  
     public void updateControls() {
 -      if (!GameServer.server) {
 -         if (this.vehicleObject.isKeyboardControlled()) {
--            boolean left = GameKeyboard.isKeyDown("Left");
--            boolean right = GameKeyboard.isKeyDown("Right");
--            boolean forward = GameKeyboard.isKeyDown("Forward");
--            boolean backward = GameKeyboard.isKeyDown("Backward");
--            boolean brake = GameKeyboard.isKeyDown("Brake");
--            boolean shift = GameKeyboard.isKeyDown("CruiseControl");
+-            boolean left = GameKeyboard.isKeyDown(KeybindId.LEFT);
+-            boolean right = GameKeyboard.isKeyDown(KeybindId.RIGHT);
+-            boolean forward = GameKeyboard.isKeyDown(KeybindId.FORWARD);
+-            boolean backward = GameKeyboard.isKeyDown(KeybindId.BACKWARD);
+-            boolean brake = GameKeyboard.isKeyDown(KeybindId.BRAKE);
+-            boolean shift = GameKeyboard.isKeyDown(KeybindId.CRUISE_CONTROL);
 -            this.clientControls.steering = 0.0F;
 -            if (left) {
 -               this.clientControls.steering--;
@@ -2798,12 +2799,12 @@ index 7cc64cc..3c69c76 100644
 +         return;
 +      }
 +      if (this.vehicleObject.isKeyboardControlled()) {
-+         boolean left = GameKeyboard.isKeyDown("Left");
-+         boolean right = GameKeyboard.isKeyDown("Right");
-+         boolean fwd = GameKeyboard.isKeyDown("Forward");
-+         boolean back = GameKeyboard.isKeyDown("Backward");
-+         boolean brk = GameKeyboard.isKeyDown("Brake");
-+         boolean cruise = GameKeyboard.isKeyDown("CruiseControl");
++         boolean left = GameKeyboard.isKeyDown(KeybindId.LEFT);
++         boolean right = GameKeyboard.isKeyDown(KeybindId.RIGHT);
++         boolean fwd = GameKeyboard.isKeyDown(KeybindId.FORWARD);
++         boolean back = GameKeyboard.isKeyDown(KeybindId.BACKWARD);
++         boolean brk = GameKeyboard.isKeyDown(KeybindId.BRAKE);
++         boolean cruise = GameKeyboard.isKeyDown(KeybindId.CRUISE_CONTROL);
 +         this.clientControls.steering = 0.0F;
 +         if (left) {
 +            this.clientControls.steering--;
@@ -2923,7 +2924,7 @@ index 7cc64cc..3c69c76 100644
        }
  
        this.isGas = this.wasGas = false;
-@@ -1291,4 +2687,28 @@ public final class CarController {
+@@ -1292,4 +2688,28 @@ public final class CarController {
           this.minRpm = rpm;
        }
     }

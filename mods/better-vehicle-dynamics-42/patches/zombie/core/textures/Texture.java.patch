@@ -1,8 +1,8 @@
 diff --git a/zombie/core/textures/Texture.java b/zombie/core/textures/Texture.java
-index cb8b39e..b8f2830 100644
+index f8a0f60..9bb3d30 100644
 --- a/zombie/core/textures/Texture.java
 +++ b/zombie/core/textures/Texture.java
-@@ -469,6 +469,17 @@ public class Texture extends Asset implements IDestroyable, ITexture, Serializab
+@@ -467,6 +467,17 @@ public class Texture extends Asset implements IDestroyable, ITexture, Serializab
        s_sharedTextureTable.put(fileName, texture);
     }
  

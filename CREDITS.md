@@ -12,6 +12,11 @@ specifications). The driving behaviour aims to feel comparable to other
 realism-focused vehicle mods — behaviour and game mechanics are not
 copyrightable; only this project's own code and text are shipped here.
 
+## Translations
+
+- **Polish** - Ayako-Chan (Piotrek0909), Steam user. Mod Options and
+  sandbox settings (`Translate/PL/`).
+
 ## Sound assets
 
 The mod ships exactly one audio file: a short tyre-slide loop used by the

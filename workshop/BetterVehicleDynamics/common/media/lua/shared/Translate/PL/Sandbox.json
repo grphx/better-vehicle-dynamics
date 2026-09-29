@@ -1,0 +1,147 @@
+{
+    "Sandbox_BetterVehicleDynamics": "Better Vehicle Dynamics",
+
+    "Sandbox_BetterVehicleDynamics_Handling": "BVD — Prowadzenie",
+    "Sandbox_BetterVehicleDynamics_TiresLoad": "BVD — Opony i Obciążenie",
+    "Sandbox_BetterVehicleDynamics_Drivetrain": "BVD — Układ napędowy",
+    "Sandbox_BetterVehicleDynamics_Readout": "BVD — Odczyty i Inne",
+
+    "Sandbox_BVD_Mode": "Gotowe ustawienia tuningu",
+    "Sandbox_BVD_Mode_tooltip": "Własne zachowuje każdy suwak poniżej tak, jak go ustawisz. Inne gotowe ustawienia dostosowują napęd, przyczepność i siłę do przygotowanego profilu po załadowaniu świata",
+    "Sandbox_BVD_Mode_option1": "Własne",
+    "Sandbox_BVD_Mode_option2": "Swobodne",
+    "Sandbox_BVD_Mode_option3": "Zrównoważone",
+    "Sandbox_BVD_Mode_option4": "Wymagające",
+
+    "Sandbox_BVD_DriverHUD": "Panel informacji o pojeździe",
+    "Sandbox_BVD_DriverHUD_tooltip": "Dodaje panel Better Vehicle Dynamics przypięty obok okna mechaniki pojazdu, pokazujący aktywny profil tuningu i ustawienia przyczepności (wartości, których domyślna gra nie wyświetla)",
+
+    "Sandbox_BVD_SkidMarks": "Ślady opon",
+    "Sandbox_BVD_SkidMarks_tooltip": "Zostawia ślady na ziemi, gdy opona traci przyczepność przy mocnym przyspieszaniu lub gwałtownym hamowaniu",
+
+    "Sandbox_BVD_SkidSound": "Dźwięk poślizgu opon",
+    "Sandbox_BVD_SkidSound_tooltip": "Odtwarza pisk opon, gdy pojazd wpada w poślizg. Niezależne od wizualnych śladów opon. Wyłącz, jeśli dźwięk Ci przeszkadza lub występuje konflikt z modem na dźwięki",
+
+    "Sandbox_BVD_EnginePower": "Moc silnika",
+    "Sandbox_BVD_EnginePower_tooltip": "Skaluje siłę ciągu każdego silnika. Poniżej 1 silnik jest słaby, powyżej 1 podjazdy i taranowanie stają się bardzo łatwe",
+
+    "Sandbox_BVD_LowSpeedGrunt": "Siła przy niskiej prędkości",
+    "Sandbox_BVD_LowSpeedGrunt_tooltip": "Dodatkowa siła ciągu dostępna przy bardzo niskiej prędkości kół — siła używana do pchania wraków i przepychania się przez tłumy. Zmniejsz dla słabszego, bardziej ostrożnego ruszania",
+
+    "Sandbox_BVD_ReverseTopSpeed": "Ograniczenie prędkości wstecznej (km/h)",
+    "Sandbox_BVD_ReverseTopSpeed_tooltip": "Maksymalny limit prędkości na biegu wstecznym",
+
+    "Sandbox_BVD_GripLevel": "Przyczepność opon",
+    "Sandbox_BVD_GripLevel_tooltip": "Ogólny poziom przyczepności. Niższa wartość oznacza, że auto łatwiej zarzuca i buksuje",
+
+    "Sandbox_BVD_WetGrip": "Mnożnik przyczepności podczas deszczu",
+    "Sandbox_BVD_WetGrip_tooltip": "Część normalnej przyczepności podczas deszczu",
+
+    "Sandbox_BVD_SnowGrip": "Mnożnik przyczepności na śniegu",
+    "Sandbox_BVD_SnowGrip_tooltip": "Część normalnej przyczepności na powierzchni pokrytej śniegiem",
+
+    "Sandbox_BVD_OffroadGrip": "Przyczepność w terenie",
+    "Sandbox_BVD_OffroadGrip_tooltip": "Poziom przyczepności w terenie. WYŻSZA = większa przyczepność (mniej poślizgu) na ziemi, trawie i żwirze. Domyślnie 0.85 = umiarkowany poślizg; 1.5 = odczucie bliskie asfaltowi. Nie zmienia oporów toczenia - dostosuj je za pomocą Opory toczenia w terenie",
+
+    "Sandbox_BVD_OffroadFloor": "Minimalna przyczepność w terenie",
+    "Sandbox_BVD_OffroadFloor_tooltip": "Minimalny mnożnik przyczepności w terenie, do jakiego może spaść dowolny typ opon. Bez tego sportowe opony mogą mieć tak niską przyczepność w terenie, że auto o dużej mocy ledwo ruszy na trawie. Domyślne 0.55 pozwala na ruch siłowy (samochód będzie się ślizgał i niszczył opony, ale będzie się poruszał)",
+
+    "Sandbox_BVD_Drag": "Opór aerodynamiczny",
+    "Sandbox_BVD_Drag_tooltip": "Skalowanie oporu aerodynamicznego. Wyższa wartość szybciej ogranicza prędkość maksymalną i gwałtowniej wytraca pęd",
+
+    "Sandbox_BVD_RollResistance": "Opory toczenia na drodze",
+    "Sandbox_BVD_RollResistance_tooltip": "Opór opon na utwardzonych nawierzchniach. Wpływa na swobodne toczenie się i utrzymywanie stałej prędkości",
+
+    "Sandbox_BVD_RollResistanceOffroad": "Opory toczenia w terenie",
+    "Sandbox_BVD_RollResistanceOffroad_tooltip": "Dodatkowy opór toczenia poza utwardzoną drogą",
+
+    "Sandbox_BVD_RealismHPWeight": "Modyfikacja mocy i masy",
+    "Sandbox_BVD_RealismHPWeight_tooltip": "Zastępuje siłę silnika i masę standardowych pojazdów zoptymalizowanymi danymi referencyjnymi Better Vehicle Dynamics (zobacz BVD_VehicleData.lua; zmodyfikowane pojazdy mogą rejestrować własne dane przez publiczne API)",
+
+    "Sandbox_BVD_TrunkScaling": "Skalowanie pojemności bagażnika",
+    "Sandbox_BVD_TrunkScaling_tooltip": "Skaluje pojemność każdego pojazdu według współczynnika dla danego typu nadwozia zamiast jej nadpisywania. Automatycznie wyłączane, gdy obecny jest mod 'isoContainers'",
+
+    "Sandbox_BVD_TrunkCar": "Współczynnik bagażnika: samochody",
+    "Sandbox_BVD_TrunkCar_tooltip": "Mnożnik referencyjnej pojemności dla tego typu nadwozia. 1.0 zachowuje wartość referencyjną",
+
+    "Sandbox_BVD_TrunkVan": "Współczynnik bagażnika: furgonetki",
+    "Sandbox_BVD_TrunkVan_tooltip": "Mnożnik referencyjnej pojemności dla tego typu nadwozia. 1.0 zachowuje wartość referencyjną",
+
+    "Sandbox_BVD_TrunkTruck": "Współczynnik bagażnika: pickupy",
+    "Sandbox_BVD_TrunkTruck_tooltip": "Mnożnik referencyjnej pojemności dla tego typu nadwozia. 1.0 zachowuje wartość referencyjną",
+
+    "Sandbox_BVD_TrunkTrailer": "Współczynnik bagażnika: przyczepy",
+    "Sandbox_BVD_TrunkTrailer_tooltip": "Mnożnik referencyjnej pojemności dla tego typu nadwozia. 1.0 zachowuje wartość referencyjną",
+
+    "Sandbox_BVD_ThrottleStart": "Automatyczny rozruch pojazdu pedałem gazu",
+    "Sandbox_BVD_ThrottleStart_tooltip": "Gdy wyłączone, silnik trzeba uruchamiać ręcznie (klawiszem rozruchu lub ikoną silnika), a nie przez wciśnięcie gazu",
+
+    "Sandbox_BVD_KeylessTow": "Łatwe holowanie bez kluczyka",
+    "Sandbox_BVD_KeylessTow_tooltip": "Gdy wyłączone, łatwe holowanie wymaga kluczyka w stacyjce lub zwolnionego hamulca postojowego",
+
+    "Sandbox_BVD_ShoveFoliage": "Spowolnienie przez roślinność",
+    "Sandbox_BVD_ShoveFoliage_tooltip": "Siła przekazywana na krzaki i małe rośliny podczas kontaktu",
+
+    "Sandbox_BVD_ShoveZombies": "Spowolnienie przy uderzeniu w zombie",
+    "Sandbox_BVD_ShoveZombies_tooltip": "Siła przekazywana żywym zombie uderzonym przez pojazd",
+
+    "Sandbox_BVD_ShoveCorpses": "Siła uderzenia w zwłoki",
+    "Sandbox_BVD_ShoveCorpses_tooltip": "Siła przekazywana ciałom i szczątkom na ziemi",
+
+    "Sandbox_BVD_Drift": "Tryb driftu",
+    "Sandbox_BVD_Drift_tooltip": "Przytrzymaj klawisz driftu podczas szybkiego skręcania, aby zerwać przyczepność tylnej osi i wejść w zręcznościowy poślizg. Przypisz klawisz w Ustawieniach modów",
+
+    "Sandbox_BVD_DriftGrip": "Przyczepność podczas driftu",
+    "Sandbox_BVD_DriftGrip_tooltip": "Przyczepność opon zachowana podczas driftu. Niższa wartość oznacza luźniejsze i trudniejsze do opanowania prowadzenie",
+
+    "Sandbox_BVD_DriftMinSpeed": "Prędkość aktywacji driftu (km/h)",
+    "Sandbox_BVD_DriftMinSpeed_tooltip": "Poniżej tej prędkości klawisz driftu jest ignorowany, aby zapobiec poślizgom podczas parkowania",
+
+    "Sandbox_BVD_DriftSteer": "Czułość skrętu w drifcie",
+    "Sandbox_BVD_DriftSteer_tooltip": "O ile mocniej reagują przednie koła podczas trzymania klawisza driftu",
+
+    "Sandbox_BVD_DriftRotation": "Siła obrotu w drifcie",
+    "Sandbox_BVD_DriftRotation_tooltip": "Siła obrotu przekazywana na samochód podczas driftu ze skręconymi kołami. Zwiększ, jeśli auto wyjeżdża szeroko, zmniejsz, jeśli wpada w obrót",
+
+    "Sandbox_BVD_TireGripModel": "Model przyczepności opon",
+    "Sandbox_BVD_TireGripModel_tooltip": "Różne typy opon (zużyte / standardowe / nowoczesne) otrzymują unikalną przyczepność na drodze, w deszczu, na śniegu i w terenie zamiast jednej stałej wartości",
+
+    "Sandbox_BVD_TireSlipWear": "Zużycie opon od buksowania",
+    "Sandbox_BVD_TireSlipWear_tooltip": "Gdy silnik obraca koła szybciej niż pozwala na to nawierzchnia (np. wciśnięcie gazu do dechy na trawie), opony z czasem tracą swój stan. Pozwala to na siłowe przebijanie się przez słabą nawierzchnię - kosztem późniejszego zużycia opon",
+
+    "Sandbox_BVD_TireSlipWearRate": "Szybkość zużycia opon od buksowania",
+    "Sandbox_BVD_TireSlipWearRate_tooltip": "Mnożnik szybkości niszczenia się opon podczas poślizgu. Domyślnie 1.0 (kilka minut mocnego buksowania widocznie je zużyje). Ustaw na 0, aby wyłączyć zużycie bez wyłączania całego modelu",
+
+    "Sandbox_BVD_LoadAffectsHandling": "Obciążenie wpływa na prowadzenie",
+    "Sandbox_BVD_LoadAffectsHandling_tooltip": "Mocno obciążony pojazd wolniej rusza z miejsca, tak jakby silnik męczył się z ciężarem",
+
+    "Sandbox_BVD_LoadAffectsFuel": "Obciążenie wpływa na zużycie paliwa",
+    "Sandbox_BVD_LoadAffectsFuel_tooltip": "Przewożenie ciężkiego ładunku zużywa dodatkowe paliwo podczas jazdy",
+
+    "Sandbox_BVD_LoadMaxPenalty": "Maksymalna kara przy ruszeniu dla pełnego obciążenia",
+    "Sandbox_BVD_LoadMaxPenalty_tooltip": "Największy spadek siły przy ruszeniu dla w pełni obciążonego pojazdu (0.50 = do 50 procent mniej siły przy starcie). Zanika wraz ze wzrostem prędkości. Wymaga 'Obciążenie wpływa na prowadzenie'",
+
+    "Sandbox_BVD_StabilityGuard": "Ochrona przed wpadaniem pod ziemię",
+    "Sandbox_BVD_StabilityGuard_tooltip": "Zabezpieczenie dla trybu wieloosobowego: jeśli pojazd zapadnie się daleko pod podłogę poziomu, na którym się znajduje (desynchronizacja 'wciągnięcia pod ziemię'), zostanie przywrócony na ten poziom. Działa tylko w sytuacjach, które nigdy nie występują podczas normalnej jazdy, więc rampy, piwnice i parkingi wielopoziomowe są bezpieczne",
+
+    "Sandbox_BVD_StabilityGuardSinkTiles": "Głębokość aktywacji ochrony (poziomy)",
+    "Sandbox_BVD_StabilityGuardSinkTiles_tooltip": "Jak daleko pod podłogę własnego poziomu pojazd musi się zapaść, aby funkcja przywróciła go na miejsce, mierzone w poziomach podłogi (0.75 = trzy czwarte jednego poziomu). Niższa wartość reaguje szybciej; zwiększ ją, jeśli na niestandardowej mapie funkcja zadziała błędnie. Wymaga 'Ochrona przed wpadaniem pod ziemię'",
+
+    "Sandbox_BVD_SteeringFactorLowSpeed": "Czułość kierownicy przy niskiej prędkości",
+    "Sandbox_BVD_SteeringFactorLowSpeed_tooltip": "Mnożnik szybkości skręcania kół przy niskiej prędkości",
+
+    "Sandbox_BVD_SteeringFactorHighSpeed": "Czułość kierownicy przy wysokiej prędkości",
+    "Sandbox_BVD_SteeringFactorHighSpeed_tooltip": "Mnożnik szybkości skręcania kół przy wysokiej prędkości",
+
+    "Sandbox_BVD_SteeringCenteringLowSpeed": "Powrót kierownicy do środka przy niskiej prędkości",
+    "Sandbox_BVD_SteeringCenteringLowSpeed_tooltip": "Mnożnik szybkości powrotu kół do pozycji centralnej przy niskiej prędkości",
+
+    "Sandbox_BVD_SteeringCenteringHighSpeed": "Powrót kierownicy do środka przy wysokiej prędkości",
+    "Sandbox_BVD_SteeringCenteringHighSpeed_tooltip": "Mnożnik szybkości powrotu kół do pozycji centralnej przy wysokiej prędkości",
+
+    "Sandbox_BVD_SteeringSnapback": "Reakcja układu kierowniczego podczas driftu",
+    "Sandbox_BVD_SteeringSnapback_tooltip": "Mnożnik szybkości skręcania kół podczas przytrzymywania driftu",
+
+    "Sandbox_BVD_SteeringHighSpeed": "Próg wysokiej prędkości dla układu kierowniczego",
+    "Sandbox_BVD_SteeringHighSpeed_tooltip": "Prędkość (km/h), przy której układ kierowniczy używa wartości reakcji i powrotu dla wysokiej prędkości zamiast niskiej"
+}

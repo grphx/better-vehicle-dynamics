@@ -1,5 +1,5 @@
 diff --git a/zombie/iso/IsoChunkMap.java b/zombie/iso/IsoChunkMap.java
-index db25d87..7c861b7 100644
+index b708c2f..43a120a 100644
 --- a/zombie/iso/IsoChunkMap.java
 +++ b/zombie/iso/IsoChunkMap.java
 @@ -1116,13 +1116,36 @@ public final class IsoChunkMap {

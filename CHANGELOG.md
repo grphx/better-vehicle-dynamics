@@ -1,5 +1,34 @@
 # Changelog
 
+## [0.1.15] - 2026-09-29 - B42.21 rebase + Polish translation
+
+- **Rebased onto Project Zomboid Build 42.21.0.** Vanilla 42.21 changed
+  three of the six classes BVD patches: `CarController`, `Texture` and
+  `IsoChunkMap`. Running v0.1.14's class files on 42.21 overrides those
+  vanilla changes, so **refreshing the manual install is required.**
+- `CarController`: vanilla moved keyboard polling from string names
+  (`isKeyDown("Forward")`) to the new `KeybindId` enum, inside the exact
+  method BVD re-authors, so the patch no longer applied. BVD's six driving
+  key reads now use `KeybindId` too. `isKeyDown(KeybindId)` delegates to
+  the same string lookup, so driving input behaves identically.
+- `Texture` / `IsoChunkMap`: vanilla changes sit outside BVD's edits; the
+  patches applied unchanged and were rebuilt so the shipped classes carry
+  vanilla 42.21's code.
+- **Added Polish translation** (`PL/IG_UI.json`, `PL/Sandbox.json`; all
+  25 Mod Options and 99 sandbox strings), by Ayako-Chan (Piotrek0909).
+  Credited in CREDITS.md and on the Workshop page.
+- **Fixed a translation-format warning** on every load
+  (`UnknownFormatConversionException ... Sandbox_BVD_LoadMaxPenalty_tooltip`):
+  the tooltip's "50% less" read as a Java format code. Now spelled out
+  ("50 percent"), in English and Polish.
+- **Manual-install folder renamed to `B42.21_Manual_Install`** so the
+  refresh is obvious. Delete nothing extra: copying the new folder's
+  `zombie` tree over the old one replaces every BVD class.
+- Manual-install payload: 12 of 18 class files rebuilt (every
+  `CarController*`, `Texture*`, `IsoChunkMap`); the other 6 are
+  byte-identical. `expectedVersion` 42.21.0. No behaviour, balance or
+  tuning changes.
+
 ## [0.1.14] - 2026-08-27 - Mod Options labels fix + B42.20.4 confirmed
 
 - **Fixed: Mod Options labels showing raw `IGUI_BVD_*` keys** (Steam

@@ -14,6 +14,8 @@ copyrightable; only this project's own code and text are shipped here.
 
 ## Translations
 
+- **Russian** - phxntom1213. Mod Options and sandbox settings
+  (`Translate/RU/`), added in v0.1.11.
 - **Polish** - Ayako-Chan (Piotrek0909), Steam user. Mod Options and
   sandbox settings (`Translate/PL/`).
 

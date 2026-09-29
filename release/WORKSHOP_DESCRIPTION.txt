@@ -45,6 +45,7 @@ Works alongside vehicle-skin and content mods. Run only one vehicle-physics over
 
 [h1]Translations[/h1]
 [list]
+[*][b]Russian:[/b] phxntom1213
 [*][b]Polish:[/b] Ayako-Chan (Piotrek0909)
 [/list]
 

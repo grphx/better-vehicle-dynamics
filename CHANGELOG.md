@@ -1,7 +1,17 @@
 # Changelog
 
-## [Unreleased]
+## [0.1.16] - 2026-10-19 - ZombieBuddy support
 
+- **New: optional ZombieBuddy layer (now the recommended install).** With
+  ZombieBuddy enabled, BVD's Java loads through it as method hooks: nothing
+  copied into the game folder, no clash with other mods over replaced class
+  files. `42.20/mod.info` names the jar (`javaJarFile`, no `require=`), so
+  players without ZombieBuddy are unaffected. The drivetrain class
+  `bvd.zb.BvdCar` is generated from the patched CarController
+  (`zb/gen_bvdcar.py`), so both install paths run the same code. The layer
+  stands down when it finds the manual-install classes. Client-only jar.
+  Verified in game: SP 12/12, dedicated server client A 12/12 + client B 4/4
+  (`docs/verification/2026-10-19-zombiebuddy-layer.md`).
 - **Dropped the `IsoChunkMap` and `IsoSprite` patches.** Both only touched the
   legacy tile renderer, which 42.21 never uses unless you toggle the debug
   "old renderer" key (`PerformanceSettings.fboRenderChunk` defaults to true and

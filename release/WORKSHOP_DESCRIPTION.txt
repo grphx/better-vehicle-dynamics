@@ -1,6 +1,9 @@
 [h1]Better Vehicle Dynamics[/h1]
 A drivetrain and traction overhaul for Project Zomboid Build 42. Every vehicle gains a torque-curve driven engine, surface- and weather-aware grip, and a stack of optional realism systems - all sandbox-tunable, all multiplayer-safe.
 
+[h2]New: ZombieBuddy support (recommended)[/h2]
+BVD now runs through [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3619862853]ZombieBuddy[/url]. [b]This is now the recommended way to play BVD:[/b] no zombie folder to copy, nothing to redo when Project Zomboid updates, and no clashes with other mods over replaced game files. The manual install still works if you prefer it. Dedicated servers need no Java install either way.
+
 [h1]What it changes[/h1]
 [list]
 [*][b]Torque-curve acceleration[/b] - engines pull from a real power curve instead of a flat number. Low-end grunt for shoving wrecks, a proper top end.
@@ -24,11 +27,11 @@ Everything is exposed in Sandbox Options, grouped into [b]Handling[/b], [b]Tyres
 Built for dedicated servers and co-op. Load-sensitive fuel is server-authoritative so it behaves consistently for everyone.
 
 [h2]Installation (players)[/h2]
-Better Vehicle Dynamics has two parts: this Workshop subscription (Lua, sandbox options, UI) and a Java part (the deep physics - engine code a Lua mod cannot reach). [b]The subscription alone is not enough[/b]. Pick [b]one[/b] way to get the Java part:
+Better Vehicle Dynamics has two parts: this Workshop subscription (Lua, sandbox options, UI) and a Java part (the deep physics - engine code a Lua mod cannot reach). [b]The subscription alone is not enough[/b]. Pick [b]one[/b] way to get the Java part. [b]Option A is recommended.[/b]
 
-[b]Option A - ZombieBuddy (no file copying).[/b] If you use [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3619862853]ZombieBuddy[/url], just enable it together with this mod. BVD's Java loads through it automatically: nothing to copy, and no recopying after Project Zomboid updates (BVD itself updates through the Workshop as usual). ZombieBuddy asks you to approve BVD's Java the first time.
+[b]Option A - ZombieBuddy (recommended, no file copying).[/b] If you use [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3619862853]ZombieBuddy[/url], just enable it together with this mod. BVD's Java loads through it automatically: nothing to copy, and no recopying after Project Zomboid updates (BVD itself updates through the Workshop as usual). ZombieBuddy asks you to approve BVD's Java the first time.
 
-[b]Option B - manual install.[/b]
+[b]Option B - manual install (only if you don't use ZombieBuddy).[/b]
 [olist]
 [*]Subscribe to this mod and let Steam finish downloading it.
 [*]Open the mod folder: [code]Steam\steamapps\workshop\content\108600\3728775267\mods\BetterVehicleDynamics\B42.21_Manual_Install\[/code]
@@ -45,7 +48,9 @@ Use one option, not both. If both are present the manual install wins and the Zo
 Already copied the zombie folder onto a server under the old instructions? It is harmless, and you can delete it.
 
 [h2]Updating from 0.1.15 or older[/h2]
-Copy the new [b]zombie[/b] folder over the old one as usual, then [b]delete these two files[/b] from your Project Zomboid folder. Copying over the old folder does not remove them, and they are no longer part of the mod:
+[b]Easiest:[/b] switch to ZombieBuddy (option A). Run Steam's [i]Verify integrity of game files[/i] to remove the old copied classes, enable ZombieBuddy, done.
+
+Staying on the manual install? Copy the new [b]zombie[/b] folder over the old one as usual, then [b]delete these two files[/b] from your Project Zomboid folder. Copying over the old folder does not remove them, and they are no longer part of the mod:
 [list]
 [*][code]zombie\iso\IsoChunkMap.class[/code]
 [*][code]zombie\iso\sprite\IsoSprite.class[/code] (plus the two [code]IsoSprite$...class[/code] files next to it)
@@ -58,7 +63,7 @@ A public Lua API lets other mods register vehicle reference data, tyre-grip prof
 [h1]Compatibility[/h1]
 Works alongside vehicle-skin and content mods. Run only one vehicle-physics overhaul at a time. Build 42.21+.
 
-Other manual-install Java mods (for example the PZ Optimization / tuner kind) clash only if they ship the same class files. BVD now ships only [code]CarController[/code], [code]WorldSimulation[/code], [code]Texture[/code] and [code]IsoFloorBloodSplat[/code] (it no longer touches [code]IsoChunkMap[/code] or [code]IsoSprite[/code]). If another Java mod ships one of those four, only one of the two mods' copies can be active.
+Other manual-install Java mods (for example the PZ Optimization / tuner kind) clash only if they ship the same class files. BVD now ships only [code]CarController[/code], [code]WorldSimulation[/code], [code]Texture[/code] and [code]IsoFloorBloodSplat[/code] (it no longer touches [code]IsoChunkMap[/code] or [code]IsoSprite[/code]). If another Java mod ships one of those four, only one of the two mods' copies can be active. With ZombieBuddy (option A), BVD replaces no game files at all, so this kind of clash goes away.
 
 [h1]Translations[/h1]
 [list]
@@ -71,3 +76,6 @@ Other manual-install Java mods (for example the PZ Optimization / tuner kind) cl
 [*][b]Mod ID:[/b] BetterVehicleDynamics
 [*][b]Workshop ID:[/b] 3728775267
 [/list]
+
+If you enjoy Better Vehicle Dynamics, you can support my mods on Ko-fi:
+[url=https://ko-fi.com/R6R21Z07HW][img]https://storage.ko-fi.com/cdn/kofi5.png?v=3[/img][/url]

@@ -1,0 +1,19 @@
+[h1]v0.1.16 - ZombieBuddy support + server and compatibility fixes[/h1]
+
+[h2]What you need to do[/h2]
+[list]
+[*][b]Recommended: use ZombieBuddy.[/b] Enable [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3619862853]ZombieBuddy[/url] together with BVD and the Java part loads by itself - no zombie folder to copy, nothing to redo after game updates. If you used the manual install before, run Steam's "Verify integrity of game files" first to remove the old copied classes.
+[*][b]Staying on the manual install?[/b] Copy the new zombie folder from B42.21_Manual_Install, then delete zombie\iso\IsoChunkMap.class and the zombie\iso\sprite\IsoSprite*.class files (they are no longer part of the mod and copying over does not remove them).
+[*][b]Dedicated servers:[/b] no Java install needed at all. Only players need it. Rented servers without a java/zombie folder work.
+[/list]
+
+[h2]Changes[/h2]
+[list]
+[*][b]New: ZombieBuddy support.[/b] BVD's physics now run through ZombieBuddy when it is installed. Tested in singleplayer and on a dedicated server with two players.
+[*][b]Fixed: dedicated servers.[/b] The server never needed BVD's Java (vehicle physics run on each driver's PC). The install instructions are corrected and the server no longer logs a "not installed" warning on every vehicle spawn.
+[*][b]Fixed: clash with PZ optimisation mods.[/b] BVD no longer ships IsoChunkMap or IsoSprite. Those patches only affected the old renderer that 42.21 doesn't use.
+[*][b]Fixed: cars dropping through unloaded ground.[/b] BVD's physics step had skipped a vanilla safety check that pauses a car while the ground around it is still loading. Likely behind some "car sank / vanished" reports.
+[*]The "Java part missing" message now points to ZombieBuddy or the manual-install folder.
+[/list]
+
+No balance or tuning changes.

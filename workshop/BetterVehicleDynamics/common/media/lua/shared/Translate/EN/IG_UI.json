@@ -22,6 +22,6 @@
     "IGUI_BVD_DriftKey_Tooltip": "Hold this key while cornering at speed to enter drift mode.",
     "IGUI_BVD_CustomizableSteering": "Customizable steering",
     "IGUI_BVD_CustomizableSteering_Tooltip": "Use the steering response sliders below instead of the default steering feel.",
-    "IGUI_BVD_NotProperlyInstalled": "Better Vehicle Dynamics is missing its Java component, so driving is vanilla. Copy the 'zombie' folder from the mod's B42.21_Manual_Install folder into your Project Zomboid install folder (see the Workshop page), then restart the game.",
+    "IGUI_BVD_NotProperlyInstalled": "Better Vehicle Dynamics is missing its Java component, so driving is vanilla. Either install ZombieBuddy from the Workshop, or copy the 'zombie' folder from the mod's B42.21_Manual_Install folder into your Project Zomboid install folder (see the Workshop page). Then restart the game.",
     "IGUI_BVD_Outdated": "Better Vehicle Dynamics: your Java component is out of date. Copy the 'zombie' folder from the mod's newest _Manual_Install folder over your old copy, then restart the game."
 }

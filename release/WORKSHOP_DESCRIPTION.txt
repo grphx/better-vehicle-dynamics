@@ -24,8 +24,11 @@ Everything is exposed in Sandbox Options, grouped into [b]Handling[/b], [b]Tyres
 Built for dedicated servers and co-op. Load-sensitive fuel is server-authoritative so it behaves consistently for everyone.
 
 [h2]Installation (players)[/h2]
-Better Vehicle Dynamics is split between this Workshop subscription (Lua, sandbox options, UI) and a small one-time Java-side install (the deep physics - engine code Steam Workshop cannot patch). [b]The subscription alone is not enough[/b]; do the manual step once and you are set. Tuning, tyre and guard updates after that are pure Workshop updates with no further manual install.
+Better Vehicle Dynamics has two parts: this Workshop subscription (Lua, sandbox options, UI) and a Java part (the deep physics - engine code a Lua mod cannot reach). [b]The subscription alone is not enough[/b]. Pick [b]one[/b] way to get the Java part:
 
+[b]Option A - ZombieBuddy (no file copying).[/b] If you use [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3619862853]ZombieBuddy[/url], just enable it together with this mod. BVD's Java loads through it automatically: nothing to copy, and no recopying after Project Zomboid updates (BVD itself updates through the Workshop as usual). ZombieBuddy asks you to approve BVD's Java the first time.
+
+[b]Option B - manual install.[/b]
 [olist]
 [*]Subscribe to this mod and let Steam finish downloading it.
 [*]Open the mod folder: [code]Steam\steamapps\workshop\content\108600\3728775267\mods\BetterVehicleDynamics\B42.21_Manual_Install\[/code]
@@ -34,8 +37,10 @@ Better Vehicle Dynamics is split between this Workshop subscription (Lua, sandbo
 [/olist]
 When Project Zomboid itself updates, recopy the [b]zombie[/b] folder to refresh it.
 
+Use one option, not both. If both are present the manual install wins and the ZombieBuddy part stays off. To switch from B to A, run Steam's [i]Verify integrity of game files[/i] to remove the copied classes.
+
 [h2]Dedicated server hosts[/h2]
-[b]The server needs only the Workshop mod - no Java install.[/b] A dedicated server never simulates vehicle physics; each driver's own game does. So hosted servers without a [code]java/zombie[/code] folder (most rented-server panels) are fine: add the mod to the server's Workshop and mod lists as usual. Every [i]player[/i] does the one-time install above on their own PC.
+[b]The server needs only the Workshop mod - no Java install.[/b] A dedicated server never simulates vehicle physics; each driver's own game does. So hosted servers without a [code]java/zombie[/code] folder (most rented-server panels) are fine: add the mod to the server's Workshop and mod lists as usual. Every [i]player[/i] sets up the Java part (option A or B above) on their own PC.
 
 Already copied the zombie folder onto a server under the old instructions? It is harmless, and you can delete it.
 

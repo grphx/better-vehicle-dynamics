@@ -119,10 +119,13 @@ local function preloadTextures()
         bvd_tiremark_d1 = "media/textures/Item_bvd_tiremark_d1.png",
         bvd_tiremark_d2 = "media/textures/Item_bvd_tiremark_d2.png",
     }
+    -- Manual install adds the helper to Texture; the ZombieBuddy layer
+    -- provides it as a global instead.
+    local register = (Texture and Texture.BVD_registerSharedTexture) or BVD_registerSharedTexture
     for name, path in pairs(files) do
         local t = getTexture(path)
-        if t and Texture and Texture.BVD_registerSharedTexture then
-            Texture.BVD_registerSharedTexture(name, t)
+        if t and register then
+            register(name, t)
         end
     end
     -- Re-probe the forward-vector path each world load: a stale false

@@ -1,0 +1,5 @@
+name=BVD Tests
+id=BVDTests
+description=Internal: in-game checks for Better Vehicle Dynamics. Never uploaded.
+versionMin=42.21
+require=\ZombieBuddy,\BetterVehicleDynamics,\PZAutotest

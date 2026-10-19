@@ -36,6 +36,7 @@ DROP_METHODS = [
     r"public boolean isBreak\(\)",
     r"public boolean isGasPedalPressed\(\)",
     r"public boolean isBrakePedalPressed\(\)",
+    r"public void updateControls\(\)",
     r"public void debug\(\)",
     r"private void renderClosestPointToOtherVehicle\(",
     r"public void drawRect\(",
@@ -90,6 +91,27 @@ def drop_member(src, pattern):
         removed += 1
 
 
+def add_read_pedals(src):
+    """Add readPedals(): BVD's updateControls minus everything vanilla's own
+    updateControls already does to clientControls. Under ZombieBuddy vanilla's
+    updateControls runs (with any other mod's hooks on it) and this only adds
+    BVD's analog-pedal and shift-button reads afterwards."""
+    sig = "   public void updateControls() {"
+    start = src.index(sig)
+    end = block_end(src, start)
+    body = src[start:end].replace(sig, "   void readPedals() {", 1)
+    for cond in ("if (this.vehicleObject.isKeyboardControlled()) {",
+                 "if (this.clientControls.forceBrake != 0L) {"):
+        i = body.index(cond)
+        body = body[:i] + body[block_end(body, i):]
+    body, n = re.subn(r"^[ \t]*this\.clientControls\.(steering|forward|backward|brake) = [^;]*;\n", "", body, flags=re.M)
+    if n != 4:
+        sys.exit("gen_bvdcar: readPedals expected 4 joypad clientControls writes, found %d" % n)
+    if "clientControls" in body:
+        sys.exit("gen_bvdcar: readPedals still touches clientControls")
+    return src[:end] + "\n\n" + body + src[end:]
+
+
 def main(inp, out):
     src = open(inp, encoding="utf8").read()
 
@@ -98,6 +120,8 @@ def main(inp, out):
     ctor = re.search(r"public CarController\(BaseVehicle vehicle\) \{", src)
     ctor_body = src[ctor.end():block_end(src, ctor.start()) - 1]
     handshake = ctor_body[:ctor_body.index("this.loadLUATables();")]
+
+    src = add_read_pedals(src)
 
     for pat in DROP_METHODS:
         src, n = drop_member(src, pat)

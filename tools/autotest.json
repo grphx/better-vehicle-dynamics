@@ -1,12 +1,32 @@
 {
   "name": "Better Vehicle Dynamics",
-  "error_names": ["BetterVehicleDynamics", "bvd.zb", "BvdCar"],
+  "error_names": [
+    "BetterVehicleDynamics",
+    "bvd.zb",
+    "BvdCar"
+  ],
   "forbidden": "not properly installed on your server|ZombieBuddy layer disabled|manual install detected",
-  "build": ["bash", "../zb/build.sh"],
+  "build": [
+    "bash",
+    "../zb/build.sh"
+  ],
   "mods": {
     "BetterVehicleDynamics": "../workshop/BetterVehicleDynamics",
     "BVDTests": "autotest/BVDTests"
   },
-  "modes": {"sp": ["BetterVehicleDynamics", "BVDTests"]},
-  "mp": {"mods": ["BetterVehicleDynamics", "BVDTests"], "spawn": "10586,11180,0", "minutes": 30}
+  "modes": {
+    "sp": [
+      "BetterVehicleDynamics",
+      "BVDTests"
+    ]
+  },
+  "mp": {
+    "mods": [
+      "BetterVehicleDynamics",
+      "BVDTests"
+    ],
+    "spawn": "10586,11180,0",
+    "minutes": 30
+  },
+  "sp_nosteam": true
 }

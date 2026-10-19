@@ -104,18 +104,15 @@ public final class Hooks {
       return true;
    }
 
-   public static boolean updateControls(CarController cc) {
+   public static void updateControls(CarController cc) {
       if (!enabled) {
-         return false;
+         return;
       }
       try {
-         BvdCar car = car(cc);
-         car.updateControls();
-         push(car);
+         car(cc).readPedals();
       } catch (Throwable t) {
          fail("updateControls", t);
       }
-      return true;
    }
 
    public static boolean park(CarController cc) {

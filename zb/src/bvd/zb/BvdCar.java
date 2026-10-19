@@ -2219,34 +2219,11 @@ public final class BvdCar {
       }
    }
 
-   public void updateControls() {
+   void readPedals() {
       if (GameServer.server) {
          return;
       }
-      if (this.cc.vehicleObject.isKeyboardControlled()) {
-         boolean left = GameKeyboard.isKeyDown(KeybindId.LEFT);
-         boolean right = GameKeyboard.isKeyDown(KeybindId.RIGHT);
-         boolean fwd = GameKeyboard.isKeyDown(KeybindId.FORWARD);
-         boolean back = GameKeyboard.isKeyDown(KeybindId.BACKWARD);
-         boolean brk = GameKeyboard.isKeyDown(KeybindId.BRAKE);
-         boolean cruise = GameKeyboard.isKeyDown(KeybindId.CRUISE_CONTROL);
-         this.cc.clientControls.steering = 0.0F;
-         if (left) {
-            this.cc.clientControls.steering--;
-         }
-
-         if (right) {
-            this.cc.clientControls.steering++;
-         }
-
-         this.cc.clientControls.forward = fwd;
-         this.cc.clientControls.backward = back;
-         this.cc.clientControls.brake = brk;
-         this.cc.clientControls.shift = cruise;
-         if (this.cc.clientControls.brake) {
-            this.cc.clientControls.wasUsingParkingBrakes = true;
-         }
-      }
+      
 
       this.pedalGas = 0.0F;
       this.pedalBrake = 0.0F;
@@ -2255,10 +2232,6 @@ public final class BvdCar {
          boolean rt = JoypadManager.instance.isRTPressed(joypad);
          boolean lt = JoypadManager.instance.isLTPressed(joypad);
          boolean bBtn = JoypadManager.instance.isBPressed(joypad);
-         this.cc.clientControls.steering = JoypadManager.instance.getMovementAxisX(joypad);
-         this.cc.clientControls.forward = rt;
-         this.cc.clientControls.backward = lt;
-         this.cc.clientControls.brake = bBtn;
          if (this.shiftDownEdge == 0) {
             this.shiftDownEdge = JoypadManager.instance.isLBPressed(joypad) ? 1 : 0;
          } else if (this.shiftDownEdge == 2) {
@@ -2290,13 +2263,7 @@ public final class BvdCar {
          }
       }
 
-      if (this.cc.clientControls.forceBrake != 0L) {
-         long elapsed = System.currentTimeMillis() - this.cc.clientControls.forceBrake;
-         if (elapsed > 0L && elapsed < 1000L) {
-            this.cc.clientControls.brake = true;
-            this.cc.clientControls.shift = false;
-         }
-      }
+      
    }
 
    public void park() {

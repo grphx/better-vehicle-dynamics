@@ -31,11 +31,13 @@ public class Patches {
       }
    }
 
+   // Not skipped: vanilla's updateControls fills clientControls exactly as
+   // BVD's does, and other mods hook it too. BVD only adds its pedal reads.
    @Patch(className = "zombie.core.physics.CarController", methodName = "updateControls")
    public static class CarUpdateControls {
-      @Patch.OnEnter(skipOn = true)
-      public static boolean enter(@Patch.This CarController self) {
-         return Hooks.updateControls(self);
+      @Patch.OnExit
+      public static void exit(@Patch.This CarController self) {
+         Hooks.updateControls(self);
       }
    }
 

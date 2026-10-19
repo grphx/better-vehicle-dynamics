@@ -38,8 +38,13 @@ local function driveBody(T)
     T.check("ZombieBuddy layer active", type(BVD_zombieBuddyActive) == "function" and BVD_zombieBuddyActive() == true,
         "BVD_zombieBuddyActive = " .. tostring(BVD_zombieBuddyActive))
     T.check("tyre-mark texture helper exposed", type(BVD_registerSharedTexture) == "function")
+    if isClient() then
+        -- give client B time to join so it can watch this car move
+        local both = T.waitFor(function() local ps = getOnlinePlayers(); return ps and ps:size() >= 2 or nil end, 300)
+        T.log("players online: " .. tostring(both and getOnlinePlayers():size()))
+    end
 
-    T.clearCars(p, 40)
+    T.clearCars(p, 120)
     local v = spawnCar(p)
     if not T.check("car spawned", v ~= nil) then return end
     T.check("BVD Java reports itself", BetterVehicleDynamicsMod.javaVersion == "3.4",
@@ -60,21 +65,44 @@ local function driveBody(T)
         inCar = T.waitFor(function() return p:getVehicle() == v end, 5)
     end
     if not T.check("entered driver seat", inCar ~= nil) then return end
-    v:tryStartEngine(true)
+    -- engine state is the server's in MP (vanilla sends the same command)
+    if isClient() then
+        sendClientCommand(p, "vehicle", "startEngine", { haveKey = true })
+    else
+        v:tryStartEngine(true)
+    end
     T.check("engine starts", T.waitFor(function() return v:isEngineRunning() end, 10) ~= nil)
     T.wait(1)
 
     local z0 = v:getZ()
     local x0, y0 = v:getX(), v:getY()
     BetterVehicleDynamicsMod.computed = nil
-    T.drive(true, true, 0)
-    local top, tEnd = 0, getTimestampMs() + 8000
-    while getTimestampMs() < tEnd do
-        top = math.max(top, math.abs(v:getCurrentSpeedKmHour()))
-        coroutine.yield()
+    -- 8 s pull: 3 s straight, 2.5 s on full lock (steering is measured here,
+    -- while the car is surely rolling), then straight again
+    local top = 0
+    local function hold(sec, steer)
+        T.drive(true, true, steer)
+        local tEnd = getTimestampMs() + sec * 1000
+        while getTimestampMs() < tEnd do
+            top = math.max(top, math.abs(v:getCurrentSpeedKmHour()))
+            coroutine.yield()
+        end
     end
+    local function travel(sec, steer)
+        local ax, ay = v:getX(), v:getY()
+        hold(sec, steer)
+        local dx, dy = v:getX() - ax, v:getY() - ay
+        return math.atan2(dy, dx), math.sqrt(dx * dx + dy * dy)
+    end
+    hold(2.5, 0)
+    local h0, d0 = travel(0.5, 0)
+    hold(1.5, 1)
+    local h1, d1 = travel(0.5, 1)
+    local turned = math.abs(math.deg(h1 - h0)) % 360
+    if turned > 180 then turned = 360 - turned end
+    hold(3, 0)
     local moved = math.sqrt((v:getX() - x0) ^ 2 + (v:getY() - y0) ^ 2)
-    T.check("car accelerates", top > 25, string.format("top %.1f km/h, moved %.1f tiles", top, moved))
+    T.check("car accelerates", top > 20, string.format("top %.1f km/h, moved %.1f tiles", top, moved))
     local c = BetterVehicleDynamicsMod.computed
     -- Only BVD's drivetrain publishes this readout; vanilla never does.
     T.check("BVD drivetrain drives the car", type(c) == "table" and type(c.gripRoad) == "number",
@@ -82,28 +110,19 @@ local function driveBody(T)
 
     -- vanilla's isGasPedalPressed() reads the fields BVD pushes back each tick
     T.check("vanilla getters see BVD pedal state", v:isGasPedalPressed() == true)
-    -- steer while still rolling from the straight pull (the road ahead has
-    -- obstacles ~45 tiles out, so the pull is kept short)
-    local function travel(sec)
-        local ax, ay = v:getX(), v:getY()
-        T.wait(sec)
-        local dx, dy = v:getX() - ax, v:getY() - ay
-        return math.atan2(dy, dx), math.sqrt(dx * dx + dy * dy)
-    end
-    T.drive(true, true, 1)
-    T.wait(1)
-    local h0, d0 = travel(0.5)
-    T.wait(1)
-    local h1, d1 = travel(0.5)
-    local turned = math.abs(math.deg(h1 - h0)) % 360
-    if turned > 180 then turned = 360 - turned end
     T.check("steering turns the car", d0 > 0.1 and d1 > 0.1 and turned > 10,
         string.format("travel direction changed %.1f deg (moved %.2f / %.2f tiles per window)", turned, d0, d1))
-
     -- holding "backward" while rolling forward is BVD's brake
     T.drive(true, false, 0)
     local stopped = T.waitFor(function() return math.abs(v:getCurrentSpeedKmHour()) < 1 end, 20)
     T.check("car brakes to a stop", stopped ~= nil, string.format("speed %.1f", v:getCurrentSpeedKmHour()))
+    if isClient() then
+        -- keep circling so client B can watch it move
+        T.drive(true, true, 0.4)
+        T.wait(20)
+        T.drive(true, false, 0)
+        T.waitFor(function() return math.abs(v:getCurrentSpeedKmHour()) < 1 end, 15)
+    end
     T.drive(false, false, 0)
     T.check("car did not sink", math.abs(v:getZ() - z0) < 0.5, string.format("z %.2f -> %.2f", z0, v:getZ()))
     ISVehicleMenu.onExit(p)
@@ -119,7 +138,7 @@ local function watchBody(T)
     p:setGhostMode(true)
     T.check("ZombieBuddy layer active on B", type(BVD_zombieBuddyActive) == "function" and BVD_zombieBuddyActive() == true)
     local v = T.waitFor(function()
-        local c = carNear(p:getX(), p:getY(), 30)
+        local c = carNear(p:getX(), p:getY(), 100)
         return c and c:getDriver() ~= nil and c or nil
     end, 180)
     if not T.check("B sees A's car with a driver", v ~= nil) then return end

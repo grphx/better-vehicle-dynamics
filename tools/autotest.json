@@ -28,5 +28,17 @@
     "spawn": "10586,11180,0",
     "minutes": 30
   },
-  "sp_nosteam": true
+  "sp_nosteam": true,
+  "media": {
+    "title": "Better Vehicle Dynamics",
+    "vanilla": [
+      "BetterVehicleDynamics",
+      "BVDTests"
+    ],
+    "preview": "brake_marks_still",
+    "size": [
+      1600,
+      900
+    ]
+  }
 }

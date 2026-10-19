@@ -1,0 +1,126 @@
+<title>BVD ZombieBuddy Footage</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700&family=Barlow:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: a single review column, one feature per block, footage first and its note beside it on wide screens. */
+  /* ds-allow-hardcode: standalone review page; the hex values are the page's own token definitions and the sizes are its fixed type scale. */
+  :root {
+    --bg: #f3f4f1;
+    --surface: #ffffff;
+    --fg: #1d2023;
+    --muted: #5a6066;
+    --line: #d7dad4;
+    --accent: #8a6a00;        /* road-marking yellow, darkened for light ground */
+    --ok: #2f7a3e;
+    --warn: #9a5b00;
+    --display: "Barlow Semi Condensed", "Arial Narrow", Arial, sans-serif;
+    --body: "Barlow", "Segoe UI", Arial, sans-serif;
+    --mono: "JetBrains Mono", Consolas, "Courier New", monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #16191c; --surface: #1f2327; --fg: #e8eae6; --muted: #9aa1a7; --line: #333a40;
+      --accent: #e2b714; --ok: #6cc37e; --warn: #e3a54a; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #16191c; --surface: #1f2327; --fg: #e8eae6; --muted: #9aa1a7; --line: #333a40;
+    --accent: #e2b714; --ok: #6cc37e; --warn: #e3a54a; color-scheme: dark;
+  }
+  body {
+    background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 16px; line-height: 1.55;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 32px 56px;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px; }
+  header { display: flex; flex-direction: column; gap: 10px; max-width: 68ch; }
+  .eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  h1 { font-family: var(--display); font-weight: 700; font-size: clamp(30px, 5vw, 44px); line-height: 1.05; margin: 0; text-wrap: balance; }
+  h1 span { color: var(--accent); }
+  h2 { font-family: var(--display); font-weight: 600; font-size: 24px; margin: 0; text-wrap: balance; }
+  p { margin: 0; }
+  .lede { color: var(--muted); }
+  .status { display: flex; flex-wrap: wrap; gap: 8px 20px; font-family: var(--mono); font-size: 13px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding-block: 12px; }
+  .status span { display: inline-flex; gap: 8px; align-items: baseline; }
+  .pass { color: var(--ok); font-weight: 500; }
+  .pend { color: var(--warn); font-weight: 500; }
+  .shot { display: grid; grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr); gap: 20px 28px; align-items: start; }
+  .shot figure { margin: 0; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .shot video, .shot img { width: 100%; max-width: 100%; height: auto; display: block; border-radius: 4px; border: 1px solid var(--line); background: #000; }
+  .note { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .note p { color: var(--muted); }
+  .note .what { color: var(--fg); }
+  .tag { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  .tag b { color: var(--accent); font-weight: 500; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .todo { border-left: 3px solid var(--warn); padding: 4px 0 4px 16px; display: flex; flex-direction: column; gap: 8px; max-width: 72ch; }
+  .todo ul { margin: 0; padding-left: 20px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+  @media (max-width: 760px) {
+    .shot { grid-template-columns: 1fr; }
+    .pair { grid-template-columns: 1fr; }
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Better Vehicle Dynamics &middot; branch zb-and-comments &middot; Build 42.21</div>
+    <h1>Driving through <span>ZombieBuddy</span>, no manual install</h1>
+    <p class="lede">Real in-game footage from the automated test profile. BVD's Java loaded through ZombieBuddy only: nothing copied into the game folder. Every frame is the game's own rendering; the clips are only trimmed and scaled. Nothing here is uploaded.</p>
+  </header>
+
+  <div class="status" aria-label="Verification status">
+    <span>Singleplayer <b class="pass">12/12 pass</b></span>
+    <span>Dedicated server, client B <b class="pass">4/4 pass</b></span>
+    <span>Dedicated server, client A <b class="pass">12/12 pass</b></span>
+    <span>Console errors <b class="pass">0</b></span>
+  </div>
+
+  <section class="shot">
+    <figure>
+      <video src="pull_away.mp4" autoplay muted loop playsinline controls aria-label="Car pulling away down the highway"></video>
+      <figcaption class="tag">pull_away &middot; <b>41 km/h</b> after 8 s in the SP test</figcaption>
+    </figure>
+    <div class="note">
+      <h2>Pulling away</h2>
+      <p class="what">The drivetrain here is BVD's, not vanilla's: the car's grip, tyre and load figures in the next shot only exist when BVD's Java is driving.</p>
+      <p>Scripted throttle on the highway south of Muldraugh. Engine started, gears and torque curve from BVD.</p>
+    </div>
+  </section>
+
+  <section class="shot">
+    <figure>
+      <img src="info_panel.jpg" alt="Vehicle Mechanics window with the Better Vehicle Dynamics panel docked to its right, listing tuning profile Custom, tire type OldTire, road, wet, snow and off-road grip 0.99, cargo load 3.3 and load penalty minus 42 percent launch">
+      <figcaption class="tag">info_panel &middot; panel values published by the ZombieBuddy layer</figcaption>
+    </figure>
+    <div class="note">
+      <h2>Vehicle info panel</h2>
+      <p class="what">Docked beside the mechanics window: tuning profile, tyre type, per-surface grip, cargo load and launch penalty.</p>
+      <p>These numbers come from BVD's Java each tick, so the panel filling in is direct proof the ZombieBuddy layer is running.</p>
+    </div>
+  </section>
+
+  <section class="shot">
+    <figure>
+      <video src="slide_marks.mp4" autoplay muted loop playsinline controls aria-label="Car sliding at an intersection and leaving dark tyre marks"></video>
+      <div class="pair">
+        <img src="tyre_marks.jpg" alt="Dark tyre-mark trail on the asphalt behind a blue car stopped at a curb">
+      </div>
+      <figcaption class="tag">corner (first shoot) &middot; tyre-mark sprites registered at load</figcaption>
+    </figure>
+    <div class="note">
+      <h2>Tyre marks</h2>
+      <p class="what">The dark trail on the asphalt is BVD's tyre-mark decal. Under ZombieBuddy the game's floor-splat list is extended at load instead of by a patched class, and the marks render.</p>
+      <p>The car slides off the road at the end. That is real BVD oversteer on full lock at speed, but it is not the shot for the Workshop page.</p>
+    </div>
+  </section>
+
+  <section class="todo">
+    <h2>Not ready yet</h2>
+    <ul>
+      <li>A clean hard-brake shot with marks on a straight road. On this stretch the road curves, so the car runs out of room before braking.</li>
+      <li>A tidy corner at half lock that stays on the asphalt.</li>
+      <li>Workshop GIFs and captions come after both shots are re-staged on a straighter road.</li>
+    </ul>
+  </section>
+</div>

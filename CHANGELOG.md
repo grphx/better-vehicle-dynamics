@@ -1,5 +1,26 @@
 # Changelog
 
+## [Unreleased]
+
+- **Dropped the `IsoChunkMap` and `IsoSprite` patches.** Both only touched the
+  legacy tile renderer, which 42.21 never uses unless you toggle the debug
+  "old renderer" key (`PerformanceSettings.fboRenderChunk` defaults to true and
+  `IsoCell.render` goes straight to `FBORenderCell`). Tyre marks render and
+  expire exactly as before (expiry is `CarController.bvdPruneSkidMarks`).
+  `IsoChunkMap` is the file that clashed with other manual-install Java
+  optimisation mods. Payload is now 14 class files. Existing installs must
+  delete the old `IsoChunkMap.class` / `IsoSprite*.class` (copying over
+  does not remove them).
+- **Dedicated servers need no Java install.** A server never simulates
+  vehicle physics (`BaseVehicle` skips `WorldSimulation.create`, and
+  `CarController` skips `Bullet.addVehicle` when `GameServer.server`). The
+  server-side version check now logs one informational line instead of a
+  "not properly installed" warning on every vehicle spawn. Workshop
+  description corrected (it told hosts to copy the zombie folder).
+- Fixed the client "missing Java component" dialog, which told players to
+  subscribe to an internal bundle name. It now points at the manual-install
+  folder (EN; PL/RU still carry the old wording).
+
 ## [0.1.15] - 2026-09-29 - B42.21 rebase + Polish translation
 
 - **Rebased onto Project Zomboid Build 42.21.0.** Vanilla 42.21 changed

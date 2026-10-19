@@ -11,6 +11,13 @@
   optimisation mods. Payload is now 14 class files. Existing installs must
   delete the old `IsoChunkMap.class` / `IsoSprite*.class` (copying over
   does not remove them).
+- **Fixed: vehicles kept simulating next to unloaded ground.** BVD's
+  `WorldSimulation` physics step had dropped vanilla's per-vehicle
+  `checkSurroundingChunks()` call, which pauses a vehicle's physics while any
+  of the 3x3 chunks around it is still loading. Without it a car at the edge
+  of the loaded area could drop through terrain that was not there yet
+  (likely behind the "car sank / vanished" reports). Restored; only
+  `WorldSimulation.class` changed in the payload.
 - **Dedicated servers need no Java install.** A server never simulates
   vehicle physics (`BaseVehicle` skips `WorldSimulation.create`, and
   `CarController` skips `Bullet.addVehicle` when `GameServer.server`). The

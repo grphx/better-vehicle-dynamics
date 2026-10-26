@@ -1,0 +1,16 @@
+[h1]v0.1.17 - Fix for the crash with Maskarad's Summer Car[/h1]
+
+[h2]What you need to do[/h2]
+[list]
+[*][b]ZombieBuddy users:[/b] nothing, Steam updates the mod and the fix comes with it.
+[*][b]Manual install:[/b] copy the zombie folder from B42.21_Manual_Install over your old one again (the vehicle controller classes changed).
+[*][b]Dedicated servers:[/b] nothing, servers still need no Java install.
+[/list]
+
+[h2]Changes[/h2]
+[list]
+[*][b]Fixed: crash or black screen when driving with Maskarad's Summer Car.[/b] BVD checked the engine for parts from a different mod and failed on every vehicle tick when that mod was missing. It now only does that when those parts exist. Cars from Maskarad's Summer Car steer, brake and drive normally with BVD. Tested in singleplayer with both mods loaded.
+[*]Known: Maskarad's engine adds about 150 kg, which BVD's load penalty counts as cargo, so those cars launch a little slower. Not changed in this version.
+[/list]
+
+No balance or tuning changes for any other vehicle.

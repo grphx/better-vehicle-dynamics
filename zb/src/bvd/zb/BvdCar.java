@@ -235,6 +235,16 @@ public final class BvdCar {
    private static ItemTag tagConverter = null;
    private static ItemTag tagFlywheel = null;
 
+   // The part-pack logic reads the engine's item container through those
+   // tags. Without the part-pack mod the tags are null, and looking one up
+   // throws. Another mod can still give the Engine part a container of its
+   // own (an engine-overhaul mod does), so the container alone does not mean
+   // the part pack is present: only treat it as one when every tag resolved.
+   private static boolean partPackLoaded() {
+      return tagBrakeBooster != null && tagPowerSteering != null && tagFanBelt != null
+         && tagGearbox != null && tagConverter != null && tagFlywheel != null;
+   }
+
    // --- Generic Lua policy contract ---------------------------------------
 
    // One-shot handshake the Lua side reads to know which bridge fields this
@@ -1498,7 +1508,7 @@ public final class BvdCar {
 
       VehiclePart enginePart = this.cc.vehicleObject.getPartById("Engine");
       ItemContainer engineBox = null;
-      if (enginePart != null) {
+      if (enginePart != null && partPackLoaded()) {
          engineBox = enginePart.getItemContainer();
       }
 

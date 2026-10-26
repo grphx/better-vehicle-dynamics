@@ -1,8 +1,8 @@
 diff --git a/zombie/core/physics/CarController.java b/zombie/core/physics/CarController.java
-index e82625b..7a4b2ff 100644
+index e82625b..d317be8 100644
 --- a/zombie/core/physics/CarController.java
 +++ b/zombie/core/physics/CarController.java
-@@ -1,840 +1,2137 @@
+@@ -1,840 +1,2147 @@
  package zombie.core.physics;
  
 +import java.util.ArrayList;
@@ -245,6 +245,16 @@ index e82625b..7a4b2ff 100644
 +   private static ItemTag tagGearbox = null;
 +   private static ItemTag tagConverter = null;
 +   private static ItemTag tagFlywheel = null;
++
++   // The part-pack logic reads the engine's item container through those
++   // tags. Without the part-pack mod the tags are null, and looking one up
++   // throws. Another mod can still give the Engine part a container of its
++   // own (an engine-overhaul mod does), so the container alone does not mean
++   // the part pack is present: only treat it as one when every tag resolved.
++   private static boolean partPackLoaded() {
++      return tagBrakeBooster != null && tagPowerSteering != null && tagFanBelt != null
++         && tagGearbox != null && tagConverter != null && tagFlywheel != null;
++   }
 +
 +   // --- Generic Lua policy contract ---------------------------------------
 +
@@ -772,8 +782,7 @@ index e82625b..7a4b2ff 100644
 +      this.absorbEngineTable(bridge.rawget("engineData"));
 +      this.absorbGearboxTable(bridge.rawget("gearboxData"));
 +      this.absorbConverterTable(bridge.rawget("converterData"));
- 
--            this.isGasR = false;
++
 +      // I2: latch / advance the generation only after a full successful parse
 +      // pass, so a (defensively guarded) malformed channel can retry on the
 +      // next call rather than latch a half-built state.
@@ -785,7 +794,8 @@ index e82625b..7a4b2ff 100644
 +         defaultsLoaded = true;
 +      }
 +   }
-+
+ 
+-            this.isGasR = false;
 +   private void absorbEngineTable(Object data) {
 +      if (!(data instanceof KahluaTableImpl)) {
 +         return;
@@ -881,7 +891,8 @@ index e82625b..7a4b2ff 100644
 +         converterSpecs.put(name, cs);
 +      }
 +   }
-+
+ 
+-            this.isGas = false;
 +   // --- Bridge-driven option mirror ---------------------------------------
 +
 +   private void updateModOptions() {
@@ -946,8 +957,7 @@ index e82625b..7a4b2ff 100644
 +      if (this.clientControls.shift) {
 +         autoRev = false;
 +      }
- 
--            this.isGas = false;
++
 +      if (autoRev && this.analogPedals) {
 +         if (forwardDot >= 0.0F && this.pedalGas - this.pedalBrake > 0.0F) {
 +            this.isGas = true;
@@ -1343,11 +1353,11 @@ index e82625b..7a4b2ff 100644
 +   private float getDriftSteeringBoost() {
 +      if (!this.getSandboxOptionBoolean("BetterVehicleDynamics.Drift", false)) {
 +         return 1.0F;
-+      }
+       }
 +      KahluaTableImpl bridge = this.bvdBridge();
 +      if (bridge != null && bridge.rawgetBool("driftActive")) {
 +         return this.getSandboxOption("BetterVehicleDynamics.DriftSteer", 1.5F);
-       }
++      }
 +      return 1.0F;
 +   }
  
@@ -1937,11 +1947,11 @@ index e82625b..7a4b2ff 100644
 +         loop.setVolume(this.loopExhaustId, (this.vehicleObject.throttle * 0.8F + 0.2F) * vol * this.startupBlend * overhaulVol);
        }
 +   }
-+
-+   // --- Main physics tick --------------------------------------------------
  
 -      if (this.vehicleObject.transmissionNumber == TransmissionNumber.Speed4) {
 -         engineSpeedCalc = 3000.0F * speed / 85.0F;
++   // --- Main physics tick --------------------------------------------------
++
 +   public void update() {
 +      // 42.20: vehicles can lack an engine entirely (burnt wrecks, trailers
 +      // on the vehicle path). Mirror vanilla: neutral box, no engine force,
@@ -1968,7 +1978,7 @@ index e82625b..7a4b2ff 100644
 -         engineSpeedCalc = 3000.0F * speed / 105.0F;
 +      VehiclePart enginePart = this.vehicleObject.getPartById("Engine");
 +      ItemContainer engineBox = null;
-+      if (enginePart != null) {
++      if (enginePart != null && partPackLoaded()) {
 +         engineBox = enginePart.getItemContainer();
        }
  
@@ -2723,7 +2733,7 @@ index e82625b..7a4b2ff 100644
              this.vehicleObject.stopSound(this.vehicleObject.ramSound);
              this.vehicleObject.ramSound = 0L;
           }
-@@ -844,6 +2141,55 @@ public final class CarController {
+@@ -844,6 +2151,55 @@ public final class CarController {
        }
     }
  
@@ -2779,7 +2789,7 @@ index e82625b..7a4b2ff 100644
     private void updateBackSignal() {
        if (this.isGasR && this.vehicleObject.isEngineRunning() && this.vehicleObject.hasBackSignal() && !this.vehicleObject.isBackSignalEmitting()) {
           if (GameClient.client) {
-@@ -933,56 +2279,106 @@ public final class CarController {
+@@ -933,56 +2289,106 @@ public final class CarController {
     }
  
     public void updateControls() {
@@ -2924,7 +2934,7 @@ index e82625b..7a4b2ff 100644
        }
  
        this.isGas = this.wasGas = false;
-@@ -1292,4 +2688,28 @@ public final class CarController {
+@@ -1292,4 +2698,28 @@ public final class CarController {
           this.minRpm = rpm;
        }
     }

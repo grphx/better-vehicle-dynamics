@@ -63,6 +63,8 @@ A public Lua API lets other mods register vehicle reference data, tyre-grip prof
 [h1]Compatibility[/h1]
 Works alongside vehicle-skin and content mods. Run only one vehicle-physics overhaul at a time. Build 42.21+.
 
+[b]Maskarad's Summer Car:[/b] works from v0.1.17 (earlier versions crashed with it). Its engine adds about 150 kg to a car, which BVD's load penalty counts as cargo, so those cars launch a little slower than they would without it. Deeper integration (following its manual or automatic gearbox) is planned, not done.
+
 Other manual-install Java mods (for example the PZ Optimization / tuner kind) clash only if they ship the same class files. BVD now ships only [code]CarController[/code], [code]WorldSimulation[/code], [code]Texture[/code] and [code]IsoFloorBloodSplat[/code] (it no longer touches [code]IsoChunkMap[/code] or [code]IsoSprite[/code]). If another Java mod ships one of those four, only one of the two mods' copies can be active. With ZombieBuddy (option A), BVD replaces no game files at all, so this kind of clash goes away.
 
 [h1]Translations[/h1]

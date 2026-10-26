@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.1.17] - 2026-10-26 - Maskarad's Summer Car crash fix
+
+- **Fixed: crash / black screen with Maskarad's Summer Car** (and any other
+  mod that gives a vehicle's Engine part an item container). BVD's
+  drivetrain looks inside the engine container for parts from the optional
+  Project Summer Car mod, through six `ProjectSummerCar:*` item tags. Without
+  that mod the tags are null, and `ItemContainer.getFirstTag(null)` throws a
+  `NullPointerException` (`Objects.requireNonNull`) on every physics tick.
+  Vanilla cars have no engine container, so it never showed until a mod
+  added one. The container is now only used when all six tags resolved
+  (`partPackLoaded()`, one gate where `engineBox` is taken in `update()`).
+  A plain null-check on each lookup would have been wrong: it would leave
+  the car with no steering, no drive force and 20% brakes, as if its pump,
+  converter and booster were missing.
+- Seen in game with the ZombieBuddy layer: the layer disabled itself after
+  the first exception and the car fell back to vanilla driving. With the
+  fix an MSC car steers, brakes and drives under BVD, and BVD's own
+  readout is published again. Manual-install players had the uncaught
+  exception every tick. `CarController*.class` changed, so a manual install
+  needs the zombie folder recopied; ZombieBuddy users get it from the
+  Workshop update.
+- Known, not changed here: MSC's engine assembly adds ~158 kg through the
+  engine container, which BVD's load penalty counts as cargo (a stock test
+  car goes from ratio 1.40 to 1.60), so MSC cars launch a little slower.
+- Tests: `tools/autotest/BVDTests` gained `msc` and `msc_base` modes
+  (run with a config that lists the MSC mod).
+
 ## [0.1.16] - 2026-10-19 - ZombieBuddy support
 
 - **New: optional ZombieBuddy layer (now the recommended install).** With

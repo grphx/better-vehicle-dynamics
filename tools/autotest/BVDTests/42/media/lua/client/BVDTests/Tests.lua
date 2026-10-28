@@ -117,6 +117,16 @@ local function driveBody(T)
     local stopped = T.waitFor(function() return math.abs(v:getCurrentSpeedKmHour()) < 1 end, 20)
     T.check("car brakes to a stop", stopped ~= nil, string.format("speed %.1f", v:getCurrentSpeedKmHour()))
     if isClient() then
+        -- tire wear in MP: the server owns the part condition, so it must apply the wear and send it back, and
+        -- the other client must see it too
+        sendClientCommand(p, "BVDTests", "wearOn", {})
+        T.wait(2)
+        local rear, front = v:getPartById("TireRearLeft"), v:getPartById("TireFrontLeft")
+        local r0, f0 = rear:getCondition(), front:getCondition()
+        BVD.requestTireWear(v, 5)
+        local worn = T.waitFor(function() return rear:getCondition() < r0 end, 15)
+        T.check("MP: server wore the rear tire part and sent it back", worn ~= nil and rear:getCondition() == r0 - 5 and front:getCondition() == f0,
+            string.format("rear %d -> %d, front %d -> %d", r0, rear:getCondition(), f0, front:getCondition()))
         -- keep circling so client B can watch it move
         T.drive(true, true, 0.4)
         T.wait(20)
@@ -147,6 +157,9 @@ local function watchBody(T)
     local moved = math.sqrt((v:getX() - x0) ^ 2 + (v:getY() - y0) ^ 2)
     T.check("B sees A's car move", moved > 5, string.format("moved %.1f tiles", moved))
     T.check("BVD readout stays local to the driver", BetterVehicleDynamicsMod.computed == nil)
+    local rear = v:getPartById("TireRearLeft")
+    local seen = T.waitFor(function() return rear:getCondition() <= 95 end, 90)
+    T.check("B sees the worn rear tire that A's server-side wear produced", seen ~= nil, "rear tire condition " .. tostring(rear:getCondition()))
 end
 
 T.register("sp", driveBody, { startLoc = { x = SPOT.x, y = SPOT.y, z = 0 } })

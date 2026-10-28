@@ -1,5 +1,39 @@
 # Changelog
 
+## [0.1.18] - 2026-10-28 - Tire wear fix (wheels came off broken)
+
+- **Fixed: removed wheels came out broken (condition 0).** The "Tires wear
+  from wheel slip" feature (on by default since v0.1.2) lowered the
+  condition of the installed tire ITEMS on every frame the driver had the
+  throttle down below 8 km/h, which includes the start of every ordinary
+  launch, and it did so on all four wheels. A vehicle PART has its own
+  condition (the mechanics window and BVD's grip model read it); setting the
+  item's condition does not update the part, so nothing showed until the
+  wheel was removed and came out broken. Measured in game: three launches
+  took all four tire items from 100 to 0 while the mechanics window still
+  said 100%, and removal at Mechanics 10 succeeded 4/4 with 4/4 broken
+  wheels. With the option off nothing changed. A client also cannot send a
+  part condition to the server (`transmitPartCondition` only works there), so
+  in multiplayer the damage never reached other players or the server's copy
+  of the item.
+- The wear is now applied to the vehicle PART by the server
+  (`server/BVD_TireWearServer.lua`): the mechanics window shows it, the grip
+  model reads it, the tire item follows, and the server sends it to every
+  player. The driver's client only counts slip and asks for it; the server
+  checks that the sender is the driver, that the option is on, caps a request
+  at 5 points and ignores requests closer than 0.9 s together.
+- It only counts real slip now: throttle down and under 3 km/h for at least
+  2 seconds (stuck or burning out). An ordinary launch never counts. It is
+  based on real time (0.5 condition points per second per driven tire at rate
+  1.0), so it no longer depends on the frame rate, and it only touches the two
+  rear wheels, the ones that get engine force.
+- **The option is now off by default** for new worlds (it never worked as
+  intended). Existing saves keep their saved setting; with the fix a world
+  that has it on wears tires slowly, and only while stuck.
+- Wheels that were already removed broken stay broken. Tires still installed
+  on a car are reset from the part's condition when the game reloads them.
+- Tests: `tools/autotest/BVDTests` mode `wheels` / `wheels_off`.
+
 ## [0.1.17] - 2026-10-26 - Maskarad's Summer Car crash fix
 
 - **Fixed: crash / black screen with Maskarad's Summer Car** (and any other

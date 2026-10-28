@@ -206,7 +206,7 @@ option BetterVehicleDynamics.TireGripModel
 
 option BetterVehicleDynamics.TireSlipWear
 {
-    type = boolean, default = true,
+    type = boolean, default = false,
     page = BetterVehicleDynamics_TiresLoad, translation = BVD_TireSlipWear,
 }
 

@@ -1,6 +1,6 @@
 name=Better Vehicle Dynamics
 id=BetterVehicleDynamics
-modversion=0.1.17
+modversion=0.1.18
 description=A drivetrain and traction overhaul: torque-curve driven acceleration, surface- and weather-aware grip, configurable rolling drag, an opt-in reference power/weight table, cargo-capacity rescaling, an arcade drift mode, tyre marks, and a driver readout. All values are sandbox-tunable. Java side loads through ZombieBuddy (recommended) or the bundled manual install.
 pzversion=42
 versionMin=42.20

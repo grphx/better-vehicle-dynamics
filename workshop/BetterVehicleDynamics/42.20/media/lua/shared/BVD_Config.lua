@@ -158,7 +158,7 @@ local function buildCfg()
 
         -- Load dynamics
         TireGripModel       = boolTrue("TireGripModel"),       -- default true
-        TireSlipWear        = boolTrue("TireSlipWear"),        -- default true
+        TireSlipWear        = boolFalse("TireSlipWear"),       -- default false (opt-in)
         TireSlipWearRate    = num("TireSlipWearRate",    1.0),
         LoadAffectsHandling = boolTrue("LoadAffectsHandling"), -- default true
         LoadAffectsFuel     = boolTrue("LoadAffectsFuel"),     -- default true

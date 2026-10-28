@@ -1,0 +1,16 @@
+[h1]v0.1.18 - Fix for wheels coming off broken[/h1]
+
+[h2]What you need to do[/h2]
+[list]
+[*]Nothing. This update only changes the mod's Lua side, so Steam updates it and it applies to both ZombieBuddy and manual installs. No zombie folder to recopy.
+[*]Wheels you already took off while this bug was active stay broken, sorry. Tires still on a car are reset when the game reloads them.
+[/list]
+
+[h2]Changes[/h2]
+[list]
+[*][b]Fixed: wheels came off broken even with enough Mechanics skill.[/b] The "Tires wear from wheel slip" option wore the tire item itself, on every launch, without showing it anywhere (the mechanics window kept saying 100%) until you removed the wheel. It now wears the vehicle's tire properly, so the condition shows in the mechanics window, counts for grip, and is the same for every player on a server.
+[*]It only counts real wheelspin now: stuck or burning out for a couple of seconds. A normal launch never wears tires. It no longer depends on your frame rate, and only the two driven rear tires wear.
+[*]The option is now [b]off by default[/b] for new worlds. Worlds that already have it on keep it, with the gentler behaviour above. You can change it in the sandbox options (Tires and Load page).
+[/list]
+
+No other balance or tuning changes.

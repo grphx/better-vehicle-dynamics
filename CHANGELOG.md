@@ -32,6 +32,7 @@
   that has it on wears tires slowly, and only while stuck.
 - Wheels that were already removed broken stay broken. Tires still installed
   on a car are reset from the part's condition when the game reloads them.
+- Reported by RedFox (Steam Workshop comment), thank you.
 - Tests: `tools/autotest/BVDTests` mode `wheels` / `wheels_off`.
 
 ## [0.1.17] - 2026-10-26 - Maskarad's Summer Car crash fix

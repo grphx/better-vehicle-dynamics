@@ -147,6 +147,18 @@ local function buildRows(vehicle)
     -- Active handling tune ----------------------------------------------
     rows[#rows + 1] = { "Tuning profile", profileName(cfg), R_NORM }
 
+    -- Which Java part is running: the optional ZombieBuddy layer, the manually copied classes, or none.
+    do
+        local mod = BetterVehicleDynamicsMod
+        if not mod or mod.javaVersion == "not installed" then
+            rows[#rows + 1] = { "Java part", "missing", R_OVER }
+        elseif type(BVD_zombieBuddyActive) == "function" and BVD_zombieBuddyActive() == true then
+            rows[#rows + 1] = { "Java part", "ZombieBuddy", R_NORM }
+        else
+            rows[#rows + 1] = { "Java part", "manual install", R_NORM }
+        end
+    end
+
     -- Per-vehicle effective grip (from computed bridge; "--" when absent) -
     rows[#rows + 1] = { "Tire type",
         (comp and comp.tireFamily) or "--",

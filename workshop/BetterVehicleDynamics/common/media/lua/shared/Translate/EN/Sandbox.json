@@ -55,6 +55,19 @@
     "Sandbox_BVD_RollResistanceOffroad": "Rolling drag (off-road)",
     "Sandbox_BVD_RollResistanceOffroad_tooltip": "Extra rolling resistance when off sealed road.",
 
+    "Sandbox_BVD_EngineBraking": "Engine braking",
+    "Sandbox_BVD_EngineBraking_tooltip": "How hard the engine slows the car when you lift off the throttle in gear, and how the revs follow the road speed (a downshift raises them). 0 turns it off and gives the old behaviour, 1 is a normal road engine, higher is a heavy diesel or a race engine. Lower gears brake harder, as in a real car.",
+    "Sandbox_BVD_EngineBrakeLockup": "Wheel lock-up on a too-low gear",
+    "Sandbox_BVD_EngineBrakeLockup_tooltip": "Dropping into a gear far too low for your speed locks the driven wheels for a moment and can slide the car. Off by default.",
+
+    "Sandbox_BVD_ManualClutch": "Manual clutch",
+    "Sandbox_BVD_ManualClutch_tooltip": "For players who turned on manual shifting: adds a clutch (hold the clutch key to disengage the engine), a neutral gear between reverse and first, and a real reverse gear. Off keeps the simple gear selector. Automatic cars are not affected.",
+    "Sandbox_BVD_ManualStall": "Stalling",
+    "Sandbox_BVD_ManualStall_tooltip": "Needs the manual clutch. Letting the clutch out in a gear too high for your speed, without enough throttle, stalls the engine and you have to restart it. Off by default.",
+
+    "Sandbox_BVD_EngineProfiles": "Engine-type shift points",
+    "Sandbox_BVD_EngineProfiles_tooltip": "Automatic gearboxes shift at the pattern of the vehicle's engine type (vans early, sports cars late), taken from the game's own engine data, instead of one shift point for every car. Off by default.",
+
     "Sandbox_BVD_RealismHPWeight": "Reference power & weight",
     "Sandbox_BVD_RealismHPWeight_tooltip": "Replaces engine force and mass for the covered vanilla vehicles with Better Vehicle Dynamics' own researched reference figures (see BVD_VehicleData.lua; modded vehicles can register their own via the public API).",
 

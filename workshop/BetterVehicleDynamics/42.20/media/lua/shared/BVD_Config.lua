@@ -114,6 +114,11 @@ local function buildCfg()
 
         -- Drivetrain
         EnginePower     = num("EnginePower",    1.0),
+        EngineBraking     = num("EngineBraking",     1.0),
+        EngineBrakeLockup = boolFalse("EngineBrakeLockup"),
+        ManualClutch      = boolFalse("ManualClutch"),
+        ManualStall       = boolFalse("ManualStall"),
+        EngineProfiles    = boolFalse("EngineProfiles"),
         LowSpeedGrunt   = num("LowSpeedGrunt",  2.5),
         ReverseTopSpeed = num("ReverseTopSpeed", 25),
 

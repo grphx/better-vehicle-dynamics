@@ -30,6 +30,36 @@ option BetterVehicleDynamics.EnginePower
     page = BetterVehicleDynamics_Drivetrain, translation = BVD_EnginePower,
 }
 
+option BetterVehicleDynamics.EngineBraking
+{
+    type = double, min = 0.0, max = 3.0, default = 1.0,
+    page = BetterVehicleDynamics_Drivetrain, translation = BVD_EngineBraking,
+}
+
+option BetterVehicleDynamics.EngineBrakeLockup
+{
+    type = boolean, default = false,
+    page = BetterVehicleDynamics_Drivetrain, translation = BVD_EngineBrakeLockup,
+}
+
+option BetterVehicleDynamics.ManualClutch
+{
+    type = boolean, default = false,
+    page = BetterVehicleDynamics_Drivetrain, translation = BVD_ManualClutch,
+}
+
+option BetterVehicleDynamics.ManualStall
+{
+    type = boolean, default = false,
+    page = BetterVehicleDynamics_Drivetrain, translation = BVD_ManualStall,
+}
+
+option BetterVehicleDynamics.EngineProfiles
+{
+    type = boolean, default = false,
+    page = BetterVehicleDynamics_Drivetrain, translation = BVD_EngineProfiles,
+}
+
 option BetterVehicleDynamics.LowSpeedGrunt
 {
     type = double, min = 1.0, max = 4.0, default = 2.5,

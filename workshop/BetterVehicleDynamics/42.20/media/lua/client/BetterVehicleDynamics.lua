@@ -84,6 +84,8 @@ keyOptions:addTickBox("JoystickThrottle", getText("IGUI_BVD_JoystickThrottle"), 
 local shiftup = keyOptions:addKeyBind("ShiftUp", getText("IGUI_BVD_ShiftUp") , Keyboard.KEY_UP, getText("IGUI_BVD_ShiftUp_Tooltip"))
 local shiftdown = keyOptions:addKeyBind("ShiftDown", getText("IGUI_BVD_ShiftDown") , Keyboard.KEY_DOWN, getText("IGUI_BVD_ShiftDown_Tooltip"))
 local driftBind = keyOptions:addKeyBind("DriftKey", getText("IGUI_BVD_DriftKey"), Keyboard.KEY_LSHIFT, getText("IGUI_BVD_DriftKey_Tooltip"))
+local clutchBind = keyOptions:addKeyBind("ClutchKey", getText("IGUI_BVD_ClutchKey"), Keyboard.KEY_LCONTROL, getText("IGUI_BVD_ClutchKey_Tooltip"))
+BetterVehicleDynamicsMod.clutchBind = clutchBind   -- read by client/BVD_Shifter.lua
 keyOptions.apply = applyOptions;
 
 keyOptions:addTickBox("CustomizableSteering", getText("IGUI_BVD_CustomizableSteering"), true, getText("IGUI_BVD_CustomizableSteering_Tooltip"))
@@ -118,7 +120,7 @@ function BetterVehicleDynamicsVersionCheck()
 		modal:initialise()
 		modal:addToUIManager()
 		UIManager.getSpeedControls():SetCurrentGameSpeed(0);
-	elseif BetterVehicleDynamicsMod.javaVersion ~= "3.4" and not VersionCheckConfirmed then
+	elseif BetterVehicleDynamicsMod.javaVersion ~= "3.5" and not VersionCheckConfirmed then
 		VersionCheckConfirmed = true;
 		local width = 400;
 		local modal = ISModalDialog:new((getCore():getScreenWidth() - width) / 2,getCore():getScreenHeight() / 4, width, 150, getText("IGUI_BVD_Outdated"),false, nil, onConfirm, 0)

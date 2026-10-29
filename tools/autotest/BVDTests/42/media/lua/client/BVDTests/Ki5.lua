@@ -17,7 +17,8 @@ end
 
 -- a start square with LINE free tiles of the same surface type to its north
 -- strict: the floor is the only object on every square (no vegetation or other ground cover that slows vehicles)
-local function findLine(prefix, cx, cy, avoid, strict)
+local function findLine(prefix, cx, cy, avoid, strict, line)
+    local LINE = line or LINE
     for dy = -90, 90, 3 do
         for dx = -90, 90, 3 do
             local x, y = cx + dx, cy + dy
@@ -362,8 +363,308 @@ local function rulesBody(T)
     T.check("a registered heavy truck is not made lighter", hm == 2600, tostring(hm))
 end
 
+-- Engine braking (v0.2): lift off at speed and see how the car slows and where the revs go, with the option at
+-- 0 (the old behaviour), 1 and 2. Also checks that full-throttle acceleration is untouched by the option.
+local function coastRun(p, v, knob)
+    SandboxVars.BetterVehicleDynamics.EngineBraking = knob
+    getSandboxOptions():updateFromLua()
+    BVD.invalidateConfigCache()
+    T.wait(2)   -- the Java side re-reads the options about once a second
+    local x0, y0 = v:getX(), v:getY()
+    T.drive(true, true, 0)
+    local t0, v3 = getTimestampMs(), nil
+    local reached, peak = nil, 0
+    while getTimestampMs() - t0 < 14000 do
+        local s = math.abs(v:getCurrentSpeedKmHour())
+        if s > peak then peak = s end
+        if not v3 and getTimestampMs() - t0 >= 3000 then v3 = s end
+        if s >= 45 then reached = s break end
+        coroutine.yield()
+    end
+    if not reached then
+        T.log(string.format("engine braking %.1f: never reached 45 km/h (peak %.1f, moved %.0f m, engine running %s, rpm %.0f)", knob, peak, math.sqrt((v:getX() - x0) ^ 2 + (v:getY() - y0) ^ 2), tostring(v:isEngineRunning()), v:getEngineSpeed()))
+        return nil, (peak < 12 and "stuck" or "slow")
+    end
+    local atRelease = math.abs(v:getCurrentSpeedKmHour())
+    T.drive(false, false, 0)   -- lift off, no brake
+    local rel = getTimestampMs()
+    local at = {}
+    local marks = { 0.3, 1.0, 2.0, 3.0 }
+    local mi, rpmMax = 1, 0
+    while getTimestampMs() - rel < 3100 do
+        local el = (getTimestampMs() - rel) / 1000
+        local rpm = v:getEngineSpeed()
+        if rpm > rpmMax then rpmMax = rpm end
+        if mi <= #marks and el >= marks[mi] then
+            at[mi] = { speed = math.abs(v:getCurrentSpeedKmHour()), rpm = rpm }
+            mi = mi + 1
+        end
+        coroutine.yield()
+    end
+    local decel = (at[1] and at[4]) and ((at[1].speed - at[4].speed) / 3.6 / (marks[4] - marks[1])) or -1
+    local dist = math.sqrt((v:getX() - x0) ^ 2 + (v:getY() - y0) ^ 2)
+    T.log(string.format("engine braking %.1f: released at %.0f km/h, accel to 3 s %s km/h; after lift-off speed %s km/h, rpm %s, rpm max %.0f; decel %.2f m/s2; run %.0f m",
+        knob, atRelease, v3 and string.format("%.1f", v3) or "?",
+        table.concat({ at[1] and string.format("%.0f", at[1].speed) or "?", at[2] and string.format("%.0f", at[2].speed) or "?", at[3] and string.format("%.0f", at[3].speed) or "?", at[4] and string.format("%.0f", at[4].speed) or "?" }, "/"),
+        table.concat({ at[1] and string.format("%.0f", at[1].rpm) or "?", at[2] and string.format("%.0f", at[2].rpm) or "?", at[3] and string.format("%.0f", at[3].rpm) or "?", at[4] and string.format("%.0f", at[4].rpm) or "?" }, "/"),
+        rpmMax, decel, dist))
+    T.drive(true, false, 0)
+    T.waitFor(function() return math.abs(v:getCurrentSpeedKmHour()) < 1 end, 20)
+    T.drive(false, false, 0)
+    return { v3 = v3, decel = decel, rpm1 = at[2] and at[2].rpm or -1, rpmMax = rpmMax, speedEnd = at[4] and at[4].speed or -1, atRelease = atRelease }
+end
+
+local function coastOnce(p, rx, ry, knob)
+    -- a fresh car at the start for each run: the previous one is a long way up the road
+    p:setX(rx + 0.5); p:setY(ry + 3.5); p:setZ(0)
+    p:setLastX(rx + 0.5); p:setLastY(ry + 3.5); p:setLastZ(0)
+    T.wait(3)
+    local v
+    for k = 1, 6 do
+        v = addVehicleDebug("Base.CarNormal", IsoDirections.N, nil, getCell():getGridSquare(rx, ry, 0))
+        if v then break end
+        T.wait(1.5)
+    end
+    if not T.check("spawned the car for engine braking " .. knob, v ~= nil) then return nil, "nospawn" end
+    T.wait(1.5)
+    BVDTestsFix(v)
+    sameTires(v)
+    T.wait(0.5)
+    if not enter(p, v) then T.log("could not enter") v:permanentlyRemove() return nil, "noenter" end
+    v:tryStartEngine(true)
+    T.waitFor(function() return v:isEngineRunning() end, 8)
+    T.wait(1)
+    pcall(function() v:setPhysicsActive(true, true) end)   -- a debug-spawned car often stays asleep; only the difference between runs matters here
+    T.wait(0.5)
+    local r, why = coastRun(p, v, knob)
+    pcall(ISVehicleMenu.onExit, p)
+    T.waitFor(function() return p:getVehicle() == nil end, 5)
+    v:permanentlyRemove()
+    T.wait(1)
+    return r, why
+end
+
+local function coastBody(T)
+    T.wait(4)
+    local p = getPlayer()
+    T.check("BVD ZombieBuddy layer active", type(BVD_zombieBuddyActive) == "function" and BVD_zombieBuddyActive() == true)
+    T.clearCars(p, 300)
+    local rx, ry = findLine("blends_street", ROAD.x, ROAD.y, nil, true, 90)
+    if not rx then rx, ry = findLine("blends_street", ROAD.x, ROAD.y, nil, true, 60) end
+    T.log("road start " .. tostring(rx) .. "," .. tostring(ry))
+    if not T.check("found a long road", rx ~= nil) then return end
+    p:setX(rx + 0.5); p:setY(ry + 3.5); p:setZ(0)
+    p:setLastX(rx + 0.5); p:setLastY(ry + 3.5); p:setLastZ(0)
+    T.wait(3)
+    local res = {}
+    local CAR = "Base.CarNormal"
+    for _, knob in ipairs({ 0.0, 1.0, 2.0 }) do
+        for attempt = 1, 4 do
+            local r, why = coastOnce(p, rx, ry, knob)
+            if r then res[knob] = r break end
+            if why ~= "stuck" then break end
+            T.log("the car did not get going (spawn quirk), attempt " .. attempt)
+        end
+    end
+    local a, b, c = res[0.0], res[1.0], res[2.0]
+    if not T.check("all three runs reached 45 km/h", a and b and c) then return end
+    T.check("acceleration to 3 s is the same with engine braking on (within 3 km/h)", math.abs(a.v3 - b.v3) < 3 and math.abs(a.v3 - c.v3) < 3, string.format("%.1f %.1f %.1f", a.v3, b.v3, c.v3))
+    T.check("engine braking 1 slows the car more than off", b.decel > a.decel + 0.3, string.format("%.2f vs %.2f m/s2", b.decel, a.decel))
+    T.check("engine braking 2 slows the car more than 1", c.decel > b.decel + 0.2, string.format("%.2f vs %.2f m/s2", c.decel, b.decel))
+    T.check("the revs follow the road speed on lift-off (1 s after, 400 rpm above off)", b.rpm1 > a.rpm1 + 400, string.format("%.0f vs %.0f rpm", b.rpm1, a.rpm1))
+    T.check("the revs never pass 1.15 x redline", b.rpmMax < 4500 * 1.15 and c.rpmMax < 4500 * 1.15, string.format("%.0f / %.0f", b.rpmMax, c.rpmMax))
+    T.check("the car still rolls (engine braking does not lock it)", b.speedEnd > 5 and c.speedEnd > 3, string.format("%.0f / %.0f km/h after 3 s", b.speedEnd, c.speedEnd))
+end
+
+-- Control for the stuck-spawn quirk: the same launch, engine braking off and on, no retries, counting how often a
+-- car never gets going. If only the "on" runs stick, the option is breaking launches.
+local function coastCtlBody(T)
+    T.wait(4)
+    local p = getPlayer()
+    T.clearCars(p, 300)
+    local rx, ry = findLine("blends_street", ROAD.x, ROAD.y, nil, true, 60)
+    T.log("road start " .. tostring(rx) .. "," .. tostring(ry))
+    if not T.check("found a road", rx ~= nil) then return end
+    local counts = {}
+    for _, knob in ipairs({ 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0 }) do
+        local r, why = coastOnce(p, rx, ry, knob)
+        local c = counts[knob] or { ok = 0, stuck = 0, other = 0 }
+        counts[knob] = c
+        if r then c.ok = c.ok + 1 elseif why == "stuck" then c.stuck = c.stuck + 1 else c.other = c.other + 1 end
+    end
+    for _, knob in ipairs({ 0.0, 1.0 }) do
+        local c = counts[knob]
+        T.log(string.format("engine braking %.1f: %d reached 45 km/h, %d never got going, %d slow/other", knob, c.ok, c.stuck, c.other))
+    end
+end
+
+-- Manual clutch, neutral, reverse gear, stalling and the on-screen shifter (v0.2). The clutch key is replaced by
+-- BVD.testClutch, gears by BetterVehicleDynamicsMod.forceGear (-1 R, 0 N, 1..n).
+local function setOpt2(name, value)
+    SandboxVars.BetterVehicleDynamics[name] = value
+    getSandboxOptions():updateFromLua()
+    BVD.invalidateConfigCache()
+end
+
+-- spawn a car, make sure it can move at all (the harness quirk), then hand it to fn(v); false when it never got going
+local function withCar(p, rx, ry, fn)
+    for attempt = 1, 4 do
+        p:setX(rx + 0.5); p:setY(ry + 3.5); p:setZ(0)
+        p:setLastX(rx + 0.5); p:setLastY(ry + 3.5); p:setLastZ(0)
+        T.wait(3)
+        local v
+        for k = 1, 6 do
+            v = addVehicleDebug("Base.CarNormal", IsoDirections.N, nil, getCell():getGridSquare(rx, ry, 0))
+            if v then break end
+            T.wait(1.5)
+        end
+        if not v then return false end
+        T.wait(1.5)
+        BVDTestsFix(v)
+        sameTires(v)
+        T.wait(0.5)
+        if not enter(p, v) then v:permanentlyRemove() return false end
+        v:tryStartEngine(true)
+        T.waitFor(function() return v:isEngineRunning() end, 8)
+        T.wait(1)
+        pcall(function() v:setPhysicsActive(true, true) end)
+        T.wait(0.5)
+        -- can it move? (automatic, no clutch option)
+        local mod = BetterVehicleDynamicsMod
+        mod.manualShift = false
+        T.drive(true, true, 0)
+        local peak, t0 = 0, getTimestampMs()
+        while getTimestampMs() - t0 < 2500 do
+            peak = math.max(peak, math.abs(v:getCurrentSpeedKmHour()))
+            coroutine.yield()
+        end
+        T.drive(true, false, 0)
+        T.waitFor(function() return math.abs(v:getCurrentSpeedKmHour()) < 1 end, 15)
+        T.drive(false, false, 0)
+        local moved = peak > 8
+        if moved then
+            fn(v)
+        end
+        pcall(ISVehicleMenu.onExit, p)
+        T.waitFor(function() return p:getVehicle() == nil end, 5)
+        v:permanentlyRemove()
+        T.wait(1)
+        if moved then return true end
+        T.log("the car did not get going (spawn quirk), attempt " .. attempt)
+    end
+    return false
+end
+
+local function runFor(v, seconds, sample)
+    local t0, peakSpeed, peakRpm = getTimestampMs(), 0, 0
+    while getTimestampMs() - t0 < seconds * 1000 do
+        peakSpeed = math.max(peakSpeed, math.abs(v:getCurrentSpeedKmHour()))
+        peakRpm = math.max(peakRpm, v:getEngineSpeed())
+        if sample then sample(v) end
+        coroutine.yield()
+    end
+    return peakSpeed, peakRpm
+end
+
+local function stopCar(v)
+    T.drive(true, false, 0)
+    T.waitFor(function() return math.abs(v:getCurrentSpeedKmHour()) < 1 end, 15)
+    T.drive(false, false, 0)
+    T.wait(0.5)
+end
+
+local function clutchBody(T)
+    T.wait(4)
+    local p = getPlayer()
+    T.check("BVD ZombieBuddy layer active", type(BVD_zombieBuddyActive) == "function" and BVD_zombieBuddyActive() == true)
+    T.clearCars(p, 300)
+    local rx, ry = findLine("blends_street", ROAD.x, ROAD.y, nil, true, 90)
+    if not rx then rx, ry = findLine("blends_street", ROAD.x, ROAD.y, nil, true, 60) end
+    if not T.check("found a road", rx ~= nil) then return end
+    local mod = BetterVehicleDynamicsMod
+    setOpt2("ManualClutch", true)
+    setOpt2("ManualStall", true)
+    T.wait(2)
+    local r = {}
+
+    local ok = withCar(p, rx, ry, function(v)
+        mod.manualShift = true
+        -- 1. neutral: revs rise, the car does not go anywhere
+        mod.forceGear = 0
+        BVD.testClutch = false
+        T.wait(0.5)
+        T.drive(true, true, 0)
+        r.neutralSpeed, r.neutralRpm = runFor(v, 2.5)
+        stopCar(v)
+        r.shifterShown = BVD.shifterShown and BVD.shifterShown() or false
+        -- 2. first gear, clutch held: revs rise, the car does not go anywhere
+        mod.forceGear = 1
+        BVD.testClutch = true
+        T.wait(0.8)
+        T.drive(true, true, 0)
+        r.heldSpeed, r.heldRpm = runFor(v, 2.5)
+        -- 3. let the clutch out with the throttle still down: the car goes
+        BVD.testClutch = false
+        r.launchSpeed = runFor(v, 4)
+        T.log(string.format("running: engine %s", tostring(v:isEngineRunning())))
+        r.launchRunning = v:isEngineRunning()
+        stopCar(v)
+        BVD.testClutch = false
+        -- 4. reverse gear
+        mod.forceGear = -1
+        T.wait(0.5)
+        local x0, y0 = v:getX(), v:getY()
+        local fx, fy = v:getForwardVector(Vector3f.new()):x(), 0
+        T.drive(true, true, 0)
+        r.reverseSpeed = runFor(v, 3)
+        local dx, dy = v:getX() - x0, v:getY() - y0
+        local fv = v:getForwardVector(Vector3f.new())
+        r.reverseDot = dx * fv:x() + dy * fv:z()   -- forward vector: x,z are the ground plane
+        stopCar(v)
+    end)
+    T.check("the test car moved on its own first", ok)
+    if not ok then BVD.testClutch = nil return end
+    T.check("in neutral the car does not move (under 3 km/h)", (r.neutralSpeed or 99) < 3, string.format("%.1f km/h", r.neutralSpeed or -1))
+    T.check("in neutral the revs rise freely", (r.neutralRpm or 0) > 2500, string.format("%.0f rpm", r.neutralRpm or -1))
+    T.check("the on-screen shifter is up in manual mode with the clutch", r.shifterShown == true)
+    T.check("clutch held in first: the car does not move (under 3 km/h)", (r.heldSpeed or 99) < 3, string.format("%.1f km/h", r.heldSpeed or -1))
+    T.check("clutch held in first: the revs rise", (r.heldRpm or 0) > 2500, string.format("%.0f rpm", r.heldRpm or -1))
+    T.check("letting the clutch out with the throttle down launches the car", (r.launchSpeed or 0) > 10, string.format("%.1f km/h", r.launchSpeed or -1))
+    T.check("the launch does not stall the engine", r.launchRunning == true)
+    T.check("reverse gear drives the car backwards", (r.reverseSpeed or 0) > 3 and (r.reverseDot or 0) < 0, string.format("%.1f km/h, dot %.2f", r.reverseSpeed or -1, r.reverseDot or 0))
+
+    -- stalling: third gear, clutch out, no throttle, from a standstill
+    local stalled, kept
+    ok = withCar(p, rx, ry, function(v)
+        mod.manualShift = true
+        mod.forceGear = 3
+        BVD.testClutch = false
+        T.drive(false, false, 0)
+        local t0 = getTimestampMs()
+        while getTimestampMs() - t0 < 5000 and v:isEngineRunning() do coroutine.yield() end
+        stalled = not v:isEngineRunning()
+    end)
+    T.check("a start in third gear with no throttle stalls the engine", ok and stalled == true)
+    setOpt2("ManualStall", false)
+    T.wait(2)
+    ok = withCar(p, rx, ry, function(v)
+        mod.manualShift = true
+        mod.forceGear = 3
+        BVD.testClutch = false
+        T.drive(false, false, 0)
+        T.wait(4)
+        kept = v:isEngineRunning()
+    end)
+    T.check("with stalling off the same start keeps the engine running", ok and kept == true)
+    BVD.testClutch = nil
+    setOpt2("ManualClutch", false)
+end
+
 local where = { startLoc = { x = ROAD.x, y = ROAD.y, z = 0 } }
 T.register("rules", rulesBody, where)
+T.register("coast", coastBody, where)
+T.register("clutch", clutchBody, where)
+T.register("coast_ctl", coastCtlBody, where)
 T.register("ki5_probe", probeBody, where)
 T.register("ki5_sweep", sweepBody, where)
 T.register("ki5", makeBody(false), where)

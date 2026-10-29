@@ -74,7 +74,7 @@ public final class BvdCar {
 
       KahluaTableImpl bridge = this.bvdBridge();
       if (bridge != null) {
-         bridge.rawset("javaVersion", "3.4");
+         bridge.rawset("javaVersion", "3.5");
          // One-shot policy-contract handshake: tells the Lua side which
          // bridge fields this build reads. Written here because this is
          // where BVD first resolves its bridge each world load; harmless
@@ -265,6 +265,68 @@ public final class BvdCar {
    private static final float SLIP_ENGINE_LOAD_FLOOR = 0.60F;
    // Traction limit of the last driven tick, for the drag budget.
    private float lastGripLimit = 0.0F;
+   // Engine braking (v0.2). With the throttle released and the engine being turned by the wheels, the engine
+   // drags the car back: its own friction, reflected through the gear. ENGINE_BRAKE_FRICTION is the share of
+   // rated torque it drags at redline (the engine model's own friction term is 0.35; a road engine's real
+   // compression braking is nearer a third of that), scaled by the EngineBraking option.
+   private static final float ENGINE_BRAKE_FRICTION = 0.12F;
+   // Engine braking alone never takes more than this share of the tyres' grip, so it cannot lock a wheel.
+   private static final float ENGINE_BRAKE_GRIP_CAP = 0.5F;
+   // Throttle below this counts as lifted off.
+   private static final float ENGINE_BRAKE_THROTTLE = 0.05F;
+   // The engine follows the geared wheel speed when the wheels turn it faster than it runs: seconds to catch up.
+   private static final float RPM_FOLLOW_TIME = 0.20F;
+   // Never pull the engine above this share of redline.
+   private static final float RPM_FOLLOW_CEILING = 1.10F;
+   // A downshift that would spin the engine beyond this share of redline locks the driven wheels for a moment
+   // (only when the EngineBrakeLockup option is on).
+   private static final float LOCKUP_OVERREV = 1.15F;
+   // Engine speed the wheels are asking for this tick; 0 when not coupled.
+   private float rpmFollowTarget = 0.0F;
+   // Manual clutch (v0.2), only with a manual gearbox and the ManualClutch option. clutchEngage runs 0 (pedal down,
+   // engine free) to 1 (fully engaged); the press is quick and the release slips for a moment, so a launch can be
+   // feathered.
+   private float clutchEngage = 1.0F;
+   private static final float CLUTCH_PRESS_RATE = 8.0F;
+   private static final float CLUTCH_RELEASE_RATE = 2.5F;
+   // Stalling (ManualStall option): with the clutch out the wheels turn the engine through the gear; if that is
+   // below STALL_RPM and the throttle is below what that gear needs to pull away, the engine dies after STALL_TIME.
+   // The throttle needed is LAUNCH_THROTTLE for first gear and grows with the gear's height.
+   private static final float STALL_RPM = 550.0F;
+   private static final float STALL_TIME = 0.35F;
+   private static final float LAUNCH_THROTTLE = 0.10F;
+   private float stallTimer = 0.0F;
+   // Engine profiles (EngineProfiles option): the vanilla vehicleEngineRPM block for the script's engineRPMType lists,
+   // per gear, the RPM it shifts up at. Kept as shares of the top gear's shift point, so each engine type shifts at
+   // its own pattern (vans early, sports cars late) whatever the car's redline is. null = every gear shifts at the
+   // same point, as before.
+   private final java.util.HashMap<String, float[]> profileShiftShares = new java.util.HashMap<>();
+
+   private float[] engineProfileShares(String type) {
+      if (!this.getSandboxOptionBoolean("BetterVehicleDynamics.EngineProfiles", false)) {
+         return null;
+      }
+      if (this.profileShiftShares.containsKey(type)) {
+         return this.profileShiftShares.get(type);
+      }
+      float[] out = null;
+      zombie.vehicles.VehicleEngineRPM profile = zombie.scripting.ScriptManager.instance.getVehicleEngineRPM(type);
+      if (profile != null) {
+         int n = 0;
+         while (n < profile.rpmData.length && profile.rpmData[n] != null && profile.rpmData[n].gearChange > 0.0F) {
+            n++;
+         }
+         if (n >= 2) {
+            out = new float[n];
+            float last = profile.rpmData[n - 1].gearChange;
+            for (int i = 0; i < n; i++) {
+               out[i] = profile.rpmData[i].gearChange / last;
+            }
+         }
+      }
+      this.profileShiftShares.put(type, out);
+      return out;
+   }
    // Wheel slip (the burnout figure) above which a screaming engine takes the next gear up.
    private static final float SLIP_UPSHIFT_BURNOUT = 5.0F;
    private boolean slipUpshift = false;
@@ -806,7 +868,9 @@ public final class BvdCar {
          return;
       }
       this.manualGearbox = bridge.rawgetBool("manualShift");
-      this.autoReverseEnabled = bridge.rawgetBool("autoReverse") || !this.manualGearbox;
+      // with the manual clutch the shifter has a neutral and a real reverse gear, so the automatic reverse is off
+      boolean clutchGearbox = this.manualGearbox && this.getSandboxOptionBoolean("BetterVehicleDynamics.ManualClutch", false);
+      this.autoReverseEnabled = (bridge.rawgetBool("autoReverse") && !clutchGearbox) || !this.manualGearbox;
       this.analogPedals = bridge.rawgetBool("useAnalogThrottle") && this.cc.vehicleObject.getJoypad() != -1;
       this.joystickPedalAxis = bridge.rawgetBool("JoystickThrottle");
       this.tunableSteering = bridge.rawgetBool("CustomizableSteering");
@@ -1601,9 +1665,11 @@ public final class BvdCar {
       // shift point (with hysteresis when shifting down), then bias one gear
       // higher if we are clearly cruising (low overrev) and have headroom.
       int gear;
+      float[] profileShares = this.engineProfileShares(script.getEngineRPMType());
       for (gear = 1; gear < gearbox.gearCount; gear++) {
          float hysteresis = this.heldGear > gear ? 500.0F : 0.0F;
-         if (wheelRpm * gearbox.ratios[gear] < shiftRpm - hysteresis) {
+         float shiftHere = (profileShares == null) ? shiftRpm : shiftRpm * profileShares[Math.min(gear - 1, profileShares.length - 1)];
+         if (wheelRpm * gearbox.ratios[gear] < shiftHere - hysteresis) {
             break;
          }
       }
@@ -1627,6 +1693,9 @@ public final class BvdCar {
          gear++;
       }
 
+      // Manual clutch: forceGear is -1 reverse, 0 neutral, 1..n forward (without it: 0 reverse, 1..n forward).
+      boolean clutchMode = this.manualGearbox && bridge != null && this.getSandboxOptionBoolean("BetterVehicleDynamics.ManualClutch", false);
+      boolean neutral = false;
       if (this.manualGearbox && bridge != null) {
          gear = bridge.rawgetInt("forceGear");
          if (this.shiftDownEdge == 1) {
@@ -1639,22 +1708,45 @@ public final class BvdCar {
             gear++;
          }
 
-         if (this.autoReverseEnabled) {
-            if (gear < 1) {
-               gear = 1;
+         if (clutchMode) {
+            gear = Math.max(-1, Math.min(gear, gearbox.gearCount));
+            bridge.rawset("forceGear", Integer.valueOf(gear).doubleValue());
+            bridge.rawset("gearCount", Integer.valueOf(gearbox.gearCount).doubleValue());   // for the on-screen shifter
+            neutral = gear == 0;
+            if (gear == -1) {
+               gear = 0;   // index 0 is the reverse ratio
             }
-         } else if (gear < 0) {
-            gear = 0;
-         }
+         } else {
+            if (this.autoReverseEnabled) {
+               if (gear < 1) {
+                  gear = 1;
+               }
+            } else if (gear < 0) {
+               gear = 0;
+            }
 
-         if (gear > gearbox.gearCount) {
-            gear = gearbox.gearCount;
-         }
+            if (gear > gearbox.gearCount) {
+               gear = gearbox.gearCount;
+            }
 
-         bridge.rawset("forceGear", Integer.valueOf(gear).doubleValue());
-         if (this.reversing) {
-            bridge.rawset("forceGear", Integer.valueOf(1).doubleValue());
+            bridge.rawset("forceGear", Integer.valueOf(gear).doubleValue());
+            if (this.reversing) {
+               bridge.rawset("forceGear", Integer.valueOf(1).doubleValue());
+            }
          }
+      }
+
+      // The clutch pedal: pressed fast, released with a bite.
+      boolean clutchHeld = false;
+      if (clutchMode) {
+         clutchHeld = bridge.rawgetBool("clutch");
+         if (clutchHeld) {
+            this.clutchEngage = Math.max(0.0F, this.clutchEngage - CLUTCH_PRESS_RATE * dt);
+         } else {
+            this.clutchEngage = Math.min(1.0F, this.clutchEngage + CLUTCH_RELEASE_RATE * dt);
+         }
+      } else {
+         this.clutchEngage = 1.0F;
       }
 
       if (this.reversing) {
@@ -1663,6 +1755,9 @@ public final class BvdCar {
 
       wheelRpm *= gearbox.ratios[gear];
       this.cc.vehicleObject.transmissionNumber = GEAR_LABELS[gear];
+      if (clutchMode && (neutral || this.clutchEngage < 0.05F)) {
+         this.cc.vehicleObject.transmissionNumber = TransmissionNumber.N;
+      }
 
       // The engine power is used as it is. The realism option's extra gain is applied to the vehicle
       // scripts for every vehicle, registered or not (BVD_Overhaul.lua), not here for registered ones only.
@@ -1746,6 +1841,35 @@ public final class BvdCar {
       lockMix = lockMix * (gruntKnob - 1.0F) + 1.0F;
 
       float wheelTorque = ratedTorque * couple * lockMix * gearbox.ratios[gear] * speedToRpm * 0.05F;
+      if (clutchMode) {
+         // the clutch carries only the share that is engaged; in neutral nothing, and the engine runs free
+         float carried = neutral ? 0.0F : this.clutchEngage;
+         couple *= carried;
+         wheelTorque *= carried;
+         // stalling
+         boolean stallRisk = !neutral && this.clutchEngage > 0.9F && this.cc.vehicleObject.isEngineRunning()
+            && this.getSandboxOptionBoolean("BetterVehicleDynamics.ManualStall", false) && gearedWheelRpm < STALL_RPM;
+         if (stallRisk) {
+            float need = LAUNCH_THROTTLE * (gearbox.ratios[1] / Math.max(0.1F, gearbox.ratios[gear]));
+            if (gear == 0) {
+               need = LAUNCH_THROTTLE;
+            }
+            if (this.cc.vehicleObject.throttle < need) {
+               this.stallTimer += dt;
+            } else {
+               this.stallTimer = Math.max(0.0F, this.stallTimer - 2.0F * dt);
+            }
+         } else {
+            this.stallTimer = Math.max(0.0F, this.stallTimer - 2.0F * dt);
+         }
+
+         if (this.stallTimer > STALL_TIME) {
+            this.stallTimer = 0.0F;
+            bridge.rawset("stallRequested", Boolean.TRUE);   // the client Lua stops the engine through the game's own action
+         }
+      } else {
+         this.stallTimer = 0.0F;
+      }
 
       // Optional load-response: a heavily laden vehicle bogs down off the line.
       // baseMass is the BVD reference mass for this script if the Lua side has
@@ -1809,6 +1933,20 @@ public final class BvdCar {
       this.lastGripLimit = gripLimit;
       float forceScale = 1.0F;
       float brakeToTorque = 50.0F;
+      // Engine braking: lifted off in gear and the wheels are turning the engine faster than it runs. The
+      // negative torque goes through the same path as a brake request below (it ends up as brakingForce).
+      this.rpmFollowTarget = 0.0F;
+      float engineBrakeKnob = this.getSandboxOption("BetterVehicleDynamics.EngineBraking", 1.0F);
+      if (engineBrakeKnob > 0.0F && this.cc.vehicleObject.isEngineRunning() && this.cc.vehicleObject.throttle < ENGINE_BRAKE_THROTTLE
+            && gearedWheelRpm > engineRpm + 50.0F && (!clutchMode || (!neutral && this.clutchEngage > 0.5F))) {
+         this.rpmFollowTarget = Math.min(gearedWheelRpm, redline * RPM_FOLLOW_CEILING);
+         float engineBrake = ratedTorque * ENGINE_BRAKE_FRICTION * (gearedWheelRpm / redline) * gearbox.ratios[gear] * speedToRpm * 0.05F * engineBrakeKnob;
+         engineBrake = Math.min(engineBrake, gripLimit * ENGINE_BRAKE_GRIP_CAP);
+         if (gearedWheelRpm > redline * LOCKUP_OVERREV && this.getSandboxOptionBoolean("BetterVehicleDynamics.EngineBrakeLockup", false)) {
+            engineBrake = gripLimit * 0.9F;
+         }
+         wheelTorque -= engineBrake;
+      }
       wheelTorque -= this.cc.brakingForce * brakeToTorque;
       this.burnout = 0.0F;
       float vehSpeed = this.cc.vehicleObject.getCurrentSpeedKmHour() * BaseVehicle.getFakeSpeedModifier();
@@ -1853,6 +1991,11 @@ public final class BvdCar {
       // over-threshold laden ratio set it, so the empty / no-policy / not-yet-
       // published path stays byte-identical to stock.
       this.cc.engineForce *= (1.0F - loadPenalty);
+      if (this.rpmFollowTarget > 0.0F) {
+         // clutch drag: pull the engine toward the geared wheel speed (rev-match on a downshift, revs follow the
+         // road when you lift off)
+         engineTorqueDelta += flywheelInertia * (this.rpmFollowTarget - engineRpm) / RPM_FOLLOW_TIME;
+      }
       this.cc.vehicleObject.addEngineSpeed(engineTorqueDelta / flywheelInertia * dt);
       this.cc.vehicleObject.setEngineSpeed(Math.max(200.0, this.cc.vehicleObject.getEngineSpeed()));
       if (this.cc.vehicleObject.getEngineSpeed() != this.cc.vehicleObject.getEngineSpeed()) {

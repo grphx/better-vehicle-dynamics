@@ -245,6 +245,38 @@ public final class BvdCar {
          && tagGearbox != null && tagConverter != null && tagFlywheel != null;
    }
 
+   // --- Off-road ------------------------------------------------------------
+   // A script's offroadEfficiency says how its author wants the vehicle to cope
+   // off-road (vanilla uses 0.8 and 1.1, KI5 sets everything from 0.8 for sports
+   // cars up to 2.0 for trucks). It used to multiply grip AND divide drag, so a
+   // low value was punished twice and anything above ~1.2 was not touched at all.
+   // It is now used once, as a 0..1 aptitude that moves traction and drag a little
+   // either way, so no vehicle ends up far from the rest.
+   private static final float OFFROAD_GRIP_LOW = 0.96F;    // grip multiplier at aptitude 0 ...
+   private static final float OFFROAD_GRIP_HIGH = 1.06F;   // ... and at aptitude 1
+   private static final float OFFROAD_DRAG_LOW = 0.95F;    // off-road drag divisor at aptitude 0 ...
+   private static final float OFFROAD_DRAG_HIGH = 1.15F;   // ... and at aptitude 1
+   // Off-road rolling drag may take at most this share of the traction the tires can
+   // give (a car on grass loses roughly a fifth), so the net force can never go to
+   // zero and a car can always get out of the grass.
+   private static final float OFFROAD_DRAG_BUDGET = 0.30F;
+   // While the wheels slip the engine still feels at least this share of its load,
+   // so it does not run away to redline.
+   private static final float SLIP_ENGINE_LOAD_FLOOR = 0.60F;
+   // Traction limit of the last driven tick, for the drag budget.
+   private float lastGripLimit = 0.0F;
+   // Wheel slip (the burnout figure) above which a screaming engine takes the next gear up.
+   private static final float SLIP_UPSHIFT_BURNOUT = 5.0F;
+   private boolean slipUpshift = false;
+
+   private float offroadAptitude(VehicleScript script) {
+      float eff = script.getOffroadEfficiency();
+      if (this.cc.vehicleObject.isInForest()) {
+         eff -= 0.2F;
+      }
+      return Math.min(Math.max((eff - 0.8F) / 0.8F, 0.0F), 1.0F);
+   }
+
    // --- Generic Lua policy contract ---------------------------------------
 
    // One-shot handshake the Lua side reads to know which bridge fields this
@@ -1216,7 +1248,7 @@ public final class BvdCar {
       if (ClimateManager.getInstance().getSnowStrength() > 0.5F) {
          float snowLoss = 1.0F - this.getSandboxOption("BetterVehicleDynamics.SnowGrip", 0.45F);
          snowLoss = (float)(snowLoss * (Math.min(Math.max(ClimateManager.getInstance().getSnowStrength(), 0.0F), 5.0F) * 0.2));
-         snowGrip = (1.0F - snowLoss) * script.getOffroadEfficiency();
+         snowGrip = (1.0F - snowLoss) * (OFFROAD_GRIP_LOW + (OFFROAD_GRIP_HIGH - OFFROAD_GRIP_LOW) * this.offroadAptitude(script));
          if (tp != null) {
             snowGrip *= profSnow;
          }
@@ -1227,7 +1259,7 @@ public final class BvdCar {
          float offLoss = this.getSandboxOption("BetterVehicleDynamics.OffroadGrip", 0.85F);
          offLoss = 1.0F - offLoss;
          offLoss *= 0.5F + this.tireFill / 2.0F;
-         surfaceGrip = (1.0F - offLoss) * script.getOffroadEfficiency();
+         surfaceGrip = (1.0F - offLoss) * (OFFROAD_GRIP_LOW + (OFFROAD_GRIP_HIGH - OFFROAD_GRIP_LOW) * this.offroadAptitude(script));
          if (tp != null) {
             surfaceGrip *= profOffroad;
          }
@@ -1356,10 +1388,7 @@ public final class BvdCar {
       }
 
       if (this.cc.vehicleObject.isDoingOffroad()) {
-         float eff = script.getOffroadEfficiency();
-         if (this.cc.vehicleObject.isInForest()) {
-            eff = (float)(eff - 0.2);
-         }
+         float dragShape = OFFROAD_DRAG_LOW + (OFFROAD_DRAG_HIGH - OFFROAD_DRAG_LOW) * this.offroadAptitude(script);
 
          float roll = this.getSandboxOption("BetterVehicleDynamics.RollResistanceOffroad", 1.8F) * 0.2F;
          // v0.1.8 (42.19 bundle): speed-dependent off-road drag halved.
@@ -1367,7 +1396,11 @@ public final class BvdCar {
          // floors maxed; the base term + mass + 1/eff still encode "off-road
          // resists motion" so this just tames the per-km/h compounding.
          roll += 0.005F * absSpeed;
-         roll *= this.cc.vehicleObject.getMass() * (1.0F + this.tireFill * 0.6F) / eff;
+         roll *= this.cc.vehicleObject.getMass() * (1.0F + this.tireFill * 0.6F) / dragShape;
+         // never more than a share of the traction the tires can give
+         if (this.lastGripLimit > 0.0F) {
+            roll = Math.min(roll, OFFROAD_DRAG_BUDGET * this.lastGripLimit);
+         }
          drag += roll;
       } else {
          float roll = this.getSandboxOption("BetterVehicleDynamics.RollResistance", 1.0F) * 0.05F;
@@ -1580,6 +1613,20 @@ public final class BvdCar {
          gear++;
       }
 
+      // A real automatic also shifts on engine speed. While the wheels spin the road speed stays low, so the
+      // road-speed pick above stays in a low gear and the engine runs to redline. Take one gear up while the
+      // engine is at its shift point and the wheels are slipping, and hold it until the engine has calmed down
+      // or the slip is gone, so it does not hunt between gears.
+      float engineRpmNow = (float)this.cc.vehicleObject.getEngineSpeed();
+      if (this.burnout > SLIP_UPSHIFT_BURNOUT && engineRpmNow >= shiftRpm * 0.98F) {
+         this.slipUpshift = true;
+      } else if (this.burnout <= 0.0F || engineRpmNow < shiftRpm * 0.75F) {
+         this.slipUpshift = false;
+      }
+      if (this.slipUpshift && gear >= 1 && gear < gearbox.gearCount) {
+         gear++;
+      }
+
       if (this.manualGearbox && bridge != null) {
          gear = bridge.rawgetInt("forceGear");
          if (this.shiftDownEdge == 1) {
@@ -1617,11 +1664,9 @@ public final class BvdCar {
       wheelRpm *= gearbox.ratios[gear];
       this.cc.vehicleObject.transmissionNumber = GEAR_LABELS[gear];
 
+      // The engine power is used as it is. The realism option's extra gain is applied to the vehicle
+      // scripts for every vehicle, registered or not (BVD_Overhaul.lua), not here for registered ones only.
       float powerUnit = this.cc.vehicleObject.getEnginePower() / 10.0F;
-      boolean realismHpWeight = this.getSandboxOptionBoolean("BetterVehicleDynamics.RealismHPWeight", false);
-      if (spec != null && spec.realismApplied && realismHpWeight) {
-         powerUnit *= 4.0F;
-      }
 
       float engineRpm = (float)this.cc.vehicleObject.getEngineSpeed();
       float engineTorqueDelta = 0.0F;
@@ -1761,6 +1806,7 @@ public final class BvdCar {
       this.loadPenaltyOut = loadPenalty;
 
       float gripLimit = this.cc.vehicleObject.getMass() * 2.0F * this.gripFactor * this.getSandboxOption("BetterVehicleDynamics.GripLevel", 1.0F);
+      this.lastGripLimit = gripLimit;
       float forceScale = 1.0F;
       float brakeToTorque = 50.0F;
       wheelTorque -= this.cc.brakingForce * brakeToTorque;
@@ -1794,7 +1840,7 @@ public final class BvdCar {
       this.bvdPruneSkidMarks();
       this.bvdStabilityGuard();
       this.applyDrag(dt);
-      engineTorqueDelta -= ratedTorque * couple * forceScale;
+      engineTorqueDelta -= ratedTorque * couple * Math.max(forceScale, SLIP_ENGINE_LOAD_FLOOR);
       if (wheelTorque < 0.0F) {
          this.cc.brakingForce = -wheelTorque / brakeToTorque;
          wheelTorque = 0.0F;

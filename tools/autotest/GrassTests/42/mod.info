@@ -1,0 +1,5 @@
+name=Grass Tests
+id=GrassTests
+description=Internal: vanilla-physics baseline for the KI5 comparison. Never uploaded.
+versionMin=42.21
+require=\ZombieBuddy,\PZAutotest

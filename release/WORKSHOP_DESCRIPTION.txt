@@ -12,7 +12,7 @@ BVD now runs through [url=https://steamcommunity.com/sharedfiles/filedetails/?id
 [*][b]Load affects handling[/b] - a heavily loaded vehicle is slow to pull away from a stop, as if the engine is straining against the weight. Strength is a sandbox slider.
 [*][b]Load affects fuel[/b] - hauling heavy burns extra fuel while driving.
 [*][b]Configurable drag[/b] - air drag and rolling resistance (road and off-road) are separate, tunable knobs.
-[*][b]Reference power & weight[/b] (opt-in) - researched HP/mass figures for the vanilla fleet; modded vehicles can register their own.
+[*][b]Reference power & weight[/b] (opt-in) - researched HP/mass figures for the vanilla fleet; modded vehicles can register their own, and modded cars without an entry get the same power boost.
 [*][b]Cargo-capacity rescale[/b] - per-body-type storage multipliers instead of one blanket override.
 [*][b]Drift mode[/b] (opt-in) - hold a bindable key to break the rear loose for an arcade slide. Off by default.
 [*][b]Tyre marks[/b] - vehicles leave a ground decal when a tyre breaks loose; marks fade out on their own.

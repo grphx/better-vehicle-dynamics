@@ -310,85 +310,103 @@ local function noteReservedCargo()
 		"For larger trunks today use the TrunkScaling sandbox option.")
 end
 
+-- The realism option gives every vehicle the same treatment, registered or not:
+--   * power: engineForce is multiplied by REALISM_POWER_GAIN. A registered car first takes the larger of its
+--     researched value (hp * 10) and its own script value, so registration can raise a car but never push it
+--     below what its author tuned it for. Before v0.1.19 only registered cars got this gain (as a 4x in the
+--     Java), which made an unregistered car four times weaker than a registered one of the same power.
+--   * mass: a registered car takes its researched mass up to MASS_CAP, but never lighter than its script.
+--   * power is capped at REALISM_FORCE_CAP (never below the script's own value).
+-- Everything is computed from the scripts' ORIGINAL values, kept here, so running this again (another world
+-- in the same session) does not compound, and turning the option off puts the originals back.
+local REALISM_POWER_GAIN = 4.0
+local MASS_CAP = 1700          -- script mass; parts (~300 kg) and cargo come on top, and a vehicle above about
+                               -- 2400 kg all-up sits on its suspension stops (bench measurement)
+
+local REALISM_FORCE_CAP = 28000 -- ceiling on the boosted engineForce (the strongest car seen, a 6150-force
+                               -- supercar, comes to 24600); a mod that already ships big engines is not
+                               -- quadrupled into absurdity. Never below the car's own script value.
+
+local original = {}            -- fullType -> { force = , mass = } as the scripts first loaded
+
+--- What the realism option turns one script into. Pure: depends only on the arguments, so it holds for any
+--- modded car whatever its numbers. `force`/`mass` are the script's ORIGINAL values; `spec` is the registered
+--- entry or nil. Returns the engineForce and the mass (nil = leave the mass alone). Guarantees, for any
+--- positive input: the result is never weaker or lighter than the script itself, power never exceeds
+--- max(REALISM_FORCE_CAP, the script's own), and a registered mass never exceeds max(MASS_CAP, the script's own).
+function BVD.realismTarget(force, mass, spec)
+	local base, newMass = force, nil
+	if spec then
+		if spec.hp then base = math.max(spec.hp * 10, force) end
+		if spec.mass_kg and mass then newMass = math.max(mass, math.min(spec.mass_kg, MASS_CAP)) end
+	end
+	local boosted = math.max(force, math.min(base * REALISM_POWER_GAIN, REALISM_FORCE_CAP))
+	return boosted, newMass
+end
+
+local function remember(v, fullType)
+	local o = original[fullType]
+	if not o then
+		local force, mass
+		pcall(function() force = v:getEngineForce() end)
+		pcall(function() mass = v:getMass() end)
+		o = { force = force, mass = mass }
+		original[fullType] = o
+	end
+	return o
+end
+
+-- NOTE the trailing comma. The script parser silently drops the LAST value of the body when it has no
+-- comma after it, so "{ engineForce = 7000 }" changes nothing and "{ engineForce = 1, mass = 2 }" loses the
+-- mass. Before v0.1.19 these were written without it: power was applied only when a mass came after it,
+-- and masses were never applied at all.
+local function loadValues(v, force, mass)
+	if force and mass then
+		v:Load(v:getName(), string.format("{ engineForce = %d, mass = %d, }", math.floor(force + 0.5), math.floor(mass + 0.5)))
+	elseif force then
+		v:Load(v:getName(), string.format("{ engineForce = %d, }", math.floor(force + 0.5)))
+	end
+end
+
 local function applyHPWeight()
 	local sv = SandboxVars and SandboxVars.BetterVehicleDynamics
-	if not sv or sv.RealismHPWeight ~= true then return end
 	local sm = getScriptManager and getScriptManager()
 	if not sm then return end
-	-- EnginePower scales the researched engineForce so users can dial up top
-	-- speed / acceleration without losing the realism baseline. Clamped to
-	-- the sandbox option's documented range so a malformed sandbox file
-	-- can't write a nonsense engineForce into the script.
-	local powerScale = tonumber(sv.EnginePower) or 1.0
-	if powerScale < 0.25 then powerScale = 0.25
-	elseif powerScale > 3.0 then powerScale = 3.0 end
+
+	if not sv or sv.RealismHPWeight ~= true then
+		-- option off: hand back anything an earlier world in this session changed
+		for fullType, o in pairs(original) do
+			local v = sm:getVehicle(fullType)
+			if v and o.force then pcall(loadValues, v, o.force, o.mass) end
+		end
+		return
+	end
+
 	-- Merge every registered data pack into our vehicle table just before
 	-- we apply. OnInitGlobalModData is late enough that all shared/ files
 	-- have loaded and any BVD.registerPack / BVD.Packs.register calls have
 	-- run. registerVehicle writes straight into vehicleData already; this
-	-- folds in the pack path too. Guarded — a broken pack must not abort
-	-- the built-in table apply below.
+	-- folds in the pack path too. Guarded - a broken pack must not abort
+	-- the apply below.
 	if BVD and BVD.Packs and BVD.Packs.applyAll then
 		pcall(function() BVD.Packs.applyAll(vehicleData) end)
 	end
+
+	local scripts = sm:getAllVehicleScripts()
 	local touched = 0
-	for fullType, spec in pairs(vehicleData) do
-		-- 'cargo' is validated + stored but reserved (see header note). If
-		-- any registered entry carries it, surface ONE info line. This is
-		-- the only place all registered data (built-in + packs) is funneled,
-		-- so it fires exactly once regardless of how cargo was registered.
-		-- Pure log — never mutates spec or the vehicle, so a registration
-		-- with no cargo is byte-identical to before this change.
-		if spec.cargo ~= nil then noteReservedCargo() end
-		local v = sm:getVehicle(fullType)
-		if v ~= nil then
-			local hp = spec.hp
-			local mass = spec.mass_kg
-			-- v0.1.9: vanilla floors. PZ's vanilla balance compresses the
-			-- HP <-> engineForce curve for small vehicles (a 15hp scooter
-			-- still has engineForce ~400, not 150). Writing the realistic
-			-- 10*hp on top would underpower them below vanilla and the
-			-- car becomes too sluggish to move. Same logic for mass: if
-			-- we'd write a LIGHTER mass than vanilla, the car becomes
-			-- floaty and breaks physics expectations. We only ever
-			-- increase from vanilla here, never decrease.
-			--
-			-- v0.1.10: authoritative packs (KI5, Community) opt out of
-			-- the floor - those entries carry curated real-world data
-			-- and are meant to REBASELINE scripts that other mods ship
-			-- with their own pre-tuned (often over-tuned) engineForce.
-			local skipFloor = BVD.Packs and BVD.Packs.isAuthoritative
-				and BVD.Packs.isAuthoritative(fullType)
-			local vanillaEngineForce, vanillaMass
-			pcall(function() vanillaEngineForce = v:getEngineForce() end)
-			pcall(function() vanillaMass = v:getMass() end)
-			local newEngineForce, newMass
-			if hp then
-				newEngineForce = hp * 10 * powerScale
-				if not skipFloor and vanillaEngineForce
-						and newEngineForce < vanillaEngineForce then
-					newEngineForce = vanillaEngineForce
-				end
-			end
-			if mass then
-				newMass = mass
-				if not skipFloor and vanillaMass and newMass < vanillaMass then
-					newMass = vanillaMass
-				end
-			end
-			-- Integer-format (PZ's vehicle-script parser dislikes floats with
-			-- trailing zeros in some locales) and drop the trailing comma.
-			if newEngineForce and newMass then
-				v:Load(v:getName(), string.format("{ engineForce = %d, mass = %d }",
-					math.floor(newEngineForce + 0.5),
-					math.floor(newMass + 0.5)))
-			elseif newEngineForce then
-				v:Load(v:getName(), string.format("{ engineForce = %d }",
-					math.floor(newEngineForce + 0.5)))
-			elseif newMass then
-				v:Load(v:getName(), string.format("{ mass = %d }",
-					math.floor(newMass + 0.5)))
-			end
+	for i = 0, scripts:size() - 1 do
+		local v = scripts:get(i)
+		local fullType = v:getFullName()
+		local o = remember(v, fullType)
+		-- no engine to power (trailers, burnt wrecks): leave alone
+		if o.force and o.force > 0 and not fullType:find("Burnt", 1, true) then
+			local spec = vehicleData[fullType] or vehicleData[v:getName()]
+			-- 'cargo' is validated + stored but reserved (see the note above). If any
+			-- registered entry carries it, surface ONE info line.
+			if spec and spec.cargo ~= nil then noteReservedCargo() end
+			local force, mass = BVD.realismTarget(o.force, o.mass, spec)
+			-- the EnginePower sandbox option is applied once, in the Java, to every vehicle
+			pcall(loadValues, v, force, mass)
 			touched = touched + 1
 		end
 	end

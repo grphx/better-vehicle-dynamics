@@ -1,5 +1,39 @@
 # Changelog
 
+## [0.1.19] - 2026-10-29 - Modded cars: off-road and the realism option work for any car
+
+Reported: KI5 cars (and other modded cars) that BVD has no entry for are very slow, most of all off the
+road, e.g. 20 km/h on the speedometer at full throttle on grass.
+
+- **Off-road model is bounded and uses the script's off-road rating once.** The vehicle script's
+  `offRoadEfficiency` (KI5 sets 0.8 to 2.0, vanilla 0.8 to 1.1) was applied twice, as a grip multiplier AND
+  as a divisor on the rolling drag, so an unusual value swung a car's grass speed a long way. It now feeds in
+  once, as a clamped 0..1 "aptitude": grip on grass moves only 0.96..1.06 and the drag shape 0.95..1.15.
+- **Off-road drag can no longer stall a car.** The off-road rolling resistance is capped at 30% of the tyre
+  grip limit, so no combination of sandbox values, mass and surface can pull more than the tyres can push.
+- **The engine stays under load when the wheels slip** (at least 60% of the normal load torque), instead of
+  running away to the redline with nothing to push against, and the automatic gearbox shifts up when the
+  wheels spin at the rev limit.
+- **Realism option (opt-in) now treats every car the same.** The 4x power gain was applied in the Java for
+  registered cars only, so an unregistered modded car was four times weaker than a registered one of the same
+  power. It is now applied in the Lua to every vehicle with an engine: registered cars take the larger of
+  their researched power (hp x 10) and their script value, then the gain; unregistered ones take the script
+  value and the gain. Power is capped at 28000 (never below the script's own), so a mod that already ships
+  big engines is not quadrupled into absurdity. A registered car takes its researched mass up to 1700 kg of
+  script mass, never lighter than its script. Applying the rules again (another world in the same session)
+  does not compound, and switching the option off puts the original scripts back.
+- **Fixed: realism masses were never applied, and single-value power entries were ignored.** The script
+  parser silently drops the LAST value of a `Load` body that has no trailing comma; BVD wrote its values
+  without one. Power only took effect when a mass followed it, and the mass itself was lost. With the option
+  on, registered cars now really get their researched mass.
+- The `EnginePower` sandbox option is applied once, in the Java, to every vehicle (registered cars used to
+  get it twice).
+- Java part changed (`CarController`): manual installs need to copy the new `zombie` folder; ZombieBuddy
+  users get it with the update.
+- Tests: `tools/autotest/BVDTests` modes `ki5`, `ki5_real`, `ki5_unreg`, `others`, `others_real` (KI5 cars
+  and the RVs/Heavy Duty pack, road and clear grass), and `rules`, which runs the realism rules over 480
+  combinations of script power, mass and registration.
+
 ## [0.1.18] - 2026-10-28 - Tire wear fix (wheels came off broken)
 
 - **Fixed: removed wheels came out broken (condition 0).** The "Tires wear

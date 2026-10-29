@@ -1,0 +1,19 @@
+[h1]v0.1.19 - Modded cars drive properly, on and off the road[/h1]
+
+[h2]What you need to do[/h2]
+[list]
+[*][b]ZombieBuddy users:[/b] nothing, Steam updates the mod and the fix comes with it.
+[*][b]Manual install:[/b] copy the zombie folder from B42.21_Manual_Install over your old one again (the vehicle controller classes changed).
+[*][b]Dedicated servers:[/b] nothing, servers still need no Java install.
+[/list]
+
+[h2]Changes[/h2]
+[list]
+[*][b]Cars from other mods no longer crawl, especially on grass.[/b] Modded cars (KI5 and others) set their own off-road rating, and BVD used it twice, so an unusual value made them far too slow off the road. It is now used once and kept within sensible limits, and off-road drag can no longer be strong enough to stall a car. In my tests most KI5 cars reach about the same speed on clear grass as under vanilla physics.
+[*]The engine no longer sits at the redline when the wheels slip, and the automatic gearbox shifts up when the wheels spin at the rev limit.
+[*][b]Reference power and weight (opt-in option): every car is treated the same now.[/b] Before, only cars BVD had an entry for got the power boost, so a modded car without an entry was four times weaker than a registered one. Now any car with an engine gets it. The boost is capped, so a mod that already ships strong engines is not multiplied into something absurd.
+[*]Fixed a bug where the researched weights of that option were never applied. They apply now, so cars BVD knows are heavier when it is on (never lighter than the mod author made them).
+[*]The Engine Power slider was applied twice to cars BVD has an entry for. Once now.
+[/list]
+
+Registering a modded car with BVD is still the best way to tune it, but an unregistered one should now drive well on its own. If you find a modded car that still drives badly, tell me which one.

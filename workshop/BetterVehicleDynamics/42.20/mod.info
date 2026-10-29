@@ -1,6 +1,6 @@
 name=Better Vehicle Dynamics
 id=BetterVehicleDynamics
-modversion=0.1.18
+modversion=0.1.19
 description=Better Vehicle Dynamics - drivetrain & traction overhaul. Java side loads through ZombieBuddy (recommended) or the manual install.
 pzversion=42
 versionMin=42.20

@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.20] - 2026-11-01 - Bushes no longer stop strong cars
+
+Reported: a heavy car stops almost immediately when it drives into a bush.
+
+- **Strong cars push through bushes.** The base game takes a fixed share of a car's speed off for every update
+  it touches a bush, so any bush row stops any car, whatever its engine. In my tests a 4000 force car and a
+  16000 force car both ended up at 2-3 km/h within about 13 m of a hedge. The existing "Foliage shove" option
+  (default 1.0) now starts from a lower base, about a fifth of the old effect: a weak engine is still slowed
+  by bushes, a strong one drives through. Set the option higher for the base game's behaviour, 0 for no effect.
+  Zombie shoves are not touched.
+- The "Foliage shove" tooltip says what the option does now.
+
 ## [0.1.19] - 2026-10-29 - Modded cars: off-road and the realism option work for any car
 
 Reported: KI5 cars (and other modded cars) that BVD has no entry for are very slow, most of all off the

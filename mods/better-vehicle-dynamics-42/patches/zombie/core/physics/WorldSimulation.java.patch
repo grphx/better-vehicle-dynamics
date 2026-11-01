@@ -1,5 +1,5 @@
 diff --git a/zombie/core/physics/WorldSimulation.java b/zombie/core/physics/WorldSimulation.java
-index e6644a7..294bb2e 100644
+index e6644a7..c71a3c3 100644
 --- a/zombie/core/physics/WorldSimulation.java
 +++ b/zombie/core/physics/WorldSimulation.java
 @@ -1,13 +1,21 @@
@@ -144,7 +144,7 @@ index e6644a7..294bb2e 100644
           IsoChunkMap cm = IsoWorld.instance.currentCell.chunkMap[0];
           Bullet.initWorld(
              metaGrid.getMinX(),
-@@ -77,34 +184,209 @@ public final class WorldSimulation {
+@@ -77,34 +184,214 @@ public final class WorldSimulation {
     }
  
     private void updatePhysic() {
@@ -223,6 +223,11 @@ index e6644a7..294bb2e 100644
 +      }
 +   }
 +
++   // The base game takes a fixed share of a car's speed off for every update it touches a bush, whatever the
++   // engine, so even a strong car was held to a crawl in a hedge. The ShoveFoliage option (1.0 = default) is
++   // scaled by this base: weak cars are still slowed, strong ones push through.
++   private static final float FOLIAGE_BASE = 0.2F;
++
 +   // BetterVehicleDynamics: rescale the queued shove impulses before the base
 +   // game applies them. Foliage and a clean zombie strike use ShoveFoliage /
 +   // ShoveZombies respectively; a squished-body (corpse-under-wheel) impulse
@@ -256,7 +261,7 @@ index e6644a7..294bb2e 100644
 +            isFoliage = isFoliage || probe.sub(impulse).lengthSquared() < 0.001F;
 +
 +            if (isFoliage) {
-+               impulse.mul(massSoften * this.massScaler * this.getSandboxOption("BetterVehicleDynamics.ShoveFoliage", 1.0F));
++               impulse.mul(massSoften * this.massScaler * FOLIAGE_BASE * this.getSandboxOption("BetterVehicleDynamics.ShoveFoliage", 1.0F));
 +            } else {
 +               impulse.mul(massSoften * this.massScaler * this.getSandboxOption("BetterVehicleDynamics.ShoveZombies", 1.0F));
 +            }
@@ -370,7 +375,7 @@ index e6644a7..294bb2e 100644
        }
     }
  
-@@ -116,6 +398,7 @@ public final class WorldSimulation {
+@@ -116,6 +403,7 @@ public final class WorldSimulation {
  
     private void updateInternal() {
        if (this.created) {

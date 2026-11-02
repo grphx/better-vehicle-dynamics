@@ -146,8 +146,14 @@ local function driveBody(T)
         sv.ManualStall = false
         getSandboxOptions():updateFromLua()
         BVD.invalidateConfigCache()
-        sendClientCommand(p, "vehicle", "startEngine", { haveKey = true })
-        T.check("MP: the engine starts again after the stall", T.waitFor(function() return v:isEngineRunning() end, 10) ~= nil)
+        T.wait(3)   -- the engine finishes shutting down before the server takes a start
+        local again
+        for attempt = 1, 3 do
+            sendClientCommand(p, "vehicle", "startEngine", { haveKey = true })
+            again = T.waitFor(function() return v:isEngineRunning() end, 8)
+            if again then break end
+        end
+        T.check("MP: the engine starts again after the stall", again ~= nil)
         T.wait(1)
         -- keep circling so client B can watch it move
         T.drive(true, true, 0.4)

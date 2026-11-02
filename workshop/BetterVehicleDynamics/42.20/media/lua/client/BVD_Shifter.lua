@@ -141,9 +141,11 @@ end
 
 local function onPlayerUpdate(player)
     if not player or not player.isLocalPlayer or not player:isLocalPlayer() then return end
+    if player.getPlayerNum and player:getPlayerNum() ~= 0 then return end   -- the bridge is shared: player 1 drives the clutch
     local mod = BetterVehicleDynamicsMod
     if not clutchActive(player) then
         mod.clutch = false
+        mod.stallRequested = false   -- a request left over from the tick the driver got out must not stop the next engine
         hidePanel()
         return
     end
@@ -160,7 +162,8 @@ local function onPlayerUpdate(player)
     if mod.stallRequested then
         mod.stallRequested = false
         local vehicle = player:getVehicle()
-        if vehicle and vehicle:isEngineRunning() and ISShutOffVehicleEngine and ISTimedActionQueue then
+        local queued = ISTimedActionQueue and ISTimedActionQueue.hasActionType and ISTimedActionQueue.hasActionType(player, "ISShutOffVehicleEngine")
+        if vehicle and vehicle:isEngineRunning() and ISShutOffVehicleEngine and ISTimedActionQueue and not queued then
             ISTimedActionQueue.add(ISShutOffVehicleEngine:new(player))
             if panel then panel.stallUntil = nowMs() + STALL_FLASH_MS end
         end

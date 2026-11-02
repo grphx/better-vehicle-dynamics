@@ -1,8 +1,8 @@
 diff --git a/zombie/core/physics/CarController.java b/zombie/core/physics/CarController.java
-index e82625b..a366cdf 100644
+index e82625b..e9d2680 100644
 --- a/zombie/core/physics/CarController.java
 +++ b/zombie/core/physics/CarController.java
-@@ -1,840 +1,2348 @@
+@@ -1,840 +1,2352 @@
  package zombie.core.physics;
  
 +import java.util.ArrayList;
@@ -294,6 +294,9 @@ index e82625b..a366cdf 100644
 +   private static final float LOCKUP_OVERREV = 1.15F;
 +   // Engine speed the wheels are asking for this tick; 0 when not coupled.
 +   private float rpmFollowTarget = 0.0F;
++   // The driver's own throttle, read before the idle governor lifts vehicle.throttle to hold idle. The stall and
++   // engine-braking checks use this one: the governor sits at about 0.175 at idle, which hid both.
++   private float pedalThrottle = 0.0F;
 +   // Manual clutch (v0.2), only with a manual gearbox and the ManualClutch option. clutchEngage runs 0 (pedal down,
 +   // engine free) to 1 (fully engaged); the press is quick and the release slips for a moment, so a launch can be
 +   // feathered.
@@ -331,7 +334,7 @@ index e82625b..a366cdf 100644
 +            out = new float[n];
 +            float last = profile.rpmData[n - 1].gearChange;
 +            for (int i = 0; i < n; i++) {
-+               out[i] = profile.rpmData[i].gearChange / last;
++               out[i] = Math.min(1.0F, profile.rpmData[i].gearChange / last);
 +            }
 +         }
 +      }
@@ -2371,6 +2374,7 @@ index e82625b..a366cdf 100644
 +            this.vehicleObject.setEngineSpeed(engineRpm);
 +         }
 +
++         this.pedalThrottle = this.vehicleObject.throttle;
 +         this.updateIdle(dt, enginePart);
 +         float signedSpeed = this.vehicleObject.getCurrentSpeedKmHour() * BaseVehicle.getFakeSpeedModifier();
 +         float reverseCap = this.getSandboxOption("BetterVehicleDynamics.ReverseTopSpeed", 25.0F);
@@ -2451,7 +2455,7 @@ index e82625b..a366cdf 100644
 +            if (gear == 0) {
 +               need = LAUNCH_THROTTLE;
 +            }
-+            if (this.vehicleObject.throttle < need) {
++            if (this.pedalThrottle < need) {
 +               this.stallTimer += dt;
 +            } else {
 +               this.stallTimer = Math.max(0.0F, this.stallTimer - 2.0F * dt);
@@ -2465,7 +2469,7 @@ index e82625b..a366cdf 100644
 -         if (speed > this.vehicleObject.getMaxSpeed() * 1.15F) {
 -            this.engineForce = this.engineForce * ((this.vehicleObject.getMaxSpeed() * 1.15F + 20.0F - speed) / 20.0F);
 +         if (this.stallTimer > STALL_TIME) {
-+            this.stallTimer = 0.0F;
++            this.stallTimer = -2.0F;   // the shut-off takes a moment; do not ask again while it runs
 +            bridge.rawset("stallRequested", Boolean.TRUE);   // the client Lua stops the engine through the game's own action
 +         }
 +      } else {
@@ -2546,7 +2550,7 @@ index e82625b..a366cdf 100644
 +      this.engineBrakeOut = 0.0F;
 +      this.rpmFollowOut = 0.0F;
 +      float engineBrakeKnob = this.getSandboxOption("BetterVehicleDynamics.EngineBraking", 1.0F);
-+      if (engineBrakeKnob > 0.0F && this.vehicleObject.isEngineRunning() && this.vehicleObject.throttle < ENGINE_BRAKE_THROTTLE
++      if (engineBrakeKnob > 0.0F && this.vehicleObject.isEngineRunning() && this.pedalThrottle < ENGINE_BRAKE_THROTTLE
 +            && gearedWheelRpm > engineRpm + 50.0F && (!clutchMode || (!neutral && this.clutchEngage > 0.5F))) {
 +         this.rpmFollowTarget = Math.min(gearedWheelRpm, redline * RPM_FOLLOW_CEILING);
 +         this.rpmFollowOut = this.rpmFollowTarget;
@@ -2933,7 +2937,7 @@ index e82625b..a366cdf 100644
              this.vehicleObject.stopSound(this.vehicleObject.ramSound);
              this.vehicleObject.ramSound = 0L;
           }
-@@ -844,6 +2352,55 @@ public final class CarController {
+@@ -844,6 +2356,55 @@ public final class CarController {
        }
     }
  
@@ -2989,7 +2993,7 @@ index e82625b..a366cdf 100644
     private void updateBackSignal() {
        if (this.isGasR && this.vehicleObject.isEngineRunning() && this.vehicleObject.hasBackSignal() && !this.vehicleObject.isBackSignalEmitting()) {
           if (GameClient.client) {
-@@ -933,56 +2490,106 @@ public final class CarController {
+@@ -933,56 +2494,106 @@ public final class CarController {
     }
  
     public void updateControls() {
@@ -3134,7 +3138,7 @@ index e82625b..a366cdf 100644
        }
  
        this.isGas = this.wasGas = false;
-@@ -1292,4 +2899,28 @@ public final class CarController {
+@@ -1292,4 +2903,28 @@ public final class CarController {
           this.minRpm = rpm;
        }
     }

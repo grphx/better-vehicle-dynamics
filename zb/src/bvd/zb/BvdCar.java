@@ -283,6 +283,9 @@ public final class BvdCar {
    private static final float LOCKUP_OVERREV = 1.15F;
    // Engine speed the wheels are asking for this tick; 0 when not coupled.
    private float rpmFollowTarget = 0.0F;
+   // The driver's own throttle, read before the idle governor lifts vehicle.throttle to hold idle. The stall and
+   // engine-braking checks use this one: the governor sits at about 0.175 at idle, which hid both.
+   private float pedalThrottle = 0.0F;
    // Manual clutch (v0.2), only with a manual gearbox and the ManualClutch option. clutchEngage runs 0 (pedal down,
    // engine free) to 1 (fully engaged); the press is quick and the release slips for a moment, so a launch can be
    // feathered.
@@ -320,7 +323,7 @@ public final class BvdCar {
             out = new float[n];
             float last = profile.rpmData[n - 1].gearChange;
             for (int i = 0; i < n; i++) {
-               out[i] = profile.rpmData[i].gearChange / last;
+               out[i] = Math.min(1.0F, profile.rpmData[i].gearChange / last);
             }
          }
       }
@@ -1794,6 +1797,7 @@ public final class BvdCar {
             this.cc.vehicleObject.setEngineSpeed(engineRpm);
          }
 
+         this.pedalThrottle = this.cc.vehicleObject.throttle;
          this.updateIdle(dt, enginePart);
          float signedSpeed = this.cc.vehicleObject.getCurrentSpeedKmHour() * BaseVehicle.getFakeSpeedModifier();
          float reverseCap = this.getSandboxOption("BetterVehicleDynamics.ReverseTopSpeed", 25.0F);
@@ -1859,7 +1863,7 @@ public final class BvdCar {
             if (gear == 0) {
                need = LAUNCH_THROTTLE;
             }
-            if (this.cc.vehicleObject.throttle < need) {
+            if (this.pedalThrottle < need) {
                this.stallTimer += dt;
             } else {
                this.stallTimer = Math.max(0.0F, this.stallTimer - 2.0F * dt);
@@ -1869,7 +1873,7 @@ public final class BvdCar {
          }
 
          if (this.stallTimer > STALL_TIME) {
-            this.stallTimer = 0.0F;
+            this.stallTimer = -2.0F;   // the shut-off takes a moment; do not ask again while it runs
             bridge.rawset("stallRequested", Boolean.TRUE);   // the client Lua stops the engine through the game's own action
          }
       } else {
@@ -1944,7 +1948,7 @@ public final class BvdCar {
       this.engineBrakeOut = 0.0F;
       this.rpmFollowOut = 0.0F;
       float engineBrakeKnob = this.getSandboxOption("BetterVehicleDynamics.EngineBraking", 1.0F);
-      if (engineBrakeKnob > 0.0F && this.cc.vehicleObject.isEngineRunning() && this.cc.vehicleObject.throttle < ENGINE_BRAKE_THROTTLE
+      if (engineBrakeKnob > 0.0F && this.cc.vehicleObject.isEngineRunning() && this.pedalThrottle < ENGINE_BRAKE_THROTTLE
             && gearedWheelRpm > engineRpm + 50.0F && (!clutchMode || (!neutral && this.clutchEngage > 0.5F))) {
          this.rpmFollowTarget = Math.min(gearedWheelRpm, redline * RPM_FOLLOW_CEILING);
          this.rpmFollowOut = this.rpmFollowTarget;

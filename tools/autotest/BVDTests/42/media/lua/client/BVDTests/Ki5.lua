@@ -637,6 +637,18 @@ local function clutchBody(T)
         stalled = not v:isEngineRunning()
     end)
     T.check("a start in third gear with no throttle stalls the engine", ok and stalled == true)
+    -- first gear from a standstill with no throttle: the idle governor's own throttle must not hide the stall
+    local stalled1
+    ok = withCar(p, rx, ry, function(v)
+        mod.manualShift = true
+        mod.forceGear = 1
+        BVD.testClutch = false
+        T.drive(false, false, 0)
+        local t0 = getTimestampMs()
+        while getTimestampMs() - t0 < 6000 and v:isEngineRunning() do coroutine.yield() end
+        stalled1 = not v:isEngineRunning()
+    end)
+    T.check("clutch out in first gear at a standstill with no throttle stalls the engine", ok and stalled1 == true)
     setOpt2("ManualStall", false)
     T.wait(2)
     ok = withCar(p, rx, ry, function(v)

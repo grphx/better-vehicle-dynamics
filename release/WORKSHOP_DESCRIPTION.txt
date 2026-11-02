@@ -11,16 +11,16 @@ BVD now runs through [url=https://steamcommunity.com/sharedfiles/filedetails/?id
 [*][b]Tyre-type grip model[/b] - worn / standard / modern tyres each get distinct grip per surface, not one flat value.
 [*][b]Load affects handling[/b] - a heavily loaded vehicle is slow to pull away from a stop, as if the engine is straining against the weight. Strength is a sandbox slider.
 [*][b]Load affects fuel[/b] - hauling heavy burns extra fuel while driving.
-[*][b]Engine braking[/b] - lift off the throttle in gear and the engine slows the car; the revs follow your road speed, so a downshift raises them. Strength is a slider, and an optional setting lets a gear far too low lock the wheels for a moment. Never takes more than half the tyre grip, so it cannot lock a wheel by itself.
-[*][b]Manual clutch, neutral and stalling[/b] (opt-in, for manual shifting) - hold the clutch key (Left Ctrl by default) to disengage, find neutral between reverse and first, and stall the engine if you let the clutch out in too high a gear without throttle. Stalling is a separate option.
-[*][b]On-screen stick shift[/b] - an H-pattern gate on your HUD shows R, N and the gears with the knob moving as you shift, amber with the clutch in, red when you stall.
-[*][b]Engine-type shift points[/b] (opt-in) - the automatic gearbox shifts like the vehicle's engine type: vans early, sports cars late, taken from the game's own engine data.
+[*][b]Engine braking[/b] - lift off in gear and the engine slows the car; the revs follow road speed, so a downshift raises them. Strength slider, never more than half the tyre grip.
+[*][b]Manual clutch, neutral and stalling[/b] (opt-in) - hold the clutch key (Left Ctrl) to disengage, find neutral between reverse and first, and stall if you let the clutch out in too high a gear without throttle.
+[*][b]On-screen stick shift[/b] - an H-pattern gate on the HUD: amber with the clutch in, red when you stall.
+[*][b]Engine-type shift points[/b] (opt-in) - the automatic shifts like the engine type: vans early, sports cars late.
 [*][b]Configurable drag[/b] - air drag and rolling resistance (road and off-road) are separate, tunable knobs.
 [*][b]Reference power & weight[/b] (opt-in) - researched HP/mass figures for the vanilla fleet; modded vehicles can register their own, and modded cars without an entry get the same power boost.
 [*][b]Cargo-capacity rescale[/b] - per-body-type storage multipliers instead of one blanket override.
 [*][b]Drift mode[/b] (opt-in) - hold a bindable key to break the rear loose for an arcade slide. Off by default.
 [*][b]Tyre marks[/b] - vehicles leave a ground decal when a tyre breaks loose; marks fade out on their own.
-[*][b]Vehicle info panel[/b] - a docked readout beside the mechanics window showing the active profile, per-surface grip, tyre type, cargo load and which Java part is running (ZombieBuddy, manual install or missing).
+[*][b]Vehicle info panel[/b] - a docked readout beside the mechanics window: active profile, per-surface grip, tyre type, cargo load and which Java part is running.
 [*][b]Ground-clip guard[/b] - a safety net that snaps a vehicle back onto its floor if it ever sinks into the ground (a multiplayer desync class). Only ever acts on an impossible state, so normal driving, ramps and basements are unaffected.
 [/list]
 
@@ -67,15 +67,15 @@ A public Lua API lets other mods register vehicle reference data, tyre-grip prof
 [h1]Compatibility[/h1]
 Works alongside vehicle-skin and content mods. Run only one vehicle-physics overhaul at a time. Build 42.21+.
 
-[b]Maskarad's Summer Car:[/b] works from v0.1.17 (earlier versions crashed with it). Its engine adds about 150 kg to a car, which BVD's load penalty counts as cargo, so those cars launch a little slower than they would without it. Deeper integration (following its manual or automatic gearbox) is planned, not done.
+[b]Maskarad's Summer Car:[/b] works from v0.1.17 (earlier versions crashed with it). Its engine adds about 150 kg to a car, which BVD's load penalty counts as cargo, so those cars launch a little slower than they would without it.
 
-Other manual-install Java mods (for example the PZ Optimization / tuner kind) clash only if they ship the same class files. BVD now ships only [code]CarController[/code], [code]WorldSimulation[/code], [code]Texture[/code] and [code]IsoFloorBloodSplat[/code] (it no longer touches [code]IsoChunkMap[/code] or [code]IsoSprite[/code]). If another Java mod ships one of those four, only one of the two mods' copies can be active. With ZombieBuddy (option A), BVD replaces no game files at all, so this kind of clash goes away.
+Other manual-install Java mods clash only if they ship the same class files. BVD ships only [code]CarController[/code], [code]WorldSimulation[/code], [code]Texture[/code] and [code]IsoFloorBloodSplat[/code]; if another Java mod ships one of those, only one copy can be active. With ZombieBuddy (option A), BVD replaces no game files at all, so this clash goes away.
 
 [h1]Translations[/h1]
 [list]
 [*][b]Russian:[/b] phxntom1213
 [*][b]Polish:[/b] Ayako-Chan (Piotrek0909)
-[*][b]Chinese (Simplified), Portuguese (Brazil), Spanish, German, Turkish, French:[/b] first drafts added in 0.2, machine translated. Corrections are very welcome - tell me what reads wrong.
+[*][b]Chinese (Simplified), Portuguese (Brazil), Spanish, German, Turkish, French:[/b] machine-translated drafts, corrections welcome.
 [/list]
 
 [h1]Mod info[/h1]

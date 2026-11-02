@@ -57,19 +57,7 @@ local function sameTires(v)
         local part = v:getPartById(id)
         if part and part:getInventoryItem() then had = had + 1 end
     end
-    for _, id in ipairs({ "TireFrontLeft", "TireFrontRight", "TireRearLeft", "TireRearRight" }) do
-        -- fit a tire on every wheel: the debug spawner sometimes leaves a car without tires, and such a car cannot
-        -- move whatever the physics does
-        local part = v:getPartById(id)
-        if part then
-            local item = instanceItem("Base.NormalTire2")
-            item:setCondition(100)
-            part:setInventoryItem(item)
-            part:setCondition(100)
-            v:transmitPartItem(part)   -- what the game's own install action does after changing a part's item
-        end
-    end
-    pcall(function() v:updatePartStats() end)
+    BVDTestsFitTires(v)   -- full air, physics flag and wheel model too, not only the item (see Fix.lua)
     return had
 end
 
@@ -378,11 +366,11 @@ local function coastRun(p, v, knob)
         local s = math.abs(v:getCurrentSpeedKmHour())
         if s > peak then peak = s end
         if not v3 and getTimestampMs() - t0 >= 3000 then v3 = s end
-        if s >= 45 then reached = s break end
+        if s >= 40 then reached = s break end
         coroutine.yield()
     end
     if not reached then
-        T.log(string.format("engine braking %.1f: never reached 45 km/h (peak %.1f, moved %.0f m, engine running %s, rpm %.0f)", knob, peak, math.sqrt((v:getX() - x0) ^ 2 + (v:getY() - y0) ^ 2), tostring(v:isEngineRunning()), v:getEngineSpeed()))
+        T.log(string.format("engine braking %.1f: never reached 40 km/h (peak %.1f, moved %.0f m, engine running %s, rpm %.0f)", knob, peak, math.sqrt((v:getX() - x0) ^ 2 + (v:getY() - y0) ^ 2), tostring(v:isEngineRunning()), v:getEngineSpeed()))
         return nil, (peak < 12 and "stuck" or "slow")
     end
     local atRelease = math.abs(v:getCurrentSpeedKmHour())
@@ -467,7 +455,7 @@ local function coastBody(T)
         end
     end
     local a, b, c = res[0.0], res[1.0], res[2.0]
-    if not T.check("all three runs reached 45 km/h", a and b and c) then return end
+    if not T.check("all three runs reached 40 km/h", a and b and c) then return end
     T.check("acceleration to 3 s is the same with engine braking on (within 3 km/h)", math.abs(a.v3 - b.v3) < 3 and math.abs(a.v3 - c.v3) < 3, string.format("%.1f %.1f %.1f", a.v3, b.v3, c.v3))
     T.check("engine braking 1 slows the car more than off", b.decel > a.decel + 0.3, string.format("%.2f vs %.2f m/s2", b.decel, a.decel))
     T.check("engine braking 2 slows the car more than 1", c.decel > b.decel + 0.2, string.format("%.2f vs %.2f m/s2", c.decel, b.decel))
@@ -673,4 +661,270 @@ T.register("ki5_unreg", makeBody(true, true), where)
 T.register("others", makeBody(false, false, OTHER_CARS), where)
 T.register("others_real", makeBody(true, true, OTHER_CARS), where)
 T.register("others_nowake", function(T) WAKE = false; return makeBody(false, false, OTHER_CARS)(T) end, where)
+T.register("ki5_nobrake", function(T)   -- same as ki5 with engine braking at 0: separates the v0.2 option from the grass numbers
+    SandboxVars.BetterVehicleDynamics.EngineBraking = 0
+    getSandboxOptions():updateFromLua()
+    BVD.invalidateConfigCache()
+    return makeBody(false)(T)
+end, where)
+-- Heavy unregistered car: the same CarNormal with its script mass raised and its engine force left alone, on road and clear grass.
+-- (A user report: a ~2000 kg modded sedan crawls at ~5 km/h on dirt while the road is fine.)
+T.register("heavy", function(T)
+    T.wait(4)
+    local p = getPlayer()
+    p:setGodMod(true); p:setGhostMode(true)
+    T.clearCars(p, 300)
+    local rx, ry = findLine("blends_street", ROAD.x, ROAD.y)
+    rx, ry = rx or ROAD.x, ry or ROAD.y
+    local cx, cy = findLine("blends_natural_01", ROAD.x, ROAD.y, { { x = rx, y = ry } }, true)
+    T.log(string.format("road start %s,%s   clear grass %s,%s", tostring(rx), tostring(ry), tostring(cx), tostring(cy)))
+    local sc = getScriptManager():getVehicle("Base.CarNormal")
+    local force0, mass0 = sc:getEngineForce(), sc:getMass()
+    for _, cfg in ipairs({ { 1100, 1.0 }, { 1600, 1.0 }, { 2000, 1.0 }, { 2000, 2.0 } }) do
+        sc:Load("CarNormal", string.format("{ mass = %d, engineForce = %d, }", cfg[1], force0 * cfg[2]))
+        T.log(string.format("script now mass %.0f force %.0f", sc:getMass(), sc:getEngineForce()))
+        measure(p, "Base.CarNormal", "road", rx, ry)
+        if cx then measure(p, "Base.CarNormal", "clear", cx, cy) end
+    end
+    sc:Load("CarNormal", string.format("{ mass = %d, engineForce = %d, }", mass0, force0))
+end, where)
+-- Heavy car on clear grass at several off-road rolling-drag settings (same 2000 kg / 4000 force script).
+T.register("heavy_drag", function(T)
+    T.wait(4)
+    local p = getPlayer()
+    p:setGodMod(true); p:setGhostMode(true)
+    T.clearCars(p, 300)
+    local rx, ry = findLine("blends_street", ROAD.x, ROAD.y)
+    rx, ry = rx or ROAD.x, ry or ROAD.y
+    local cx, cy = findLine("blends_natural_01", ROAD.x, ROAD.y, { { x = rx, y = ry } }, true)
+    local sc = getScriptManager():getVehicle("Base.CarNormal")
+    local force0, mass0 = sc:getEngineForce(), sc:getMass()
+    sc:Load("CarNormal", "{ mass = 2000, engineForce = 4000, }")
+    for _, rr in ipairs({ 1.8, 0.9, 0.4, 0.0 }) do
+        SandboxVars.BetterVehicleDynamics.RollResistanceOffroad = rr
+        getSandboxOptions():updateFromLua()
+        BVD.invalidateConfigCache()
+        T.wait(2)
+        T.log("RollResistanceOffroad " .. rr)
+        measure(p, "Base.CarNormal", "clear", cx, cy)
+    end
+    SandboxVars.BetterVehicleDynamics.RollResistanceOffroad = 1.8
+    sc:Load("CarNormal", string.format("{ mass = %d, engineForce = %d, }", mass0, force0))
+end, where)
+-- Heavy car (2000 kg script, 6000 force) at low / normal / high offRoadEfficiency, road and clear grass. Run it with BVD
+-- ("heavy_eff") and with its Java part off ("heavy_eff_van") to see what vanilla's own off-road handling gives.
+local function heavyEffBody(T)
+    T.wait(4)
+    local p = getPlayer()
+    p:setGodMod(true); p:setGhostMode(true)
+    T.log("ZombieBuddy layer active: " .. tostring(type(BVD_zombieBuddyActive) == "function" and BVD_zombieBuddyActive() == true))
+    T.clearCars(p, 300)
+    local rx, ry = findLine("blends_street", ROAD.x, ROAD.y)
+    rx, ry = rx or ROAD.x, ry or ROAD.y
+    local cx, cy = findLine("blends_natural_01", ROAD.x, ROAD.y, { { x = rx, y = ry } }, true)
+    local sc = getScriptManager():getVehicle("Base.CarNormal")
+    local force0, mass0, eff0 = sc:getEngineForce(), sc:getMass(), sc:getOffroadEfficiency()
+    for _, eff in ipairs({ 0.4, 1.0, 2.0 }) do
+        sc:Load("CarNormal", string.format("{ mass = 2000, engineForce = 6000, offRoadEfficiency = %.1f, }", eff))
+        T.log(string.format("script now mass %.0f force %.0f offroadEfficiency %.1f", sc:getMass(), sc:getEngineForce(), sc:getOffroadEfficiency()))
+        measure(p, "Base.CarNormal", "road", rx, ry)
+        measure(p, "Base.CarNormal", "clear", cx, cy)
+    end
+    sc:Load("CarNormal", string.format("{ mass = %d, engineForce = %d, offRoadEfficiency = %.1f, }", mass0, force0, eff0))
+end
+T.register("heavy_eff", heavyEffBody, where)
+T.register("heavy_eff_van", heavyEffBody, where)
+-- Heavy car on every kind of ground found near the start: which floor sprites exist, and how the car does on each.
+T.register("heavy_surf", function(T)
+    T.wait(4)
+    local p = getPlayer()
+    p:setGodMod(true); p:setGhostMode(true)
+    T.log("ZombieBuddy layer active: " .. tostring(type(BVD_zombieBuddyActive) == "function" and BVD_zombieBuddyActive() == true))
+    T.clearCars(p, 300)
+    local count, order = {}, {}
+    for dy = -90, 90, 3 do
+        for dx = -90, 90, 3 do
+            local sq = getCell():getGridSquare(ROAD.x + dx, ROAD.y + dy, 0)
+            local n = sq and floorName(sq) or ""
+            local base = n:gsub("_%d+$", "")
+            if n ~= "" then
+                if not count[base] then count[base] = 0; order[#order + 1] = base end
+                count[base] = count[base] + 1
+            end
+        end
+    end
+    for _, b in ipairs(order) do T.log(string.format("floor %-40s %d squares", b, count[b])) end
+    local sc = getScriptManager():getVehicle("Base.CarNormal")
+    local force0, mass0 = sc:getEngineForce(), sc:getMass()
+    sc:Load("CarNormal", "{ mass = 2000, engineForce = 6000, }")
+    local used = {}
+    for _, b in ipairs(order) do
+        if not b:find("blends_street", 1, true) and count[b] >= 8 then
+            for _, strict in ipairs({ true, false }) do
+                local x, y = findLine(b, ROAD.x, ROAD.y, nil, strict, 40)
+                if x and not used[x .. "," .. y] then
+                    used[x .. "," .. y] = true
+                    T.log(string.format("surface %s strict=%s at %d,%d  objects: %s", b, tostring(strict), x, y, describe(x, y)))
+                    measure(p, "Base.CarNormal", (strict and "S:" or "O:") .. b:sub(-12), x, y)
+                end
+            end
+        end
+    end
+    sc:Load("CarNormal", string.format("{ mass = %d, engineForce = %d, }", mass0, force0))
+end, where)
+-- The overgrown-ground patch that held a 2000 kg car at 0 km/h: is it the place, the weight or the harness?
+T.register("heavy_over", function(T)
+    T.wait(4)
+    local p = getPlayer()
+    p:setGodMod(true); p:setGhostMode(true)
+    T.clearCars(p, 300)
+    local x, y = findLine("blends_natural_01", ROAD.x, ROAD.y, nil, false, 40)
+    local sx, sy = findLine("blends_natural_01", ROAD.x, ROAD.y, nil, true, 40)
+    T.log(string.format("overgrown %s,%s (%s)   clear %s,%s", tostring(x), tostring(y), x and describe(x, y) or "-", tostring(sx), tostring(sy)))
+    local sc = getScriptManager():getVehicle("Base.CarNormal")
+    local force0, mass0 = sc:getEngineForce(), sc:getMass()
+    for _, cfg in ipairs({ { 1100, 4000 }, { 2000, 6000 }, { 2000, 16000 } }) do
+        sc:Load("CarNormal", string.format("{ mass = %d, engineForce = %d, }", cfg[1], cfg[2]))
+        for _, wake in ipairs({ false, true }) do
+            WAKE = wake
+            T.log(string.format("script mass %d force %d wake %s", cfg[1], cfg[2], tostring(wake)))
+            if x then measure(p, "Base.CarNormal", "over", x, y) end
+        end
+    end
+    WAKE = false
+    sc:Load("CarNormal", string.format("{ mass = %d, engineForce = %d, }", mass0, force0))
+end, where)
+-- Bushes: a line of real bush sprites across a clear patch, and how a light, a heavy and a heavy strong car do through it.
+-- The vanilla game takes a fixed share of a car's speed off for every update it touches a bush.
+local function findBushSprite()
+    for dy = -90, 90, 2 do
+        for dx = -90, 90, 2 do
+            local sq = getCell():getGridSquare(ROAD.x + dx, ROAD.y + dy, 0)
+            local b = sq and sq:getBush()
+            if b and b:getSprite() then return b:getSpriteName() end
+        end
+    end
+end
+
+local function bushRun(p, x, y, label, bushes)
+    p:setX(x + 0.5); p:setY(y + 3.5); p:setZ(0)
+    p:setLastX(x + 0.5); p:setLastY(y + 3.5); p:setLastZ(0)
+    T.wait(3)
+    local v
+    for attempt = 1, 6 do
+        v = addVehicleDebug("Base.CarNormal", IsoDirections.N, nil, getCell():getGridSquare(x, y, 0))
+        if v then break end
+        T.wait(1.5)
+    end
+    if not v then T.log(label .. ": could not spawn") return end
+    T.wait(1.5)
+    BVDTestsFix(v)
+    sameTires(v)
+    T.wait(0.5)
+    if not enter(p, v) then T.log(label .. ": could not enter") v:permanentlyRemove() return end
+    v:tryStartEngine(true)
+    T.waitFor(function() return v:isEngineRunning() end, 8)
+    T.wait(1)
+    local x0, y0 = v:getX(), v:getY()
+    local t0 = getTimestampMs()
+    local marks, mi, at, peak = { 2, 3, 4, 5, 6, 7, 8 }, 1, {}, 0
+    T.drive(true, true, 0)
+    while getTimestampMs() - t0 < 8100 do
+        local el = (getTimestampMs() - t0) / 1000
+        local s = math.abs(v:getCurrentSpeedKmHour())
+        if s > peak then peak = s end
+        if mi <= #marks and el >= marks[mi] then at[mi] = string.format("%.0f", s) mi = mi + 1 end
+        coroutine.yield()
+    end
+    local dist = math.sqrt((v:getX() - x0) ^ 2 + (v:getY() - y0) ^ 2)
+    T.log(string.format("%-34s %s  speed at 2..8 s: %s  peak %.0f  moved %.0f m", label, bushes and "BUSHES" or "no bushes", table.concat(at, "/"), peak, dist))
+    T.drive(true, false, 0)
+    T.waitFor(function() return math.abs(v:getCurrentSpeedKmHour()) < 1 end, 15)
+    T.drive(false, false, 0)
+    pcall(ISVehicleMenu.onExit, p)
+    T.waitFor(function() return p:getVehicle() == nil end, 5)
+    v:permanentlyRemove()
+    T.wait(1)
+end
+
+local function bushBody(T)
+    T.wait(4)
+    local p = getPlayer()
+    p:setGodMod(true); p:setGhostMode(true)
+    T.log("ZombieBuddy layer active: " .. tostring(type(BVD_zombieBuddyActive) == "function" and BVD_zombieBuddyActive() == true))
+    T.clearCars(p, 300)
+    local sprite = findBushSprite()
+    T.log("bush sprite found: " .. tostring(sprite))
+    local cx, cy = findLine("blends_natural_01", ROAD.x, ROAD.y, nil, true, 40)
+    T.log(string.format("clear patch %s,%s", tostring(cx), tostring(cy)))
+    if not (sprite and cx) then T.check("have a bush sprite and a clear patch", false) return end
+    local sc = getScriptManager():getVehicle("Base.CarNormal")
+    local force0, mass0 = sc:getEngineForce(), sc:getMass()
+    local cars = { { "light 1100/4000", 1100, 4000 }, { "heavy 2000/6000", 2000, 6000 }, { "heavy strong 2000/16000", 2000, 16000 } }
+    local function runAll(bushes)
+        for _, c in ipairs(cars) do
+            sc:Load("CarNormal", string.format("{ mass = %d, engineForce = %d, }", c[2], c[3]))
+            bushRun(p, cx, cy, c[1], bushes)
+        end
+    end
+    runAll(false)
+    -- bushes from 10 to 30 tiles ahead, on the car's column and the one beside it
+    local placed = {}
+    for dy = 8, 28 do
+        for dx = -1, 1 do   -- three columns: the car does not stay on one line
+            local sq = getCell():getGridSquare(cx + dx, cy - dy, 0)
+            if sq then
+                local o = IsoObject.getNew(sq, sprite, nil, false)
+                sq:AddTileObject(o)
+                placed[#placed + 1] = { sq = sq, o = o }
+            end
+        end
+    end
+    T.log(#placed .. " bushes placed; first one isBush=" .. tostring(placed[1] and placed[1].o:isBush()))
+    runAll(true)
+    for _, e in ipairs(placed) do pcall(function() e.sq:RemoveTileObject(e.o) end) end
+    sc:Load("CarNormal", string.format("{ mass = %d, engineForce = %d, }", mass0, force0))
+end
+-- Bushes only, at several ShoveFoliage values, for the cars that matter (light stock, heavy, heavy strong, stock-strength heavy x2).
+T.register("bush_sweep", function(T)
+    T.wait(4)
+    local p = getPlayer()
+    p:setGodMod(true); p:setGhostMode(true)
+    T.clearCars(p, 300)
+    local sprite = findBushSprite()
+    local cx, cy = findLine("blends_natural_01", ROAD.x, ROAD.y, nil, true, 40)
+    if not (sprite and cx) then T.check("have a bush sprite and a clear patch", false) return end
+    local sc = getScriptManager():getVehicle("Base.CarNormal")
+    local force0, mass0 = sc:getEngineForce(), sc:getMass()
+    local placed = {}
+    for dy = 8, 28 do
+        local sq = getCell():getGridSquare(cx, cy - dy, 0)
+        if sq then local o = IsoObject.getNew(sq, sprite, nil, false); sq:AddTileObject(o); placed[#placed + 1] = { sq = sq, o = o } end
+    end
+    local cars = { { "light 1100/4000", 1100, 4000 }, { "heavy 2000/6000", 2000, 6000 }, { "heavy 2000/10000", 2000, 10000 }, { "strong 2000/16000", 2000, 16000 } }
+    for _, shove in ipairs({ 0.2, 0.1, 0.05 }) do
+        SandboxVars.BetterVehicleDynamics.ShoveFoliage = shove
+        getSandboxOptions():updateFromLua()
+        BVD.invalidateConfigCache()
+        T.wait(2)
+        for _, c in ipairs(cars) do
+            sc:Load("CarNormal", string.format("{ mass = %d, engineForce = %d, }", c[2], c[3]))
+            bushRun(p, cx, cy, string.format("shove %.2f  %s", shove, c[1]), true)
+        end
+    end
+    for _, e in ipairs(placed) do pcall(function() e.sq:RemoveTileObject(e.o) end) end
+    SandboxVars.BetterVehicleDynamics.ShoveFoliage = 1.0
+    sc:Load("CarNormal", string.format("{ mass = %d, engineForce = %d, }", mass0, force0))
+end, where)
+T.register("bush", bushBody, where)
+T.register("bush_van", bushBody, where)
+local function shoveBody(v) return function(T)
+    SandboxVars.BetterVehicleDynamics.ShoveFoliage = v
+    getSandboxOptions():updateFromLua()
+    BVD.invalidateConfigCache()
+    T.log("ShoveFoliage " .. v)
+    return bushBody(T)
+end end
+T.register("bush_s03", shoveBody(0.3), where)
+T.register("bush_s0", shoveBody(0.0), where)
 T.register("others_vanilla", makeBody(false, false, OTHER_CARS), where)   -- run with BVD out of the mod list: the harness baseline

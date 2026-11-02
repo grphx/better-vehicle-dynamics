@@ -130,6 +130,11 @@ public final class BvdWorld {
       return true;
    }
 
+   // The base game takes a fixed share of a car's speed off for every update it touches a bush, whatever the
+   // engine, so even a strong car was held to a crawl in a hedge. The ShoveFoliage option (1.0 = default) is
+   // scaled by this base: weak cars are still slowed, strong ones push through.
+   private static final float FOLIAGE_BASE = 0.2F;
+
    // Rescale the queued shove impulses before vanilla applies them: foliage
    // and zombie strikes by ShoveFoliage / ShoveZombies, a squished body by
    // ShoveCorpses with an extra 2.0 weighting, rate-limited so rolling over a
@@ -153,7 +158,7 @@ public final class BvdWorld {
             probe.mul(-0.1F * vehicle.getFudgedMass());
             isFoliage = isFoliage || probe.sub(impulse).lengthSquared() < 0.001F;
             if (isFoliage) {
-               impulse.mul(massSoften * massScaler * sandbox("BetterVehicleDynamics.ShoveFoliage", 1.0F));
+               impulse.mul(massSoften * massScaler * FOLIAGE_BASE * sandbox("BetterVehicleDynamics.ShoveFoliage", 1.0F));
             } else {
                impulse.mul(massSoften * massScaler * sandbox("BetterVehicleDynamics.ShoveZombies", 1.0F));
             }

@@ -1,8 +1,8 @@
 diff --git a/zombie/core/physics/CarController.java b/zombie/core/physics/CarController.java
-index e82625b..9a36805 100644
+index e82625b..b67bf0c 100644
 --- a/zombie/core/physics/CarController.java
 +++ b/zombie/core/physics/CarController.java
-@@ -1,840 +1,2336 @@
+@@ -1,840 +1,2339 @@
  package zombie.core.physics;
  
 +import java.util.ArrayList;
@@ -286,7 +286,7 @@ index e82625b..9a36805 100644
 +   // Throttle below this counts as lifted off.
 +   private static final float ENGINE_BRAKE_THROTTLE = 0.05F;
 +   // The engine follows the geared wheel speed when the wheels turn it faster than it runs: seconds to catch up.
-+   private static final float RPM_FOLLOW_TIME = 0.20F;
++   private static final float RPM_FOLLOW_TIME = 0.10F;
 +   // Never pull the engine above this share of redline.
 +   private static final float RPM_FOLLOW_CEILING = 1.10F;
 +   // A downshift that would spin the engine beyond this share of redline locks the driven wheels for a moment
@@ -2542,6 +2542,9 @@ index e82625b..9a36805 100644
 +      if (engineBrakeKnob > 0.0F && this.vehicleObject.isEngineRunning() && this.vehicleObject.throttle < ENGINE_BRAKE_THROTTLE
 +            && gearedWheelRpm > engineRpm + 50.0F && (!clutchMode || (!neutral && this.clutchEngage > 0.5F))) {
 +         this.rpmFollowTarget = Math.min(gearedWheelRpm, redline * RPM_FOLLOW_CEILING);
++         // overrun: the wheels turn the engine, so the converter model must not also push the car forward
++         wheelTorque = 0.0F;
++         couple = 0.0F;
 +         float engineBrake = ratedTorque * ENGINE_BRAKE_FRICTION * (gearedWheelRpm / redline) * gearbox.ratios[gear] * speedToRpm * 0.05F * engineBrakeKnob;
 +         engineBrake = Math.min(engineBrake, gripLimit * ENGINE_BRAKE_GRIP_CAP);
 +         if (gearedWheelRpm > redline * LOCKUP_OVERREV && this.getSandboxOptionBoolean("BetterVehicleDynamics.EngineBrakeLockup", false)) {
@@ -2921,7 +2924,7 @@ index e82625b..9a36805 100644
              this.vehicleObject.stopSound(this.vehicleObject.ramSound);
              this.vehicleObject.ramSound = 0L;
           }
-@@ -844,6 +2340,55 @@ public final class CarController {
+@@ -844,6 +2343,55 @@ public final class CarController {
        }
     }
  
@@ -2977,7 +2980,7 @@ index e82625b..9a36805 100644
     private void updateBackSignal() {
        if (this.isGasR && this.vehicleObject.isEngineRunning() && this.vehicleObject.hasBackSignal() && !this.vehicleObject.isBackSignalEmitting()) {
           if (GameClient.client) {
-@@ -933,56 +2478,106 @@ public final class CarController {
+@@ -933,56 +2481,106 @@ public final class CarController {
     }
  
     public void updateControls() {
@@ -3122,7 +3125,7 @@ index e82625b..9a36805 100644
        }
  
        this.isGas = this.wasGas = false;
-@@ -1292,4 +2887,28 @@ public final class CarController {
+@@ -1292,4 +2890,28 @@ public final class CarController {
           this.minRpm = rpm;
        }
     }

@@ -22,3 +22,27 @@ BVDTestsFix = function(v)
         v:transmitPartUsedDelta(bat)
     end
 end
+
+-- Fit a full set of good tires the way the game's own install does it. A debug-spawned car can come without tires
+-- (the game marks those wheels "removed" in the physics, so the engine drives nothing) or with flat ones (a tire
+-- with no air explodes and drops on the road as soon as the car runs above 10 km/h). Swapping the part's item is
+-- not enough: the air, the physics flag and the wheel model all have to be set too.
+BVDTestsFitTires = function(v, tireType)
+    tireType = tireType or "Base.NormalTire2"
+    for _, id in ipairs({ "TireFrontLeft", "TireFrontRight", "TireRearLeft", "TireRearRight" }) do
+        local part = v:getPartById(id)
+        if part then
+            local item = instanceItem(tireType)
+            item:setCondition(100)
+            part:setInventoryItem(item)
+            part:setCondition(100)
+            local cap = 0
+            pcall(function() cap = part:getContainerCapacity() end)   -- what the game itself fills a tire to
+            if cap > 0 then pcall(function() part:setContainerContentAmount(cap, false, true) end) end
+            pcall(function() part:setModelVisible("InflatedTirePlusWheel", true) end)
+            v:transmitPartItem(part)
+            v:setTireRemoved(part:getWheelIndex(), false)
+        end
+    end
+    pcall(function() v:updatePartStats() end)
+end

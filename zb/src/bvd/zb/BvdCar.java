@@ -275,7 +275,7 @@ public final class BvdCar {
    // Throttle below this counts as lifted off.
    private static final float ENGINE_BRAKE_THROTTLE = 0.05F;
    // The engine follows the geared wheel speed when the wheels turn it faster than it runs: seconds to catch up.
-   private static final float RPM_FOLLOW_TIME = 0.20F;
+   private static final float RPM_FOLLOW_TIME = 0.10F;
    // Never pull the engine above this share of redline.
    private static final float RPM_FOLLOW_CEILING = 1.10F;
    // A downshift that would spin the engine beyond this share of redline locks the driven wheels for a moment
@@ -1940,6 +1940,9 @@ public final class BvdCar {
       if (engineBrakeKnob > 0.0F && this.cc.vehicleObject.isEngineRunning() && this.cc.vehicleObject.throttle < ENGINE_BRAKE_THROTTLE
             && gearedWheelRpm > engineRpm + 50.0F && (!clutchMode || (!neutral && this.clutchEngage > 0.5F))) {
          this.rpmFollowTarget = Math.min(gearedWheelRpm, redline * RPM_FOLLOW_CEILING);
+         // overrun: the wheels turn the engine, so the converter model must not also push the car forward
+         wheelTorque = 0.0F;
+         couple = 0.0F;
          float engineBrake = ratedTorque * ENGINE_BRAKE_FRICTION * (gearedWheelRpm / redline) * gearbox.ratios[gear] * speedToRpm * 0.05F * engineBrakeKnob;
          engineBrake = Math.min(engineBrake, gripLimit * ENGINE_BRAKE_GRIP_CAP);
          if (gearedWheelRpm > redline * LOCKUP_OVERREV && this.getSandboxOptionBoolean("BetterVehicleDynamics.EngineBrakeLockup", false)) {

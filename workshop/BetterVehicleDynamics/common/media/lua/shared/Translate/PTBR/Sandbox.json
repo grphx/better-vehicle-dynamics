@@ -69,7 +69,7 @@
     "Sandbox_BVD_EngineProfiles_tooltip": "Os câmbios automáticos trocam de marcha conforme o padrão do tipo de motor do veículo (vans cedo, esportivos tarde), obtido dos próprios dados de motor do jogo, em vez de um único ponto de troca para todos os carros. Desativado por padrão.",
 
     "Sandbox_BVD_RealismHPWeight": "Potência e peso de referência",
-    "Sandbox_BVD_RealismHPWeight_tooltip": "Opcional. Aplica os valores de referência do Better Vehicle Dynamics a todos os carros. Veículos com dados pesquisados recebem essa potência e esse peso (nunca mais fracos nem mais leves do que o mod os fez); qualquer outro carro com motor, inclusive de mods, recebe o mesmo aumento de potência (4x, com limite). A potência mostrada é a força do motor do jogo, não cavalos de potência, por isso o número parece alto. Desligar a opção restaura os valores originais.",
+    "Sandbox_BVD_RealismHPWeight_tooltip": "Opcional. Aplica os valores de referência do Better Vehicle Dynamics a todos os carros. Veículos com dados pesquisados recebem essa potência e esse peso (nunca mais fracos nem mais leves do que o mod os fez); qualquer outro carro com motor, inclusive de mods, recebe o mesmo aumento de potência (4x, com limite). O aumento age dentro da física, então a potência mostrada na janela do veículo continua sendo o valor do próprio script (a força do motor do jogo dividida por 10, não cavalos de potência reais). Desligar a opção restaura os valores originais.",
 
     "Sandbox_BVD_TrunkScaling": "Reescala da capacidade de carga",
     "Sandbox_BVD_TrunkScaling_tooltip": "Multiplica o armazenamento de cada veículo por um fator de cada tipo de carroceria, em vez de sobrescrevê-lo. Desativado automaticamente quando 'isoContainers' está presente.",

@@ -69,7 +69,7 @@
     "Sandbox_BVD_EngineProfiles_tooltip": "Otomatik vites kutuları, her araç için tek bir vites noktası yerine, oyunun kendi motor verilerinden alınan aracın motor tipine uygun düzende vites değiştirir (minibüsler erken, spor arabalar geç). Varsayılan olarak kapalı.",
 
     "Sandbox_BVD_RealismHPWeight": "Referans güç ve ağırlık",
-    "Sandbox_BVD_RealismHPWeight_tooltip": "İsteğe bağlı. Better Vehicle Dynamics'in referans değerlerini her arabaya uygular. Araştırılmış verisi olan araçlar bu motor gücünü ve kütleyi alır (modun yaptığından daha zayıf ya da hafif olmaz); motoru olan diğer tüm arabalar, modlu olanlar dahil, aynı güç artışını alır (4 kat, sınırlı). Gösterilen güç oyunun motor kuvvetidir, beygir gücü değildir, bu yüzden yüksek görünür. Seçeneği kapatmak özgün değerleri geri getirir.",
+    "Sandbox_BVD_RealismHPWeight_tooltip": "İsteğe bağlı. Better Vehicle Dynamics'in referans değerlerini her arabaya uygular. Araştırılmış verisi olan araçlar bu motor gücünü ve kütleyi alır (modun yaptığından daha zayıf ya da hafif olmaz); motoru olan diğer tüm arabalar, modlu olanlar dahil, aynı güç artışını alır (4 kat, sınırlı). Artış fiziğin içinde çalışır, bu yüzden araç penceresinde gösterilen güç betiğin kendi değeri olarak kalır (oyunun motor kuvvetinin 10'a bölünmüşü, gerçek beygir gücü değil). Seçeneği kapatmak özgün değerleri geri getirir.",
 
     "Sandbox_BVD_TrunkScaling": "Yük kapasitesi yeniden ölçekleme",
     "Sandbox_BVD_TrunkScaling_tooltip": "Her aracın depolama alanını üzerine yazmak yerine, kasa tipine göre bir çarpanla ölçekler. 'isoContainers' varsa otomatik olarak devre dışı kalır.",

@@ -74,7 +74,7 @@ public final class BvdCar {
 
       KahluaTableImpl bridge = this.bvdBridge();
       if (bridge != null) {
-         bridge.rawset("javaVersion", "3.5");
+         bridge.rawset("javaVersion", "3.6");
          // One-shot policy-contract handshake: tells the Lua side which
          // bridge fields this build reads. Written here because this is
          // where BVD first resolves its bridge each world load; harmless
@@ -282,6 +282,10 @@ public final class BvdCar {
    // (only when the EngineBrakeLockup option is on).
    private static final float LOCKUP_OVERREV = 1.15F;
    // Engine speed the wheels are asking for this tick; 0 when not coupled.
+   // Reference power & weight option: the power gain and its ceiling (the strongest car seen, a 6150-force supercar,
+   // comes to 24600; a mod that already ships big engines is not quadrupled into absurdity).
+   private static final float REALISM_POWER_GAIN = 4.0F;
+   private static final float REALISM_FORCE_CAP = 28000.0F;
    private float rpmFollowTarget = 0.0F;
    // The driver's own throttle, read before the idle governor lifts vehicle.throttle to hold idle. The stall and
    // engine-braking checks use this one: the governor sits at about 0.175 at idle, which hid both.
@@ -1778,7 +1782,14 @@ public final class BvdCar {
 
       // The engine power is used as it is. The realism option's extra gain is applied to the vehicle
       // scripts for every vehicle, registered or not (BVD_Overhaul.lua), not here for registered ones only.
-      float powerUnit = this.cc.vehicleObject.getEnginePower() / 10.0F;
+      // The reference-power option (RealismHPWeight) boosts every car's power here, in the physics, instead of by
+      // rewriting the script's engine force: the vehicle window then keeps showing the script's own number
+      // (it prints engine force / 10 as "hp"), and the boost never compounds with a script reload.
+      float scriptPower = this.cc.vehicleObject.getEnginePower();
+      if (this.getSandboxOptionBoolean("BetterVehicleDynamics.RealismHPWeight", false)) {
+         scriptPower = Math.max(scriptPower, Math.min(scriptPower * REALISM_POWER_GAIN, REALISM_FORCE_CAP));
+      }
+      float powerUnit = scriptPower / 10.0F;
 
       float engineRpm = (float)this.cc.vehicleObject.getEngineSpeed();
       float engineTorqueDelta = 0.0F;

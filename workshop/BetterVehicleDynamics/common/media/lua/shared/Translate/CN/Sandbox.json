@@ -69,7 +69,7 @@
     "Sandbox_BVD_EngineProfiles_tooltip": "自动变速箱会按照车辆发动机类型的换挡规律换挡（厢式货车较早，跑车较晚），数据取自游戏自带的发动机数据，而不是所有车辆共用同一个换挡点。默认关闭。",
 
     "Sandbox_BVD_RealismHPWeight": "参考功率与重量",
-    "Sandbox_BVD_RealismHPWeight_tooltip": "可选项。把 Better Vehicle Dynamics 的参考数据应用到每一辆车。我们有研究数据的车辆会使用这些发动机动力和质量（不会比原模组更弱或更轻）；其他所有带发动机的车辆，包括模组车辆，会得到同样的动力提升（4 倍，有上限）。车辆信息里显示的动力是游戏内部的发动机力，不是马力，所以数字看起来偏大。关闭该选项会恢复原始数值。",
+    "Sandbox_BVD_RealismHPWeight_tooltip": "可选项。把 Better Vehicle Dynamics 的参考数据应用到每一辆车。我们有研究数据的车辆会使用这些发动机动力和质量（不会比原模组更弱或更轻）；其他所有带发动机的车辆，包括模组车辆，会得到同样的动力提升（4 倍，有上限）。该提升在物理计算内部生效，所以车辆窗口里显示的动力仍是脚本自己的数值（游戏的发动机力除以 10，不是真正的马力）。关闭该选项会恢复原始数值。",
 
     "Sandbox_BVD_TrunkScaling": "载货容量重新缩放",
     "Sandbox_BVD_TrunkScaling_tooltip": "按车身类型的系数缩放每辆车的储物空间，而不是直接覆盖。检测到“isoContainers”时自动禁用。",

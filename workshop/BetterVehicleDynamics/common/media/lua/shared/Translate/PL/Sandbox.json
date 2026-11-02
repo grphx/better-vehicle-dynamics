@@ -69,7 +69,7 @@
     "Sandbox_BVD_EngineProfiles_tooltip": "Automatyczne skrzynie biegów zmieniają biegi według wzorca typu silnika pojazdu (dostawczaki wcześnie, sportowe auta późno), na podstawie danych silników z samej gry, zamiast jednego punktu zmiany biegu dla wszystkich aut. Domyślnie wyłączone.",
 
     "Sandbox_BVD_RealismHPWeight": "Modyfikacja mocy i masy",
-    "Sandbox_BVD_RealismHPWeight_tooltip": "Opcja dodatkowa. Stosuje dane referencyjne Better Vehicle Dynamics do każdego samochodu. Pojazdy, dla których mamy zbadane dane, dostają tę moc i masę (nigdy słabsze ani lżejsze niż w modzie); każdy inny samochód z silnikiem, także z modów, dostaje takie samo wzmocnienie mocy (4x, z limitem). Pokazywana moc to siła silnika w grze, a nie konie mechaniczne, więc wygląda na dużą. Wyłączenie opcji przywraca oryginalne wartości.",
+    "Sandbox_BVD_RealismHPWeight_tooltip": "Opcja dodatkowa. Stosuje dane referencyjne Better Vehicle Dynamics do każdego samochodu. Pojazdy, dla których mamy zbadane dane, dostają tę moc i masę (nigdy słabsze ani lżejsze niż w modzie); każdy inny samochód z silnikiem, także z modów, dostaje takie samo wzmocnienie mocy (4x, z limitem). Wzmocnienie działa w fizyce, więc moc w oknie pojazdu pozostaje wartością ze skryptu (siła silnika w grze podzielona przez 10, a nie prawdziwe konie mechaniczne). Wyłączenie opcji przywraca oryginalne wartości.",
 
     "Sandbox_BVD_TrunkScaling": "Skalowanie pojemności bagażnika",
     "Sandbox_BVD_TrunkScaling_tooltip": "Skaluje pojemność każdego pojazdu według współczynnika dla danego typu nadwozia zamiast jej nadpisywania. Automatycznie wyłączane, gdy obecny jest mod 'isoContainers'",

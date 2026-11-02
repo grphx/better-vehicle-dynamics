@@ -214,9 +214,9 @@ local function makeBody(realism, unregistered, cars)
                 if o and n then
                     local registeredCar = (name == "Base.CarNormal") or not unregistered
                     if registeredCar then
-                        if n.force < math.min(o.force * 4, 28000) - 1 or n.mass < o.mass - 1 or n.mass > 1700 + 1 then ruleOk = false; ruleBad[#ruleBad + 1] = name .. " (registered)" end
+                        if n.force < o.force - 1 or n.mass < o.mass - 1 or n.mass > 1700 + 1 then ruleOk = false; ruleBad[#ruleBad + 1] = name .. " (registered)" end
                     else
-                        if math.abs(n.force - math.min(o.force * 4, 28000)) > 1 or math.abs(n.mass - o.mass) > 1 then ruleOk = false; ruleBad[#ruleBad + 1] = name .. " (unregistered)" end
+                        if math.abs(n.force - o.force) > 1 or math.abs(n.mass - o.mass) > 1 then ruleOk = false; ruleBad[#ruleBad + 1] = name .. " (unregistered)" end
                     end
                 end
             end
@@ -331,11 +331,12 @@ local function rulesBody(T)
                 local why
                 if type(force) ~= "number" or force ~= force or force == math.huge then why = "force not a finite number"
                 elseif force < f then why = "weaker than its script"
-                elseif force > math.max(28000, f) then why = "above the power ceiling"
                 elseif mass ~= nil and (type(mass) ~= "number" or mass ~= mass) then why = "mass not a number"
                 elseif mass ~= nil and mass < m then why = "lighter than its script"
                 elseif mass ~= nil and mass > math.max(1700, m) then why = "above the mass cap"
-                elseif not spec and (mass ~= nil or force ~= math.min(f * 4, 28000) and force ~= f) then why = "unregistered car treated differently"
+                elseif not spec and (mass ~= nil or force ~= f) then why = "unregistered car treated differently"
+                elseif spec and spec.hp and force ~= math.max(spec.hp * 10, f) then why = "registered power is not max(researched, script)"
+                elseif spec and not spec.hp and force ~= f then why = "registered car without hp changed power"
                 elseif force ~= force2 or mass ~= mass2 then why = "not repeatable" end
                 if why and #bad < 8 then bad[#bad + 1] = string.format("f=%s m=%s spec#%d: %s (-> %s, %s)", f, m, si, why, tostring(force), tostring(mass)) end
             end
@@ -344,9 +345,11 @@ local function rulesBody(T)
     T.log(string.format("%d combinations of script force, mass and registration checked", n))
     T.check("realism rules hold for every combination", #bad == 0, table.concat(bad, " | "))
     local f, m = BVD.realismTarget(4000, 1000, nil)
-    T.check("an ordinary unregistered car gets the plain gain and keeps its mass", f == 16000 and m == nil, tostring(f) .. "/" .. tostring(m))
+    T.check("an ordinary unregistered car keeps its script force and its mass (the gain is in the Java)", f == 4000 and m == nil, tostring(f) .. "/" .. tostring(m))
     f = BVD.realismTarget(15000, 1000, nil)
-    T.check("an already strong engine is capped, not quadrupled", f == 28000, tostring(f))
+    T.check("a strong engine's script force is left alone", f == 15000, tostring(f))
+    f = BVD.realismTarget(1000, 1000, { hp = 200 })
+    T.check("a registered car takes its researched power when that is higher (hp x 10)", f == 2000, tostring(f))
     local _, hm = BVD.realismTarget(4000, 2600, { hp = 200, mass_kg = 1500 })
     T.check("a registered heavy truck is not made lighter", hm == 2600, tostring(hm))
 end

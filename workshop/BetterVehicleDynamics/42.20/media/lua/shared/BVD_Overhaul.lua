@@ -311,37 +311,32 @@ local function noteReservedCargo()
 end
 
 -- The realism option gives every vehicle the same treatment, registered or not:
---   * power: engineForce is multiplied by REALISM_POWER_GAIN. A registered car first takes the larger of its
---     researched value (hp * 10) and its own script value, so registration can raise a car but never push it
---     below what its author tuned it for. Before v0.1.19 only registered cars got this gain (as a 4x in the
---     Java), which made an unregistered car four times weaker than a registered one of the same power.
+--   * power: the 4x gain (capped at 28000) is applied in the Java, to every car with an engine, so the vehicle
+--     window keeps showing the script's own number (it prints engine force / 10 as "hp"). Here, a registered car
+--     only takes the larger of its researched value (hp * 10) and its own script value, so registration can raise
+--     a car but never push it below what its author tuned it for. Until v0.1.19 only registered cars got the gain,
+--     which made an unregistered car four times weaker; from v0.1.19 to v0.2.0 the gain was written into the
+--     scripts, which showed values around 1500 in the window.
 --   * mass: a registered car takes its researched mass up to MASS_CAP, but never lighter than its script.
---   * power is capped at REALISM_FORCE_CAP (never below the script's own value).
 -- Everything is computed from the scripts' ORIGINAL values, kept here, so running this again (another world
 -- in the same session) does not compound, and turning the option off puts the originals back.
-local REALISM_POWER_GAIN = 4.0
 local MASS_CAP = 1700          -- script mass; parts (~300 kg) and cargo come on top, and a vehicle above about
                                -- 2400 kg all-up sits on its suspension stops (bench measurement)
-
-local REALISM_FORCE_CAP = 28000 -- ceiling on the boosted engineForce (the strongest car seen, a 6150-force
-                               -- supercar, comes to 24600); a mod that already ships big engines is not
-                               -- quadrupled into absurdity. Never below the car's own script value.
 
 local original = {}            -- fullType -> { force = , mass = } as the scripts first loaded
 
 --- What the realism option turns one script into. Pure: depends only on the arguments, so it holds for any
 --- modded car whatever its numbers. `force`/`mass` are the script's ORIGINAL values; `spec` is the registered
---- entry or nil. Returns the engineForce and the mass (nil = leave the mass alone). Guarantees, for any
---- positive input: the result is never weaker or lighter than the script itself, power never exceeds
---- max(REALISM_FORCE_CAP, the script's own), and a registered mass never exceeds max(MASS_CAP, the script's own).
+--- entry or nil. Returns the engineForce to write into the script and the mass (nil = leave the mass alone).
+--- Guarantees, for any positive input: the result is never weaker or lighter than the script itself, an
+--- unregistered car keeps its force, and a registered mass never exceeds max(MASS_CAP, the script's own).
 function BVD.realismTarget(force, mass, spec)
 	local base, newMass = force, nil
 	if spec then
 		if spec.hp then base = math.max(spec.hp * 10, force) end
 		if spec.mass_kg and mass then newMass = math.max(mass, math.min(spec.mass_kg, MASS_CAP)) end
 	end
-	local boosted = math.max(force, math.min(base * REALISM_POWER_GAIN, REALISM_FORCE_CAP))
-	return boosted, newMass
+	return base, newMass
 end
 
 local function remember(v, fullType)

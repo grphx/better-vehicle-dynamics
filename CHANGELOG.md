@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.2.1] - 2026-11-03 - The vehicle window shows the script's own power
+
+Reported twice on the Workshop page: with "Reference power & weight" on, the vehicle window shows engine power
+around 1500 to 2500. The window prints the script's engine force divided by 10 with the label "hp" (that
+is vanilla; it is not horsepower, and KI5 scripts already show 400 to 600 for a small car). BVD made it
+look worse by multiplying the script's engine force by 4 for every car when the option was on.
+
+- **The reference-power gain now happens in the physics, not in the scripts.** The 4x (capped at 28000, only for
+  cars with an engine) is applied by the Java part, so the vehicle window keeps showing the script's own number.
+  Driving is the same as 0.2.0. A registered car still takes the larger of its researched power (hp x 10) and
+  its own script value. The mass rules are unchanged.
+- The option's tooltip explains it, in all languages.
+- Java version 3.6: manual-install users copy the `zombie` folder again; with ZombieBuddy nothing to do.
+
 ## [0.2.0] - 2026-11-03 - Drivetrain feel
 
 The theme of this release is how a car feels to drive when you lift off and shift. Every new behaviour is a sandbox

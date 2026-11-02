@@ -69,7 +69,7 @@
     "Sandbox_BVD_EngineProfiles_tooltip": "Automatikgetriebe schalten nach dem Muster des Motortyps des Fahrzeugs (Transporter früh, Sportwagen spät), basierend auf den Motordaten des Spiels, statt mit einem einzigen Schaltpunkt für alle Autos. Standardmäßig aus.",
 
     "Sandbox_BVD_RealismHPWeight": "Referenzleistung & -gewicht",
-    "Sandbox_BVD_RealismHPWeight_tooltip": "Optional. Wendet die Referenzwerte von Better Vehicle Dynamics auf jedes Auto an. Fahrzeuge mit recherchierten Daten bekommen diese Motorleistung und dieses Gewicht (nie schwächer oder leichter, als der Mod sie gemacht hat); jedes andere Auto mit Motor, auch aus Mods, bekommt denselben Leistungsschub (4x, begrenzt). Die angezeigte Leistung ist die Motorkraft des Spiels, keine PS, deshalb wirkt die Zahl hoch. Wenn du die Option ausschaltest, kommen die Originalwerte zurück.",
+    "Sandbox_BVD_RealismHPWeight_tooltip": "Optional. Wendet die Referenzwerte von Better Vehicle Dynamics auf jedes Auto an. Fahrzeuge mit recherchierten Daten bekommen diese Motorleistung und dieses Gewicht (nie schwächer oder leichter, als der Mod sie gemacht hat); jedes andere Auto mit Motor, auch aus Mods, bekommt denselben Leistungsschub (4x, begrenzt). Der Schub wirkt in der Physik, daher zeigt das Fahrzeugfenster weiter den Wert des Skripts an (die Motorkraft des Spiels geteilt durch 10, keine echten PS). Wenn du die Option ausschaltest, kommen die Originalwerte zurück.",
 
     "Sandbox_BVD_TrunkScaling": "Laderaum-Skalierung",
     "Sandbox_BVD_TrunkScaling_tooltip": "Skaliert den Stauraum jedes Fahrzeugs mit einem Faktor je Karosserietyp, statt ihn zu überschreiben. Wird automatisch deaktiviert, wenn 'isoContainers' vorhanden ist.",

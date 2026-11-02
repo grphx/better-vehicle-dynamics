@@ -1,0 +1,16 @@
+[h1]v0.2.1 - The vehicle window shows the script's own power[/h1]
+
+[h2]What you need to do[/h2]
+[list]
+[*][b]ZombieBuddy users:[/b] nothing, Steam updates the mod.
+[*][b]Manual install:[/b] copy the zombie folder from B42.21_Manual_Install over your old one again (the vehicle controller changed). The old one shows an "out of date" message.
+[*][b]Dedicated servers:[/b] nothing, servers still need no Java install.
+[/list]
+
+[h2]Changes[/h2]
+[list]
+[*][b]Engine power no longer looks multiplied.[/b] The vehicle window shows the vehicle script's engine force divided by 10 and calls it "hp". That is how the base game does it (and KI5 scripts use big numbers), so a small car already reads in the hundreds. With the opt-in "Reference power and weight" option on, BVD used to multiply that value by 4 in the scripts, which put it at 1500 and more. The boost now happens inside the physics instead, so the window shows the script's own number and the car drives exactly as before.
+[*]The option's tooltip explains this in every language.
+[/list]
+
+Thanks to the players who reported it.

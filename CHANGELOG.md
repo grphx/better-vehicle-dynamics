@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.2.0] - Unreleased - Drivetrain feel
+## [0.2.0] - 2026-11-03 - Drivetrain feel
 
 The theme of this release is how a car feels to drive when you lift off and shift. Every new behaviour is a sandbox
 option; the defaults keep an ordinary drive close to 0.1.20 (engine braking is the one effect that is on by default).

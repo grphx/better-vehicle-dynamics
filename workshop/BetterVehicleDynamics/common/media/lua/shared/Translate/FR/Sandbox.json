@@ -1,0 +1,160 @@
+{
+    "Sandbox_BetterVehicleDynamics": "Better Vehicle Dynamics",
+
+    "Sandbox_BetterVehicleDynamics_Handling": "BVD — Conduite",
+    "Sandbox_BetterVehicleDynamics_TiresLoad": "BVD — Pneus et chargement",
+    "Sandbox_BetterVehicleDynamics_Drivetrain": "BVD — Transmission",
+    "Sandbox_BetterVehicleDynamics_Readout": "BVD — Affichage et divers",
+
+    "Sandbox_BVD_Mode": "Préréglage de conduite",
+    "Sandbox_BVD_Mode_tooltip": "Personnalisé conserve chaque curseur ci-dessous tel que vous l'avez réglé. Les autres préréglages alignent les valeurs de transmission, d'adhérence et de poussée sur un profil prédéfini au chargement du monde.",
+    "Sandbox_BVD_Mode_option1": "Personnalisé",
+    "Sandbox_BVD_Mode_option2": "Détendu",
+    "Sandbox_BVD_Mode_option3": "Réaliste",
+    "Sandbox_BVD_Mode_option4": "Impitoyable",
+
+    "Sandbox_BVD_DriverHUD": "Panneau d'infos du véhicule",
+    "Sandbox_BVD_DriverHUD_tooltip": "Ajoute un panneau Better Vehicle Dynamics ancré à côté de la fenêtre de mécanique du véhicule, affichant le profil de réglage actif et les paramètres d'adhérence (les valeurs que le jeu de base n'affiche pas).",
+
+    "Sandbox_BVD_SkidMarks": "Traces de pneus",
+    "Sandbox_BVD_SkidMarks_tooltip": "Laisse une marque au sol quand un pneu décroche sous l'accélération ou lors d'un freinage brusque.",
+
+    "Sandbox_BVD_SkidSound": "Son de dérapage des pneus",
+    "Sandbox_BVD_SkidSound_tooltip": "Joue un crissement de pneus quand un véhicule dérape. Indépendant de l'effet visuel des traces de pneus. À désactiver si le son vous gêne ou si un mod de sons entre en conflit.",
+
+    "Sandbox_BVD_EnginePower": "Puissance moteur",
+    "Sandbox_BVD_EnginePower_tooltip": "Multiplie la force de traction de chaque moteur. En dessous de 1, les véhicules manquent de punch ; au-dessus de 1, les côtes et les emboutissages deviennent triviaux.",
+
+    "Sandbox_BVD_LowSpeedGrunt": "Poussée à très basse vitesse",
+    "Sandbox_BVD_LowSpeedGrunt_tooltip": "Force de traction supplémentaire disponible à très basse vitesse de roue — la force utilisée pour pousser les épaves et se frayer un chemin dans les foules. Réduisez-la pour des bas régimes plus faibles et plus prudents.",
+
+    "Sandbox_BVD_ReverseTopSpeed": "Vitesse max en marche arrière (km/h)",
+    "Sandbox_BVD_ReverseTopSpeed_tooltip": "Plafond strict de la vitesse en marche arrière.",
+
+    "Sandbox_BVD_GripLevel": "Adhérence des pneus",
+    "Sandbox_BVD_GripLevel_tooltip": "Budget global d'adhérence. Plus il est bas, plus la voiture décroche et patine facilement.",
+
+    "Sandbox_BVD_WetGrip": "Adhérence sous la pluie",
+    "Sandbox_BVD_WetGrip_tooltip": "Fraction de l'adhérence normale quand il pleut.",
+
+    "Sandbox_BVD_SnowGrip": "Adhérence sur la neige",
+    "Sandbox_BVD_SnowGrip_tooltip": "Fraction de l'adhérence normale sur un sol enneigé.",
+
+    "Sandbox_BVD_OffroadGrip": "Adhérence hors route",
+    "Sandbox_BVD_OffroadGrip_tooltip": "Force d'adhérence hors route. PLUS ÉLEVÉ = plus d'adhérence (moins de patinage des pneus) sur la terre, l'herbe et le gravier. Par défaut 0.85 = patinage modéré ; 1.5 = sensation proche d'une route goudronnée. Ne change pas la résistance au roulement - réglez-la via Résistance au roulement (hors route).",
+
+    "Sandbox_BVD_OffroadFloor": "Plancher d'adhérence hors route",
+    "Sandbox_BVD_OffroadFloor_tooltip": "Multiplicateur d'adhérence hors route minimal auquel n'importe quelle famille de pneus peut descendre. Sans lui, les profils de pneus sport peuvent faire tomber l'adhérence hors route si bas qu'une voiture très puissante avance à peine sur l'herbe. La valeur par défaut 0.55 laisse un déplacement à la force brute possible (la voiture patine et ronge ses pneus, mais elle avance).",
+
+    "Sandbox_BVD_Drag": "Traînée aérodynamique",
+    "Sandbox_BVD_Drag_tooltip": "Échelle de la résistance aérodynamique. Plus elle est élevée, plus la vitesse maximale est plafonnée tôt et plus l'élan se perd vite.",
+
+    "Sandbox_BVD_RollResistance": "Résistance au roulement (route)",
+    "Sandbox_BVD_RollResistance_tooltip": "Résistance des pneus sur les surfaces revêtues. Affecte la décélération en roue libre et la vitesse stabilisée.",
+
+    "Sandbox_BVD_RollResistanceOffroad": "Résistance au roulement (hors route)",
+    "Sandbox_BVD_RollResistanceOffroad_tooltip": "Résistance au roulement supplémentaire en dehors de la route revêtue.",
+
+    "Sandbox_BVD_EngineBraking": "Frein moteur",
+    "Sandbox_BVD_EngineBraking_tooltip": "Intensité avec laquelle le moteur ralentit la voiture quand vous levez le pied de l'accélérateur avec une vitesse engagée, et la façon dont le régime suit la vitesse sur route (un rétrogradage l'augmente). 0 le désactive et redonne l'ancien comportement, 1 correspond à un moteur de route normal, plus haut à un gros diesel ou un moteur de course. Les vitesses basses freinent plus fort, comme dans une vraie voiture.",
+    "Sandbox_BVD_EngineBrakeLockup": "Blocage des roues sur une vitesse trop basse",
+    "Sandbox_BVD_EngineBrakeLockup_tooltip": "Rétrograder sur une vitesse beaucoup trop basse pour votre vitesse bloque brièvement les roues motrices et peut faire glisser la voiture. Désactivé par défaut.",
+
+    "Sandbox_BVD_ManualClutch": "Embrayage manuel",
+    "Sandbox_BVD_ManualClutch_tooltip": "Pour les joueurs qui ont activé le passage manuel des vitesses : ajoute un embrayage (maintenez la touche d'embrayage pour désolidariser le moteur), un point mort entre la marche arrière et la première, et une vraie marche arrière. Désactivé, on garde le sélecteur de vitesses simple. Les voitures automatiques ne sont pas affectées.",
+    "Sandbox_BVD_ManualStall": "Calage",
+    "Sandbox_BVD_ManualStall_tooltip": "Nécessite l'embrayage manuel. Relâcher l'embrayage sur une vitesse trop haute pour votre vitesse, sans assez d'accélérateur, cale le moteur et il faut le redémarrer. Désactivé par défaut.",
+
+    "Sandbox_BVD_EngineProfiles": "Points de passage selon le type de moteur",
+    "Sandbox_BVD_EngineProfiles_tooltip": "Les boîtes de vitesses automatiques changent de rapport selon le schéma du type de moteur du véhicule (les fourgons tôt, les sportives tard), tiré des données moteur du jeu, au lieu d'un seul point de passage pour toutes les voitures. Désactivé par défaut.",
+
+    "Sandbox_BVD_RealismHPWeight": "Puissance et poids de référence",
+    "Sandbox_BVD_RealismHPWeight_tooltip": "Optionnel. Applique les valeurs de référence de Better Vehicle Dynamics à toutes les voitures. Les véhicules pour lesquels nous avons des données étudiées reçoivent cette puissance et ce poids (jamais plus faibles ni plus légers que ce que le mod a prévu) ; toute autre voiture avec un moteur, y compris celles des mods, reçoit le même gain de puissance (4x, plafonné). La puissance affichée est la force moteur du jeu, pas des chevaux, donc le chiffre paraît élevé. Désactiver l'option rétablit les valeurs d'origine.",
+
+    "Sandbox_BVD_TrunkScaling": "Redimensionnement de la capacité de chargement",
+    "Sandbox_BVD_TrunkScaling_tooltip": "Met à l'échelle le stockage de chaque véhicule selon un facteur propre à chaque type de carrosserie au lieu de l'écraser. Désactivé automatiquement si 'isoContainers' est présent.",
+
+    "Sandbox_BVD_TrunkCar": "Facteur de chargement : voitures",
+    "Sandbox_BVD_TrunkCar_tooltip": "Multiplicateur appliqué au stockage de référence de ce type de carrosserie. 1.0 conserve la valeur de référence.",
+
+    "Sandbox_BVD_TrunkVan": "Facteur de chargement : fourgons",
+    "Sandbox_BVD_TrunkVan_tooltip": "Multiplicateur appliqué au stockage de référence de ce type de carrosserie. 1.0 conserve la valeur de référence.",
+
+    "Sandbox_BVD_TrunkTruck": "Facteur de chargement : pick-up",
+    "Sandbox_BVD_TrunkTruck_tooltip": "Multiplicateur appliqué au stockage de référence de ce type de carrosserie. 1.0 conserve la valeur de référence.",
+
+    "Sandbox_BVD_TrunkTrailer": "Facteur de chargement : remorques",
+    "Sandbox_BVD_TrunkTrailer_tooltip": "Multiplicateur appliqué au stockage de référence de ce type de carrosserie. 1.0 conserve la valeur de référence.",
+
+    "Sandbox_BVD_ThrottleStart": "Démarrer à l'accélérateur",
+    "Sandbox_BVD_ThrottleStart_tooltip": "Désactivé, le moteur doit être démarré volontairement (touche de démarrage ou icône du moteur) au lieu de l'être en appuyant sur l'accélérateur.",
+
+    "Sandbox_BVD_KeylessTow": "Remorquer sans clés",
+    "Sandbox_BVD_KeylessTow_tooltip": "Désactivé, le remorquage facile nécessite les clés sur le contact ou le frein à main desserré.",
+
+    "Sandbox_BVD_ShoveFoliage": "Poussée sur la végétation",
+    "Sandbox_BVD_ShoveFoliage_tooltip": "Force avec laquelle les buissons et les petites plantes ralentissent la voiture au contact. 1.0 est la valeur par défaut : les moteurs faibles sont ralentis, les puissants passent en force. 0 = les buissons n'ont aucun effet, plus haut = plus proche du jeu de base, où n'importe quel buisson arrête n'importe quelle voiture.",
+
+    "Sandbox_BVD_ShoveZombies": "Poussée sur les zombies",
+    "Sandbox_BVD_ShoveZombies_tooltip": "Force transmise aux zombies vivants percutés par le véhicule.",
+
+    "Sandbox_BVD_ShoveCorpses": "Poussée sur les cadavres",
+    "Sandbox_BVD_ShoveCorpses_tooltip": "Force transmise aux corps et aux morceaux de corps au sol.",
+
+    "Sandbox_BVD_Drift": "Mode drift",
+    "Sandbox_BVD_Drift_tooltip": "Maintenez la touche de drift en prenant un virage à vitesse élevée pour faire décrocher l'arrière et obtenir une glissade de style arcade. Assignez la touche dans les options des mods.",
+
+    "Sandbox_BVD_DriftGrip": "Glissement en drift",
+    "Sandbox_BVD_DriftGrip_tooltip": "Adhérence des pneus conservée pendant le drift. Plus bas, plus la voiture est lâche et difficile à tenir.",
+
+    "Sandbox_BVD_DriftMinSpeed": "Vitesse d'activation du drift (km/h)",
+    "Sandbox_BVD_DriftMinSpeed_tooltip": "En dessous de cette vitesse, la touche de drift est ignorée, pour que les manœuvres de stationnement ne glissent pas.",
+
+    "Sandbox_BVD_DriftSteer": "Gain de direction en drift",
+    "Sandbox_BVD_DriftSteer_tooltip": "À quel point les roues avant réagissent plus vivement tant qu'un drift est maintenu.",
+
+    "Sandbox_BVD_DriftRotation": "Force de rotation en drift",
+    "Sandbox_BVD_DriftRotation_tooltip": "Intensité de la rotation imprimée à la voiture pendant un drift avec braquage. Augmentez si elle part trop large, réduisez si elle part en tête-à-queue.",
+
+    "Sandbox_BVD_TireGripModel": "Modèle d'adhérence des pneus",
+    "Sandbox_BVD_TireGripModel_tooltip": "Les différents types de pneus (usés / standard / modernes) ont une adhérence distincte sur route, sous la pluie, sur la neige et hors route, au lieu d'une valeur unique.",
+
+    "Sandbox_BVD_TireSlipWear": "Usure des pneus par patinage",
+    "Sandbox_BVD_TireSlipWear_tooltip": "Quand le moteur force les roues plus vite que la surface ne peut adhérer (par ex. pied au plancher sur l'herbe), les pneus perdent de l'état avec le temps. Permet de passer en force sur les surfaces à faible adhérence - au prix de pneus lisses plus tard.",
+
+    "Sandbox_BVD_TireSlipWearRate": "Vitesse d'usure des pneus par patinage",
+    "Sandbox_BVD_TireSlipWearRate_tooltip": "Multiplicateur de la vitesse à laquelle les pneus se dégradent en patinant. 1.0 est la valeur par défaut (quelques minutes de patinage intense les dégradent sensiblement). Mettez 0 pour désactiver l'usure sans désactiver le modèle.",
+
+    "Sandbox_BVD_LoadAffectsHandling": "La charge affecte la conduite",
+    "Sandbox_BVD_LoadAffectsHandling_tooltip": "Un véhicule lourdement chargé démarre lentement, comme si le moteur peinait contre le poids.",
+
+    "Sandbox_BVD_LoadAffectsFuel": "La charge affecte la consommation",
+    "Sandbox_BVD_LoadAffectsFuel_tooltip": "Transporter une lourde charge consomme du carburant en plus pendant la conduite.",
+
+    "Sandbox_BVD_LoadMaxPenalty": "Pénalité de démarrage max à pleine charge",
+    "Sandbox_BVD_LoadMaxPenalty_tooltip": "Plus forte baisse de la force de démarrage pour un véhicule plein (0.50 = jusqu'à 50 pour cent de force en moins à l'arrêt). S'estompe à mesure que le véhicule accélère. Nécessite 'La charge affecte la conduite'.",
+
+    "Sandbox_BVD_StabilityGuard": "Protection anti-enfoncement du véhicule",
+    "Sandbox_BVD_StabilityGuard_tooltip": "Filet de sécurité pour le multijoueur : si un véhicule s'enfonce bien en dessous du sol de l'étage où il se trouve (la désynchronisation « aspiré dans le sol »), il est replacé sur ce sol. N'agit que sur un état jamais atteint en conduite normale, donc les rampes, les sous-sols et les parkings à plusieurs niveaux ne sont pas affectés.",
+
+    "Sandbox_BVD_StabilityGuardSinkTiles": "Profondeur de déclenchement de l'enfoncement (étages)",
+    "Sandbox_BVD_StabilityGuardSinkTiles_tooltip": "De combien un véhicule doit s'enfoncer sous le sol de son propre étage avant que la protection ne le replace, mesuré en étages (0.75 = trois quarts d'un étage). Plus bas réagit plus tôt ; augmentez-le si une carte personnalisée le déclenche à tort. Nécessite 'Protection anti-enfoncement du véhicule'.",
+
+    "Sandbox_BVD_SteeringFactorLowSpeed": "Réactivité de la direction (basse vitesse)",
+    "Sandbox_BVD_SteeringFactorLowSpeed_tooltip": "Multiplicateur de la rapidité avec laquelle les roues tournent à basse vitesse.",
+
+    "Sandbox_BVD_SteeringFactorHighSpeed": "Réactivité de la direction (haute vitesse)",
+    "Sandbox_BVD_SteeringFactorHighSpeed_tooltip": "Multiplicateur de la rapidité avec laquelle les roues tournent à haute vitesse.",
+
+    "Sandbox_BVD_SteeringCenteringLowSpeed": "Recentrage de la direction (basse vitesse)",
+    "Sandbox_BVD_SteeringCenteringLowSpeed_tooltip": "Multiplicateur de la rapidité avec laquelle les roues reviennent au centre à basse vitesse.",
+
+    "Sandbox_BVD_SteeringCenteringHighSpeed": "Recentrage de la direction (haute vitesse)",
+    "Sandbox_BVD_SteeringCenteringHighSpeed_tooltip": "Multiplicateur de la rapidité avec laquelle les roues reviennent au centre à haute vitesse.",
+
+    "Sandbox_BVD_SteeringSnapback": "Réactivité de la direction en drift",
+    "Sandbox_BVD_SteeringSnapback_tooltip": "Multiplicateur de la rapidité avec laquelle les roues tournent tant qu'un drift est maintenu.",
+
+    "Sandbox_BVD_SteeringHighSpeed": "Seuil de haute vitesse (km/h)",
+    "Sandbox_BVD_SteeringHighSpeed_tooltip": "Vitesse (km/h) à partir de laquelle la direction utilise les valeurs de réactivité et de recentrage haute vitesse au lieu de celles de basse vitesse."
+}

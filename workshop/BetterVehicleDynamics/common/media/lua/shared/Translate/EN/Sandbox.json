@@ -69,7 +69,7 @@
     "Sandbox_BVD_EngineProfiles_tooltip": "Automatic gearboxes shift at the pattern of the vehicle's engine type (vans early, sports cars late), taken from the game's own engine data, instead of one shift point for every car. Off by default.",
 
     "Sandbox_BVD_RealismHPWeight": "Reference power & weight",
-    "Sandbox_BVD_RealismHPWeight_tooltip": "Replaces engine force and mass for the covered vanilla vehicles with Better Vehicle Dynamics' own researched reference figures (see BVD_VehicleData.lua; modded vehicles can register their own via the public API).",
+    "Sandbox_BVD_RealismHPWeight_tooltip": "Opt-in. Applies Better Vehicle Dynamics' reference figures to every car. Vehicles it has researched data for get that engine power and weight (never weaker or lighter than the mod made them); every other car with an engine, modded cars included, gets the same power boost (4x, capped). The power shown for a vehicle is the game's engine force, not horsepower, so it reads high. Turning the option off restores the original values.",
 
     "Sandbox_BVD_TrunkScaling": "Cargo capacity rescale",
     "Sandbox_BVD_TrunkScaling_tooltip": "Scales each vehicle's storage by a per-body-type factor instead of overwriting it. Auto-disabled when 'isoContainers' is present.",

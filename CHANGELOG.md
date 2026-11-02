@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.2.0] - Unreleased - Drivetrain feel
+
+The theme of this release is how a car feels to drive when you lift off and shift. Every new behaviour is a sandbox
+option; the defaults keep an ordinary drive close to 0.1.20 (engine braking is the one effect that is on by default).
+
+- **Engine braking.** With the throttle released in gear the wheels now turn the engine: the revs follow the road
+  speed (a downshift raises them) and the engine slows the car by its own friction through the gear ratio,
+  never more than half the tyre grip. Slider `EngineBraking` (default 1.0, 0 = old behaviour); optional
+  `EngineBrakeLockup` lets a gear far too low lock the driven wheels. Presets set it to 0.6 / 1.0 / 1.5.
+- **Manual clutch, neutral, reverse and stalling** (opt-in). `ManualClutch` adds a clutch key (Left Ctrl by
+  default, rebindable), a neutral between reverse and first and a reverse that is a gear you pick; `ManualStall`
+  stalls the engine when the clutch is let out in too high a gear without throttle. A stall shuts the engine off
+  through the game's own action, so it works the same in multiplayer.
+- **On-screen H-pattern shifter** for manual mode: R, N and the gears with the knob moving as you shift, amber with
+  the clutch in, red when stalled.
+- **Engine-type shift points** (opt-in `EngineProfiles`): the automatic gearbox shifts at the pattern of the
+  vehicle script's engine type, read from the game's own `vehicleEngineRPM` data.
+- **Info panel shows the install path**: "Java part: ZombieBuddy / manual install / missing".
+- **Six new languages**: Chinese (Simplified), Portuguese (Brazil), Spanish, German, Turkish, French. These are
+  machine-translated first drafts. Polish and Russian gained the new strings.
+- The "Reference power & weight" tooltip now says it applies to every car and that the power shown is the game's
+  engine force, not horsepower (reported by a player who saw values around 1500).
+- Java version 3.5: Manual-install users copy the `zombie` folder again.
+
 ## [0.1.20] - 2026-11-01 - Bushes no longer stop strong cars
 
 Reported: a heavy car stops almost immediately when it drives into a bush.

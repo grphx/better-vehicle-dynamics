@@ -55,8 +55,21 @@
     "Sandbox_BVD_RollResistanceOffroad": "Opory toczenia w terenie",
     "Sandbox_BVD_RollResistanceOffroad_tooltip": "Dodatkowy opór toczenia poza utwardzoną drogą",
 
+    "Sandbox_BVD_EngineBraking": "Hamowanie silnikiem",
+    "Sandbox_BVD_EngineBraking_tooltip": "Jak mocno silnik zwalnia samochód, gdy zdejmiesz nogę z gazu na wybranym biegu, oraz jak obroty podążają za prędkością jazdy (redukcja biegu je podnosi). 0 wyłącza ten mechanizm i przywraca dawne zachowanie, 1 to zwykły silnik drogowy, wyższe wartości oznaczają ciężki diesel lub silnik wyścigowy. Niższe biegi hamują mocniej, jak w prawdziwym samochodzie.",
+    "Sandbox_BVD_EngineBrakeLockup": "Blokowanie kół na zbyt niskim biegu",
+    "Sandbox_BVD_EngineBrakeLockup_tooltip": "Wrzucenie biegu zdecydowanie zbyt niskiego jak na twoją prędkość na chwilę blokuje koła napędowe i może wprowadzić auto w poślizg. Domyślnie wyłączone.",
+
+    "Sandbox_BVD_ManualClutch": "Ręczne sprzęgło",
+    "Sandbox_BVD_ManualClutch_tooltip": "Dla graczy, którzy włączyli ręczną zmianę biegów: dodaje sprzęgło (przytrzymaj klawisz sprzęgła, aby odłączyć silnik), bieg jałowy między wstecznym a pierwszym oraz prawdziwy bieg wsteczny. Po wyłączeniu zostaje prosty wybierak biegów. Samochody z automatyczną skrzynią biegów nie są objęte tą opcją.",
+    "Sandbox_BVD_ManualStall": "Gaśnięcie silnika",
+    "Sandbox_BVD_ManualStall_tooltip": "Wymaga ręcznego sprzęgła. Puszczenie sprzęgła na biegu zbyt wysokim jak na twoją prędkość, bez wystarczającej ilości gazu, gasi silnik i trzeba go uruchomić ponownie. Domyślnie wyłączone.",
+
+    "Sandbox_BVD_EngineProfiles": "Punkty zmiany biegów zależne od typu silnika",
+    "Sandbox_BVD_EngineProfiles_tooltip": "Automatyczne skrzynie biegów zmieniają biegi według wzorca typu silnika pojazdu (dostawczaki wcześnie, sportowe auta późno), na podstawie danych silników z samej gry, zamiast jednego punktu zmiany biegu dla wszystkich aut. Domyślnie wyłączone.",
+
     "Sandbox_BVD_RealismHPWeight": "Modyfikacja mocy i masy",
-    "Sandbox_BVD_RealismHPWeight_tooltip": "Zastępuje siłę silnika i masę standardowych pojazdów zoptymalizowanymi danymi referencyjnymi Better Vehicle Dynamics (zobacz BVD_VehicleData.lua; zmodyfikowane pojazdy mogą rejestrować własne dane przez publiczne API)",
+    "Sandbox_BVD_RealismHPWeight_tooltip": "Opcja dodatkowa. Stosuje dane referencyjne Better Vehicle Dynamics do każdego samochodu. Pojazdy, dla których mamy zbadane dane, dostają tę moc i masę (nigdy słabsze ani lżejsze niż w modzie); każdy inny samochód z silnikiem, także z modów, dostaje takie samo wzmocnienie mocy (4x, z limitem). Pokazywana moc to siła silnika w grze, a nie konie mechaniczne, więc wygląda na dużą. Wyłączenie opcji przywraca oryginalne wartości.",
 
     "Sandbox_BVD_TrunkScaling": "Skalowanie pojemności bagażnika",
     "Sandbox_BVD_TrunkScaling_tooltip": "Skaluje pojemność każdego pojazdu według współczynnika dla danego typu nadwozia zamiast jej nadpisywania. Automatycznie wyłączane, gdy obecny jest mod 'isoContainers'",

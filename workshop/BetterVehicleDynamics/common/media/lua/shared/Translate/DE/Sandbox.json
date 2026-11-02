@@ -1,0 +1,160 @@
+{
+    "Sandbox_BetterVehicleDynamics": "Better Vehicle Dynamics",
+
+    "Sandbox_BetterVehicleDynamics_Handling": "BVD — Fahrverhalten",
+    "Sandbox_BetterVehicleDynamics_TiresLoad": "BVD — Reifen & Beladung",
+    "Sandbox_BetterVehicleDynamics_Drivetrain": "BVD — Antriebsstrang",
+    "Sandbox_BetterVehicleDynamics_Readout": "BVD — Anzeige & Sonstiges",
+
+    "Sandbox_BVD_Mode": "Tuning-Voreinstellung",
+    "Sandbox_BVD_Mode_tooltip": "Benutzerdefiniert behält jeden Regler unten so bei, wie du ihn eingestellt hast. Die anderen Voreinstellungen setzen die Werte für Antriebsstrang, Grip und Schub beim Laden der Welt auf ein festgelegtes Profil.",
+    "Sandbox_BVD_Mode_option1": "Benutzerdefiniert",
+    "Sandbox_BVD_Mode_option2": "Entspannt",
+    "Sandbox_BVD_Mode_option3": "Bodenständig",
+    "Sandbox_BVD_Mode_option4": "Gnadenlos",
+
+    "Sandbox_BVD_DriverHUD": "Fahrzeug-Infofenster",
+    "Sandbox_BVD_DriverHUD_tooltip": "Fügt ein Better-Vehicle-Dynamics-Fenster neben dem Fahrzeugmechanik-Fenster hinzu. Es zeigt das aktive Tuning-Profil und die Grip-Einstellungen (Werte, die das Standardspiel nicht anzeigt).",
+
+    "Sandbox_BVD_SkidMarks": "Reifenspuren",
+    "Sandbox_BVD_SkidMarks_tooltip": "Hinterlässt eine Spur auf dem Boden, wenn ein Reifen unter Last oder bei starkem Bremsen die Haftung verliert.",
+
+    "Sandbox_BVD_SkidSound": "Reifenquietschen",
+    "Sandbox_BVD_SkidSound_tooltip": "Spielt ein Reifenquietschen ab, wenn ein Fahrzeug rutscht. Unabhängig von den sichtbaren Reifenspuren. Deaktivieren, falls der Ton stört oder ein Sound-Mod Konflikte verursacht.",
+
+    "Sandbox_BVD_EnginePower": "Motorleistung",
+    "Sandbox_BVD_EnginePower_tooltip": "Skaliert, wie viel Zugkraft jeder Motor erzeugt. Unter 1 wirkt er kraftlos; über 1 werden Steigungen und Rammen zum Kinderspiel.",
+
+    "Sandbox_BVD_LowSpeedGrunt": "Schub bei Schrittgeschwindigkeit",
+    "Sandbox_BVD_LowSpeedGrunt_tooltip": "Zusätzliche Zugkraft bei sehr niedriger Raddrehzahl — die Kraft, mit der Wracks weggeschoben und Menschenmengen durchpflügt werden. Niedriger einstellen für ein schwächeres, vorsichtigeres Anfahren.",
+
+    "Sandbox_BVD_ReverseTopSpeed": "Höchstgeschwindigkeit rückwärts (km/h)",
+    "Sandbox_BVD_ReverseTopSpeed_tooltip": "Harte Obergrenze für die Rückwärtsgeschwindigkeit.",
+
+    "Sandbox_BVD_GripLevel": "Reifenhaftung",
+    "Sandbox_BVD_GripLevel_tooltip": "Gesamtes Traktionsbudget. Niedriger bedeutet, dass das Heck eher ausbricht und die Räder eher durchdrehen.",
+
+    "Sandbox_BVD_WetGrip": "Haftung bei Regen",
+    "Sandbox_BVD_WetGrip_tooltip": "Anteil der normalen Haftung bei Regen.",
+
+    "Sandbox_BVD_SnowGrip": "Haftung auf Schnee",
+    "Sandbox_BVD_SnowGrip_tooltip": "Anteil der normalen Haftung auf schneebedecktem Untergrund.",
+
+    "Sandbox_BVD_OffroadGrip": "Haftung im Gelände",
+    "Sandbox_BVD_OffroadGrip_tooltip": "Haftungsstärke im Gelände. HÖHER = mehr Haftung (weniger Reifenschlupf) auf Erde, Gras und Schotter. Standard 0.85 = mäßiger Schlupf; 1.5 = fast wie auf Asphalt. Ändert nicht den Rollwiderstand - diesen stellst du über Rollwiderstand (Gelände) ein.",
+
+    "Sandbox_BVD_OffroadFloor": "Mindesthaftung im Gelände",
+    "Sandbox_BVD_OffroadFloor_tooltip": "Minimaler Geländehaftungs-Multiplikator, auf den eine Reifenart fallen kann. Ohne diese Grenze können Sportreifen-Profile die Geländehaftung so weit senken, dass ein starkes Auto auf Gras kaum vorankommt. Der Standardwert 0.55 hält Fortbewegung mit roher Gewalt möglich (das Auto rutscht und verschleißt die Reifen, kommt aber voran).",
+
+    "Sandbox_BVD_Drag": "Luftwiderstand",
+    "Sandbox_BVD_Drag_tooltip": "Skalierung des aerodynamischen Widerstands. Höher begrenzt die Höchstgeschwindigkeit früher und baut Schwung schneller ab.",
+
+    "Sandbox_BVD_RollResistance": "Rollwiderstand (Straße)",
+    "Sandbox_BVD_RollResistance_tooltip": "Widerstand der Reifen auf befestigtem Untergrund. Beeinflusst das Ausrollen und die konstante Geschwindigkeit.",
+
+    "Sandbox_BVD_RollResistanceOffroad": "Rollwiderstand (Gelände)",
+    "Sandbox_BVD_RollResistanceOffroad_tooltip": "Zusätzlicher Rollwiderstand abseits befestigter Straßen.",
+
+    "Sandbox_BVD_EngineBraking": "Motorbremse",
+    "Sandbox_BVD_EngineBraking_tooltip": "Wie stark der Motor das Auto abbremst, wenn du im Gang vom Gas gehst, und wie die Drehzahl der Fahrgeschwindigkeit folgt (Herunterschalten erhöht sie). 0 schaltet sie aus und gibt das alte Verhalten, 1 ist ein normaler Straßenmotor, höher entspricht einem schweren Diesel oder einem Rennmotor. Niedrigere Gänge bremsen stärker, wie in einem echten Auto.",
+    "Sandbox_BVD_EngineBrakeLockup": "Blockierende Räder bei zu niedrigem Gang",
+    "Sandbox_BVD_EngineBrakeLockup_tooltip": "Wer in einen für die Geschwindigkeit viel zu niedrigen Gang herunterschaltet, blockiert kurz die Antriebsräder und kann ins Rutschen geraten. Standardmäßig aus.",
+
+    "Sandbox_BVD_ManualClutch": "Manuelle Kupplung",
+    "Sandbox_BVD_ManualClutch_tooltip": "Für Spieler, die manuelles Schalten aktiviert haben: fügt eine Kupplung hinzu (Kupplungstaste halten, um den Motor auszukuppeln), einen Leerlauf zwischen Rückwärtsgang und erstem Gang sowie einen echten Rückwärtsgang. Aus behält die einfache Gangwahl bei. Automatikfahrzeuge sind nicht betroffen.",
+    "Sandbox_BVD_ManualStall": "Abwürgen",
+    "Sandbox_BVD_ManualStall_tooltip": "Benötigt die manuelle Kupplung. Wer die Kupplung in einem für die Geschwindigkeit zu hohen Gang ohne genug Gas kommen lässt, würgt den Motor ab und muss ihn neu starten. Standardmäßig aus.",
+
+    "Sandbox_BVD_EngineProfiles": "Schaltpunkte je Motortyp",
+    "Sandbox_BVD_EngineProfiles_tooltip": "Automatikgetriebe schalten nach dem Muster des Motortyps des Fahrzeugs (Transporter früh, Sportwagen spät), basierend auf den Motordaten des Spiels, statt mit einem einzigen Schaltpunkt für alle Autos. Standardmäßig aus.",
+
+    "Sandbox_BVD_RealismHPWeight": "Referenzleistung & -gewicht",
+    "Sandbox_BVD_RealismHPWeight_tooltip": "Optional. Wendet die Referenzwerte von Better Vehicle Dynamics auf jedes Auto an. Fahrzeuge mit recherchierten Daten bekommen diese Motorleistung und dieses Gewicht (nie schwächer oder leichter, als der Mod sie gemacht hat); jedes andere Auto mit Motor, auch aus Mods, bekommt denselben Leistungsschub (4x, begrenzt). Die angezeigte Leistung ist die Motorkraft des Spiels, keine PS, deshalb wirkt die Zahl hoch. Wenn du die Option ausschaltest, kommen die Originalwerte zurück.",
+
+    "Sandbox_BVD_TrunkScaling": "Laderaum-Skalierung",
+    "Sandbox_BVD_TrunkScaling_tooltip": "Skaliert den Stauraum jedes Fahrzeugs mit einem Faktor je Karosserietyp, statt ihn zu überschreiben. Wird automatisch deaktiviert, wenn 'isoContainers' vorhanden ist.",
+
+    "Sandbox_BVD_TrunkCar": "Laderaumfaktor: Autos",
+    "Sandbox_BVD_TrunkCar_tooltip": "Multiplikator auf den Referenz-Stauraum dieses Karosserietyps. 1.0 behält den Referenzwert bei.",
+
+    "Sandbox_BVD_TrunkVan": "Laderaumfaktor: Transporter",
+    "Sandbox_BVD_TrunkVan_tooltip": "Multiplikator auf den Referenz-Stauraum dieses Karosserietyps. 1.0 behält den Referenzwert bei.",
+
+    "Sandbox_BVD_TrunkTruck": "Laderaumfaktor: Pickups",
+    "Sandbox_BVD_TrunkTruck_tooltip": "Multiplikator auf den Referenz-Stauraum dieses Karosserietyps. 1.0 behält den Referenzwert bei.",
+
+    "Sandbox_BVD_TrunkTrailer": "Laderaumfaktor: Anhänger",
+    "Sandbox_BVD_TrunkTrailer_tooltip": "Multiplikator auf den Referenz-Stauraum dieses Karosserietyps. 1.0 behält den Referenzwert bei.",
+
+    "Sandbox_BVD_ThrottleStart": "Start per Gas",
+    "Sandbox_BVD_ThrottleStart_tooltip": "Wenn aus, muss der Motor bewusst gestartet werden (Starttaste oder Motorsymbol), statt durch Drücken von Gas.",
+
+    "Sandbox_BVD_KeylessTow": "Abschleppen ohne Schlüssel",
+    "Sandbox_BVD_KeylessTow_tooltip": "Wenn aus, braucht das einfache Abschleppen Schlüssel im Zündschloss oder eine gelöste Handbremse.",
+
+    "Sandbox_BVD_ShoveFoliage": "Widerstand durch Gestrüpp",
+    "Sandbox_BVD_ShoveFoliage_tooltip": "Wie stark Büsche und kleine Pflanzen das Auto bei Berührung abbremsen. 1.0 ist der Standard: schwache Motoren werden gebremst, starke pflügen hindurch. 0 = Büsche bewirken nichts, höher = näher am Standardspiel, wo jeder Busch jedes Auto stoppt.",
+
+    "Sandbox_BVD_ShoveZombies": "Stoßkraft auf Zombies",
+    "Sandbox_BVD_ShoveZombies_tooltip": "Kraft, die auf lebende Zombies wirkt, die vom Fahrzeug getroffen werden.",
+
+    "Sandbox_BVD_ShoveCorpses": "Stoßkraft auf Leichen",
+    "Sandbox_BVD_ShoveCorpses_tooltip": "Kraft, die auf Körper und Leichenteile am Boden wirkt.",
+
+    "Sandbox_BVD_Drift": "Drift-Modus",
+    "Sandbox_BVD_Drift_tooltip": "Halte die Drift-Taste gedrückt, während du schnell durch eine Kurve fährst, um das Heck ausbrechen zu lassen und im Arcade-Stil zu rutschen. Die Taste wird in den Mod-Optionen belegt.",
+
+    "Sandbox_BVD_DriftGrip": "Drift-Schlupf",
+    "Sandbox_BVD_DriftGrip_tooltip": "Reifenhaftung, die beim Driften erhalten bleibt. Niedriger ist lockerer und schwerer zu halten.",
+
+    "Sandbox_BVD_DriftMinSpeed": "Drift-Aktivierungsgeschwindigkeit (km/h)",
+    "Sandbox_BVD_DriftMinSpeed_tooltip": "Unterhalb dieser Geschwindigkeit wird die Drift-Taste ignoriert, damit man beim Einparken nicht rutscht.",
+
+    "Sandbox_BVD_DriftSteer": "Drift-Lenkverstärkung",
+    "Sandbox_BVD_DriftSteer_tooltip": "Wie viel schärfer die Vorderräder reagieren, solange ein Drift gehalten wird.",
+
+    "Sandbox_BVD_DriftRotation": "Drift-Drehkraft",
+    "Sandbox_BVD_DriftRotation_tooltip": "Stärke der Drehung, die dem Auto beim Driften und Lenken aufgeprägt wird. Erhöhen, wenn es zu weit hinausrutscht, senken, wenn es sich dreht.",
+
+    "Sandbox_BVD_TireGripModel": "Reifenhaftungsmodell",
+    "Sandbox_BVD_TireGripModel_tooltip": "Verschiedene Reifentypen (abgefahren / Standard / modern) erhalten unterschiedliche Haftung auf Straße, bei Regen, auf Schnee und im Gelände statt eines einzigen festen Werts.",
+
+    "Sandbox_BVD_TireSlipWear": "Reifenverschleiß durch Schlupf",
+    "Sandbox_BVD_TireSlipWear_tooltip": "Wenn der Motor die Räder schneller antreibt, als der Untergrund Halt bieten kann (z. B. Vollgas auf Gras), verlieren die Reifen mit der Zeit an Zustand. So kommst du mit roher Gewalt über Untergründe mit wenig Haftung - auf Kosten später abgefahrener Reifen.",
+
+    "Sandbox_BVD_TireSlipWearRate": "Reifenverschleiß-Rate durch Schlupf",
+    "Sandbox_BVD_TireSlipWearRate_tooltip": "Multiplikator darauf, wie schnell die Reifen bei Schlupf verschleißen. 1.0 ist der Standard (einige Minuten hartes Durchdrehen verschleißen sie spürbar). Auf 0 setzen, um den Verschleiß abzuschalten, ohne das Modell zu deaktivieren.",
+
+    "Sandbox_BVD_LoadAffectsHandling": "Beladung beeinflusst Fahrverhalten",
+    "Sandbox_BVD_LoadAffectsHandling_tooltip": "Ein schwer beladenes Fahrzeug fährt aus dem Stand nur träge an, als würde sich der Motor gegen das Gewicht stemmen.",
+
+    "Sandbox_BVD_LoadAffectsFuel": "Beladung beeinflusst Kraftstoffverbrauch",
+    "Sandbox_BVD_LoadAffectsFuel_tooltip": "Schwere Ladung verbraucht beim Fahren zusätzlich Kraftstoff.",
+
+    "Sandbox_BVD_LoadMaxPenalty": "Max. Anfahrabzug bei voller Beladung",
+    "Sandbox_BVD_LoadMaxPenalty_tooltip": "Größter Abzug bei der Anfahrkraft für ein voll beladenes Fahrzeug (0.50 = bis zu 50 Prozent weniger Kraft aus dem Stand). Lässt nach, wenn das Fahrzeug schneller wird. Benötigt 'Beladung beeinflusst Fahrverhalten'.",
+
+    "Sandbox_BVD_StabilityGuard": "Schutz gegen Einsinken ins Gelände",
+    "Sandbox_BVD_StabilityGuard_tooltip": "Sicherheitsnetz für den Mehrspielermodus: Sinkt ein Fahrzeug weit unter den Boden seiner Ebene (die Desynchronisation 'in den Boden gesaugt'), wird es zurück auf diesen Boden gesetzt. Greift nur bei einem Zustand, der beim normalen Fahren nie auftritt, daher bleiben Rampen, Keller und mehrstöckige Parkhäuser unberührt.",
+
+    "Sandbox_BVD_StabilityGuardSinkTiles": "Auslösetiefe des Einsink-Schutzes (Ebenen)",
+    "Sandbox_BVD_StabilityGuardSinkTiles_tooltip": "Wie weit ein Fahrzeug unter den Boden seiner eigenen Ebene sinken muss, bevor der Schutz es neu aufsetzt, gemessen in Stockwerkshöhen (0.75 = dreiviertel einer Ebene). Niedriger reagiert früher; erhöhen, falls eine eigene Karte ihn fälschlich auslöst. Benötigt 'Schutz gegen Einsinken ins Gelände'.",
+
+    "Sandbox_BVD_SteeringFactorLowSpeed": "Lenkreaktion (niedrige Geschwindigkeit)",
+    "Sandbox_BVD_SteeringFactorLowSpeed_tooltip": "Multiplikator darauf, wie schnell sich die Räder bei niedriger Geschwindigkeit einschlagen.",
+
+    "Sandbox_BVD_SteeringFactorHighSpeed": "Lenkreaktion (hohe Geschwindigkeit)",
+    "Sandbox_BVD_SteeringFactorHighSpeed_tooltip": "Multiplikator darauf, wie schnell sich die Räder bei hoher Geschwindigkeit einschlagen.",
+
+    "Sandbox_BVD_SteeringCenteringLowSpeed": "Lenkung zentriert sich selbst (niedrige Geschwindigkeit)",
+    "Sandbox_BVD_SteeringCenteringLowSpeed_tooltip": "Multiplikator darauf, wie schnell die Räder bei niedriger Geschwindigkeit in die Mitte zurückkehren.",
+
+    "Sandbox_BVD_SteeringCenteringHighSpeed": "Lenkung zentriert sich selbst (hohe Geschwindigkeit)",
+    "Sandbox_BVD_SteeringCenteringHighSpeed_tooltip": "Multiplikator darauf, wie schnell die Räder bei hoher Geschwindigkeit in die Mitte zurückkehren.",
+
+    "Sandbox_BVD_SteeringSnapback": "Lenkreaktion beim Driften",
+    "Sandbox_BVD_SteeringSnapback_tooltip": "Multiplikator darauf, wie schnell sich die Räder einschlagen, solange ein Drift gehalten wird.",
+
+    "Sandbox_BVD_SteeringHighSpeed": "Schwelle für hohe Geschwindigkeit (km/h)",
+    "Sandbox_BVD_SteeringHighSpeed_tooltip": "Geschwindigkeit (km/h), ab der die Lenkung die Werte für hohe Geschwindigkeit bei Reaktion und Zentrierung statt der für niedrige Geschwindigkeit verwendet."
+}

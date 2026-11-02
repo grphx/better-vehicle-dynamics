@@ -1,0 +1,160 @@
+{
+    "Sandbox_BetterVehicleDynamics": "Better Vehicle Dynamics",
+
+    "Sandbox_BetterVehicleDynamics_Handling": "BVD — Yol Tutuşu",
+    "Sandbox_BetterVehicleDynamics_TiresLoad": "BVD — Lastikler ve Yük",
+    "Sandbox_BetterVehicleDynamics_Drivetrain": "BVD — Güç Aktarımı",
+    "Sandbox_BetterVehicleDynamics_Readout": "BVD — Göstergeler ve Diğer",
+
+    "Sandbox_BVD_Mode": "Ayar ön ayarı",
+    "Sandbox_BVD_Mode_tooltip": "Özel, aşağıdaki her kaydırıcıyı sizin ayarladığınız gibi bırakır. Diğer ön ayarlar, dünya yüklenirken güç aktarımı, yol tutuşu ve itme değerlerini hazır bir profile ayarlar.",
+    "Sandbox_BVD_Mode_option1": "Özel",
+    "Sandbox_BVD_Mode_option2": "Rahat",
+    "Sandbox_BVD_Mode_option3": "Gerçekçi",
+    "Sandbox_BVD_Mode_option4": "Acımasız",
+
+    "Sandbox_BVD_DriverHUD": "Araç bilgi paneli",
+    "Sandbox_BVD_DriverHUD_tooltip": "Araç mekaniği penceresinin yanına, etkin ayar profilini ve yol tutuşu ayarlarını (orijinal oyunun göstermediği değerler) gösteren bir Better Vehicle Dynamics paneli ekler.",
+
+    "Sandbox_BVD_SkidMarks": "Lastik izleri",
+    "Sandbox_BVD_SkidMarks_tooltip": "Bir lastik güç verirken veya sert frenlemede tutunmayı kaybettiğinde yerde iz bırakır.",
+
+    "Sandbox_BVD_SkidSound": "Lastik kayma sesi",
+    "Sandbox_BVD_SkidSound_tooltip": "Araç kayarken lastik gıcırtısı sesi çalar. Lastik izleri görseliyle ilgisizdir. Ses sizi rahatsız ediyorsa veya bir ses modu ile çakışıyorsa kapatın.",
+
+    "Sandbox_BVD_EnginePower": "Motor gücü",
+    "Sandbox_BVD_EnginePower_tooltip": "Her motorun ürettiği çekiş gücünü ölçekler. 1'in altı güçsüz hissettirir; 1'in üstü yokuşları ve çarpmayı çok kolaylaştırır.",
+
+    "Sandbox_BVD_LowSpeedGrunt": "Düşük hız itme gücü",
+    "Sandbox_BVD_LowSpeedGrunt_tooltip": "Çok düşük teker hızında kullanılabilen ek çekiş gücü — enkazları itmek ve kalabalığın arasından geçmek için kullanılan güç. Daha zayıf ve daha temkinli bir alt devir için düşürün.",
+
+    "Sandbox_BVD_ReverseTopSpeed": "Geri vites hız sınırı (km/s)",
+    "Sandbox_BVD_ReverseTopSpeed_tooltip": "Geri gitme hızının kesin üst sınırı.",
+
+    "Sandbox_BVD_GripLevel": "Lastik tutuşu",
+    "Sandbox_BVD_GripLevel_tooltip": "Genel yol tutuş payı. Düşük değer, aracın daha kolay savrulması ve lastiklerin daha kolay boşa dönmesi demektir.",
+
+    "Sandbox_BVD_WetGrip": "Yağmurda tutuş",
+    "Sandbox_BVD_WetGrip_tooltip": "Yağmur yağarken normal tutuşun hangi oranda olacağı.",
+
+    "Sandbox_BVD_SnowGrip": "Karda tutuş",
+    "Sandbox_BVD_SnowGrip_tooltip": "Karla kaplı zeminde normal tutuşun hangi oranda olacağı.",
+
+    "Sandbox_BVD_OffroadGrip": "Arazide tutuş",
+    "Sandbox_BVD_OffroadGrip_tooltip": "Arazi tutuş gücü. YÜKSEK = toprakta, çimende ve çakılda daha fazla tutuş (daha az lastik kayması). Varsayılan 0.85 = orta düzey kayma; 1.5 = asfalta yakın his. Yuvarlanma direncini değiştirmez - bunu Yuvarlanma direnci (arazi) ile ayarlayın.",
+
+    "Sandbox_BVD_OffroadFloor": "Arazi tutuşu alt sınırı",
+    "Sandbox_BVD_OffroadFloor_tooltip": "Herhangi bir lastik ailesinin arazi tutuş çarpanının düşebileceği en düşük değer. Bu sınır olmazsa spor lastik profilleri arazi tutuşunu o kadar düşürebilir ki güçlü bir araç çimende zor hareket eder. Varsayılan 0.55, kaba kuvvetle ilerlemeyi mümkün kılar (araç kayar ve lastikleri yer, ama ilerler).",
+
+    "Sandbox_BVD_Drag": "Hava direnci",
+    "Sandbox_BVD_Drag_tooltip": "Aerodinamik direncin ölçeği. Yüksek değer azami hızı daha erken sınırlar ve ivmeyi daha hızlı kaybettirir.",
+
+    "Sandbox_BVD_RollResistance": "Yuvarlanma direnci (yol)",
+    "Sandbox_BVD_RollResistance_tooltip": "Lastiklerin kaplanmış zeminlerdeki direnci. Boşta ilerlemeyi ve sabit hızı etkiler.",
+
+    "Sandbox_BVD_RollResistanceOffroad": "Yuvarlanma direnci (arazi)",
+    "Sandbox_BVD_RollResistanceOffroad_tooltip": "Kaplanmış yolun dışındayken ek yuvarlanma direnci.",
+
+    "Sandbox_BVD_EngineBraking": "Motor freni",
+    "Sandbox_BVD_EngineBraking_tooltip": "Vitesteyken gazdan ayağınızı çektiğinizde motorun aracı ne kadar sert yavaşlattığı ve devrin yol hızını nasıl takip ettiği (vites küçültmek devri yükseltir). 0 kapatır ve eski davranışı verir, 1 normal bir yol motorudur, daha yüksek değerler ağır bir dizel ya da yarış motorudur. Gerçek bir arabada olduğu gibi düşük vitesler daha sert frenler.",
+    "Sandbox_BVD_EngineBrakeLockup": "Çok düşük vitesde teker kilitlenmesi",
+    "Sandbox_BVD_EngineBrakeLockup_tooltip": "Hızınıza göre çok düşük bir vitese düşmek, çekiş tekerlerini bir anlığına kilitler ve aracı kaydırabilir. Varsayılan olarak kapalı.",
+
+    "Sandbox_BVD_ManualClutch": "Manuel debriyaj",
+    "Sandbox_BVD_ManualClutch_tooltip": "Manuel vitesi açmış oyuncular için: bir debriyaj (motoru devreden çıkarmak için debriyaj tuşunu basılı tutun), geri vites ile birinci vites arasında bir boş vites ve gerçek bir geri vites ekler. Kapalıyken basit vites seçici kullanılır. Otomatik araçlar etkilenmez.",
+    "Sandbox_BVD_ManualStall": "Motor stop etme",
+    "Sandbox_BVD_ManualStall_tooltip": "Manuel debriyaj gerekir. Debriyajı hızınıza göre fazla yüksek bir vitesteyken, yeterli gaz vermeden bırakmak motoru stop ettirir ve yeniden çalıştırmanız gerekir. Varsayılan olarak kapalı.",
+
+    "Sandbox_BVD_EngineProfiles": "Motor tipine göre vites noktaları",
+    "Sandbox_BVD_EngineProfiles_tooltip": "Otomatik vites kutuları, her araç için tek bir vites noktası yerine, oyunun kendi motor verilerinden alınan aracın motor tipine uygun düzende vites değiştirir (minibüsler erken, spor arabalar geç). Varsayılan olarak kapalı.",
+
+    "Sandbox_BVD_RealismHPWeight": "Referans güç ve ağırlık",
+    "Sandbox_BVD_RealismHPWeight_tooltip": "İsteğe bağlı. Better Vehicle Dynamics'in referans değerlerini her arabaya uygular. Araştırılmış verisi olan araçlar bu motor gücünü ve kütleyi alır (modun yaptığından daha zayıf ya da hafif olmaz); motoru olan diğer tüm arabalar, modlu olanlar dahil, aynı güç artışını alır (4 kat, sınırlı). Gösterilen güç oyunun motor kuvvetidir, beygir gücü değildir, bu yüzden yüksek görünür. Seçeneği kapatmak özgün değerleri geri getirir.",
+
+    "Sandbox_BVD_TrunkScaling": "Yük kapasitesi yeniden ölçekleme",
+    "Sandbox_BVD_TrunkScaling_tooltip": "Her aracın depolama alanını üzerine yazmak yerine, kasa tipine göre bir çarpanla ölçekler. 'isoContainers' varsa otomatik olarak devre dışı kalır.",
+
+    "Sandbox_BVD_TrunkCar": "Yük çarpanı: otomobiller",
+    "Sandbox_BVD_TrunkCar_tooltip": "Bu kasa tipinin referans depolama alanına uygulanan çarpan. 1.0 referans değeri korur.",
+
+    "Sandbox_BVD_TrunkVan": "Yük çarpanı: minibüsler",
+    "Sandbox_BVD_TrunkVan_tooltip": "Bu kasa tipinin referans depolama alanına uygulanan çarpan. 1.0 referans değeri korur.",
+
+    "Sandbox_BVD_TrunkTruck": "Yük çarpanı: pikaplar",
+    "Sandbox_BVD_TrunkTruck_tooltip": "Bu kasa tipinin referans depolama alanına uygulanan çarpan. 1.0 referans değeri korur.",
+
+    "Sandbox_BVD_TrunkTrailer": "Yük çarpanı: römorklar",
+    "Sandbox_BVD_TrunkTrailer_tooltip": "Bu kasa tipinin referans depolama alanına uygulanan çarpan. 1.0 referans değeri korur.",
+
+    "Sandbox_BVD_ThrottleStart": "Gazla çalıştırma",
+    "Sandbox_BVD_ThrottleStart_tooltip": "Kapalıyken motor, gaza basarak değil, bilinçli olarak (çalıştırma tuşu veya motor simgesi ile) çalıştırılmalıdır.",
+
+    "Sandbox_BVD_KeylessTow": "Anahtarsız çekme",
+    "Sandbox_BVD_KeylessTow_tooltip": "Kapalıyken kolay çekme için anahtarın kontakta olması veya el frenin indirilmiş olması gerekir.",
+
+    "Sandbox_BVD_ShoveFoliage": "Bitki örtüsü itme",
+    "Sandbox_BVD_ShoveFoliage_tooltip": "Çalıların ve küçük bitkilerin, temas ettiklerinde aracı ne kadar yavaşlattığı. 1.0 varsayılandır: zayıf motorlar yavaşlar, güçlü olanlar içinden geçer. 0 = çalılar hiçbir şey yapmaz, yüksek değerler = her çalının her arabayı durdurduğu orijinal oyuna daha yakın.",
+
+    "Sandbox_BVD_ShoveZombies": "Zombi itme",
+    "Sandbox_BVD_ShoveZombies_tooltip": "Araç tarafından çarpılan canlı zombilere uygulanan kuvvet.",
+
+    "Sandbox_BVD_ShoveCorpses": "Ceset itme",
+    "Sandbox_BVD_ShoveCorpses_tooltip": "Yerdeki cesetlere ve et parçalarına uygulanan kuvvet.",
+
+    "Sandbox_BVD_Drift": "Drift modu",
+    "Sandbox_BVD_Drift_tooltip": "Hızlıyken viraj alırken drift tuşunu basılı tutarak, arcade tarzı bir kayma için arka ucu serbest bırakın. Tuşu Mod Seçenekleri'nden atayın.",
+
+    "Sandbox_BVD_DriftGrip": "Drift kayması",
+    "Sandbox_BVD_DriftGrip_tooltip": "Drift sırasında korunan lastik tutuşu. Düşük değer daha gevşek ve kontrolü daha zordur.",
+
+    "Sandbox_BVD_DriftMinSpeed": "Drift etkinleşme hızı (km/s)",
+    "Sandbox_BVD_DriftMinSpeed_tooltip": "Bu hızın altında drift tuşu yok sayılır, böylece park ederken araç kaymaz.",
+
+    "Sandbox_BVD_DriftSteer": "Drift direksiyon çarpanı",
+    "Sandbox_BVD_DriftSteer_tooltip": "Drift basılı tutulurken ön tekerleklerin ne kadar daha keskin tepki verdiği.",
+
+    "Sandbox_BVD_DriftRotation": "Drift dönüş kuvveti",
+    "Sandbox_BVD_DriftRotation_tooltip": "Drift yaparken + direksiyon çevirirken araca uygulanan dönüş kuvvetinin şiddeti. Geniş kayıyorsa artırın, kendi etrafında dönüyorsa düşürün.",
+
+    "Sandbox_BVD_TireGripModel": "Lastik tutuş modeli",
+    "Sandbox_BVD_TireGripModel_tooltip": "Farklı lastik tipleri (aşınmış / standart / modern), tek bir sabit değer yerine yolda, yağmurda, karda ve arazide farklı tutuşa sahip olur.",
+
+    "Sandbox_BVD_TireSlipWear": "Lastikler teker kaymasından aşınır",
+    "Sandbox_BVD_TireSlipWear_tooltip": "Motor tekerleri yüzeyin tutunabileceğinden daha hızlı döndürmeye zorladığında (örneğin çimende sonuna kadar gaza basmak) lastikler zamanla durumunu kaybeder. Düşük tutuşlu yüzeylerden kaba kuvvetle geçmenizi sağlar - bedeli sonradan kel lastiklerdir.",
+
+    "Sandbox_BVD_TireSlipWearRate": "Kaymadan lastik aşınma hızı",
+    "Sandbox_BVD_TireSlipWearRate_tooltip": "Lastiklerin kayarken ne kadar hızlı yıprandığına uygulanan çarpan. 1.0 varsayılandır (birkaç dakikalık sert kayma lastikleri gözle görülür şekilde yıpratır). Modeli kapatmadan aşınmayı devre dışı bırakmak için 0 yapın.",
+
+    "Sandbox_BVD_LoadAffectsHandling": "Yük sürüşü etkiler",
+    "Sandbox_BVD_LoadAffectsHandling_tooltip": "Ağır yüklü bir araç duruştan zor kalkar, sanki motor ağırlığa karşı zorlanıyormuş gibi.",
+
+    "Sandbox_BVD_LoadAffectsFuel": "Yük yakıt tüketimini etkiler",
+    "Sandbox_BVD_LoadAffectsFuel_tooltip": "Ağır yük taşımak, sürüş sırasında fazladan yakıt yakar.",
+
+    "Sandbox_BVD_LoadMaxPenalty": "Tam yüklüyken en yüksek kalkış cezası",
+    "Sandbox_BVD_LoadMaxPenalty_tooltip": "Tam yüklü bir araç için kalkış gücündeki en büyük düşüş (0.50 = duruştan kalkarken yüzde 50'ye kadar daha az güç). Araç hızlandıkça azalarak kaybolur. 'Yük sürüşü etkiler' gerekir.",
+
+    "Sandbox_BVD_StabilityGuard": "Araç yere gömülme koruması",
+    "Sandbox_BVD_StabilityGuard_tooltip": "Çok oyunculu için güvenlik ağı: bir araç bulunduğu katın zemininin çok altına batarsa ('yere çekilme' senkron hatası), o zemine geri oturtulur. Yalnızca normal sürüşte asla ulaşılmayan bir durumda devreye girer, bu yüzden rampalar, bodrumlar ve çok katlı otoparklar etkilenmez.",
+
+    "Sandbox_BVD_StabilityGuardSinkTiles": "Yere gömülme tetik derinliği (kat)",
+    "Sandbox_BVD_StabilityGuardSinkTiles_tooltip": "Koruma aracı yeniden oturtmadan önce, aracın kendi katının zemininin ne kadar altına batması gerektiği, kat cinsinden ölçülür (0.75 = bir katın dörtte üçü). Düşük değer daha erken tepki verir; özel bir harita onu yanlış yere tetikliyorsa artırın. 'Araç yere gömülme koruması' gerekir.",
+
+    "Sandbox_BVD_SteeringFactorLowSpeed": "Direksiyon tepkisi (düşük hız)",
+    "Sandbox_BVD_SteeringFactorLowSpeed_tooltip": "Düşük hızda tekerleklerin ne kadar çabuk döndüğüne uygulanan çarpan.",
+
+    "Sandbox_BVD_SteeringFactorHighSpeed": "Direksiyon tepkisi (yüksek hız)",
+    "Sandbox_BVD_SteeringFactorHighSpeed_tooltip": "Yüksek hızda tekerleklerin ne kadar çabuk döndüğüne uygulanan çarpan.",
+
+    "Sandbox_BVD_SteeringCenteringLowSpeed": "Direksiyon kendiliğinden toplanma (düşük hız)",
+    "Sandbox_BVD_SteeringCenteringLowSpeed_tooltip": "Düşük hızda tekerleklerin ne kadar çabuk ortaya döndüğüne uygulanan çarpan.",
+
+    "Sandbox_BVD_SteeringCenteringHighSpeed": "Direksiyon kendiliğinden toplanma (yüksek hız)",
+    "Sandbox_BVD_SteeringCenteringHighSpeed_tooltip": "Yüksek hızda tekerleklerin ne kadar çabuk ortaya döndüğüne uygulanan çarpan.",
+
+    "Sandbox_BVD_SteeringSnapback": "Drift sırasında direksiyon tepkisi",
+    "Sandbox_BVD_SteeringSnapback_tooltip": "Drift basılı tutulurken tekerleklerin ne kadar çabuk döndüğüne uygulanan çarpan.",
+
+    "Sandbox_BVD_SteeringHighSpeed": "Yüksek hız eşiği (km/s)",
+    "Sandbox_BVD_SteeringHighSpeed_tooltip": "Direksiyonun düşük hız değerleri yerine yüksek hız tepkisi ve toplanma değerlerini kullanmaya başladığı hız (km/s)."
+}

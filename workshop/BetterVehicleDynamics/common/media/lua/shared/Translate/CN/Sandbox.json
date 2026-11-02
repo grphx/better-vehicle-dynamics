@@ -1,0 +1,160 @@
+{
+    "Sandbox_BetterVehicleDynamics": "Better Vehicle Dynamics",
+
+    "Sandbox_BetterVehicleDynamics_Handling": "BVD — 操控",
+    "Sandbox_BetterVehicleDynamics_TiresLoad": "BVD — 轮胎与载重",
+    "Sandbox_BetterVehicleDynamics_Drivetrain": "BVD — 传动系统",
+    "Sandbox_BetterVehicleDynamics_Readout": "BVD — 信息显示与其他",
+
+    "Sandbox_BVD_Mode": "调校预设",
+    "Sandbox_BVD_Mode_tooltip": "“自定义”会保留下面每个滑块的设置。其他预设会在世界加载时，将传动系统、抓地力和冲撞力度的数值调整为一套精心调校的方案。",
+    "Sandbox_BVD_Mode_option1": "自定义",
+    "Sandbox_BVD_Mode_option2": "轻松",
+    "Sandbox_BVD_Mode_option3": "写实",
+    "Sandbox_BVD_Mode_option4": "严苛",
+
+    "Sandbox_BVD_DriverHUD": "车辆信息面板",
+    "Sandbox_BVD_DriverHUD_tooltip": "在车辆机械窗口旁边添加一个 Better Vehicle Dynamics 面板，显示当前的调校方案和抓地力设置（原版不会显示这些数值）。",
+
+    "Sandbox_BVD_SkidMarks": "轮胎痕迹",
+    "Sandbox_BVD_SkidMarks_tooltip": "当轮胎因动力过大或急刹车而失去抓地力时，在地面上留下痕迹。",
+
+    "Sandbox_BVD_SkidSound": "轮胎打滑声",
+    "Sandbox_BVD_SkidSound_tooltip": "车辆打滑时播放轮胎尖啸声。与轮胎痕迹的视觉效果相互独立。如果觉得声音烦人，或与音效模组冲突，请关闭。",
+
+    "Sandbox_BVD_EnginePower": "发动机输出",
+    "Sandbox_BVD_EnginePower_tooltip": "调整所有发动机产生的牵引力大小。低于 1 会显得动力不足；高于 1 则爬坡和撞击都变得轻而易举。",
+
+    "Sandbox_BVD_LowSpeedGrunt": "低速冲撞力",
+    "Sandbox_BVD_LowSpeedGrunt_tooltip": "车轮转速极低时额外可用的牵引力，用于推开残骸和在尸群中挤出一条路。调低可使低速动力更弱、更谨慎。",
+
+    "Sandbox_BVD_ReverseTopSpeed": "倒车速度上限 (km/h)",
+    "Sandbox_BVD_ReverseTopSpeed_tooltip": "倒车速度的硬性上限。",
+
+    "Sandbox_BVD_GripLevel": "轮胎抓地力",
+    "Sandbox_BVD_GripLevel_tooltip": "整体的牵引力额度。越低，车辆越容易甩尾、空转。",
+
+    "Sandbox_BVD_WetGrip": "雨天抓地力",
+    "Sandbox_BVD_WetGrip_tooltip": "下雨时相对于正常抓地力的比例。",
+
+    "Sandbox_BVD_SnowGrip": "雪地抓地力",
+    "Sandbox_BVD_SnowGrip_tooltip": "在积雪地面上相对于正常抓地力的比例。",
+
+    "Sandbox_BVD_OffroadGrip": "越野抓地力",
+    "Sandbox_BVD_OffroadGrip_tooltip": "越野路面的抓地力强度。数值越高 = 抓地力越大（轮胎打滑越少），适用于泥土、草地和碎石路。默认 0.85 = 中等程度的打滑；1.5 = 接近铺装路面的手感。不会改变滚动阻力，滚动阻力请通过“滚动阻力（越野）”调整。",
+
+    "Sandbox_BVD_OffroadFloor": "越野抓地力下限",
+    "Sandbox_BVD_OffroadFloor_tooltip": "任何轮胎类型的越野抓地力系数所能降到的最小值。如果没有这个下限，运动轮胎的设定可能把越野抓地力压得过低，导致大马力的车在草地上几乎动不了。默认 0.55 可保证车辆仍能靠蛮力前进（车会打滑、磨损轮胎，但能动）。",
+
+    "Sandbox_BVD_Drag": "空气阻力",
+    "Sandbox_BVD_Drag_tooltip": "空气动力阻力的缩放系数。越高，最高车速越早到顶，动量损失也越快。",
+
+    "Sandbox_BVD_RollResistance": "滚动阻力（公路）",
+    "Sandbox_BVD_RollResistance_tooltip": "轮胎在铺装路面上受到的阻力。影响滑行和稳定行驶时的速度。",
+
+    "Sandbox_BVD_RollResistanceOffroad": "滚动阻力（越野）",
+    "Sandbox_BVD_RollResistanceOffroad_tooltip": "驶离铺装路面时额外增加的滚动阻力。",
+
+    "Sandbox_BVD_EngineBraking": "发动机制动",
+    "Sandbox_BVD_EngineBraking_tooltip": "挂挡时松开油门，发动机让车减速的力度，以及转速如何跟随车速变化（降挡会使转速升高）。0 为关闭，恢复旧有表现；1 为普通公路发动机；更高则相当于重型柴油机或赛车发动机。与真实车辆一样，挡位越低，制动越强。",
+    "Sandbox_BVD_EngineBrakeLockup": "挡位过低时车轮抱死",
+    "Sandbox_BVD_EngineBrakeLockup_tooltip": "以远低于当前车速所适合的挡位强行降挡时，驱动轮会瞬间抱死，并可能使车辆打滑。默认关闭。",
+
+    "Sandbox_BVD_ManualClutch": "手动离合器",
+    "Sandbox_BVD_ManualClutch_tooltip": "适用于已开启手动换挡的玩家：增加离合器（按住离合键使发动机脱开）、位于倒挡与一挡之间的空挡，以及真正的倒挡。关闭则保留简单的挡位选择方式。自动挡车辆不受影响。",
+    "Sandbox_BVD_ManualStall": "熄火",
+    "Sandbox_BVD_ManualStall_tooltip": "需要启用手动离合器。在高于当前车速所适合的挡位松开离合且油门不足时，发动机会熄火，需要重新启动。默认关闭。",
+
+    "Sandbox_BVD_EngineProfiles": "按发动机类型设定换挡点",
+    "Sandbox_BVD_EngineProfiles_tooltip": "自动变速箱会按照车辆发动机类型的换挡规律换挡（厢式货车较早，跑车较晚），数据取自游戏自带的发动机数据，而不是所有车辆共用同一个换挡点。默认关闭。",
+
+    "Sandbox_BVD_RealismHPWeight": "参考功率与重量",
+    "Sandbox_BVD_RealismHPWeight_tooltip": "可选项。把 Better Vehicle Dynamics 的参考数据应用到每一辆车。我们有研究数据的车辆会使用这些发动机动力和质量（不会比原模组更弱或更轻）；其他所有带发动机的车辆，包括模组车辆，会得到同样的动力提升（4 倍，有上限）。车辆信息里显示的动力是游戏内部的发动机力，不是马力，所以数字看起来偏大。关闭该选项会恢复原始数值。",
+
+    "Sandbox_BVD_TrunkScaling": "载货容量重新缩放",
+    "Sandbox_BVD_TrunkScaling_tooltip": "按车身类型的系数缩放每辆车的储物空间，而不是直接覆盖。检测到“isoContainers”时自动禁用。",
+
+    "Sandbox_BVD_TrunkCar": "载货系数：轿车",
+    "Sandbox_BVD_TrunkCar_tooltip": "该车身类型参考储物空间的倍率。1.0 保持参考值不变。",
+
+    "Sandbox_BVD_TrunkVan": "载货系数：厢式货车",
+    "Sandbox_BVD_TrunkVan_tooltip": "该车身类型参考储物空间的倍率。1.0 保持参考值不变。",
+
+    "Sandbox_BVD_TrunkTruck": "载货系数：皮卡",
+    "Sandbox_BVD_TrunkTruck_tooltip": "该车身类型参考储物空间的倍率。1.0 保持参考值不变。",
+
+    "Sandbox_BVD_TrunkTrailer": "载货系数：拖车",
+    "Sandbox_BVD_TrunkTrailer_tooltip": "该车身类型参考储物空间的倍率。1.0 保持参考值不变。",
+
+    "Sandbox_BVD_ThrottleStart": "踩油门启动",
+    "Sandbox_BVD_ThrottleStart_tooltip": "关闭时，必须主动启动发动机（按启动键或点击发动机图标），而不是靠踩油门来启动。",
+
+    "Sandbox_BVD_KeylessTow": "无钥匙拖车",
+    "Sandbox_BVD_KeylessTow_tooltip": "关闭时，便捷拖车需要点火开关里有钥匙，或已松开手刹。",
+
+    "Sandbox_BVD_ShoveFoliage": "灌木冲撞阻力",
+    "Sandbox_BVD_ShoveFoliage_tooltip": "灌木和小型植物在接触时让车辆减速的强度。1.0 为默认值：动力弱的发动机会被减速，动力强的则能冲过去。0 = 灌木毫无影响，数值越高越接近原版，即任何灌木都能拦停任何车。",
+
+    "Sandbox_BVD_ShoveZombies": "僵尸冲撞力",
+    "Sandbox_BVD_ShoveZombies_tooltip": "车辆撞到活动僵尸时施加给它们的力。",
+
+    "Sandbox_BVD_ShoveCorpses": "尸体冲撞力",
+    "Sandbox_BVD_ShoveCorpses_tooltip": "车辆撞到地上的尸体和残肢时施加给它们的力。",
+
+    "Sandbox_BVD_Drift": "漂移模式",
+    "Sandbox_BVD_Drift_tooltip": "高速过弯时按住漂移键，让车尾甩出，实现街机风格的滑行。请在“模组选项”中绑定按键。",
+
+    "Sandbox_BVD_DriftGrip": "漂移打滑程度",
+    "Sandbox_BVD_DriftGrip_tooltip": "漂移时保留的轮胎抓地力。越低越松散，也越难控制。",
+
+    "Sandbox_BVD_DriftMinSpeed": "漂移触发速度 (km/h)",
+    "Sandbox_BVD_DriftMinSpeed_tooltip": "低于此速度时漂移键无效，因此停车时不会打滑。",
+
+    "Sandbox_BVD_DriftSteer": "漂移转向增益",
+    "Sandbox_BVD_DriftSteer_tooltip": "按住漂移时，前轮的转向响应变得多敏锐。",
+
+    "Sandbox_BVD_DriftRotation": "漂移旋转力",
+    "Sandbox_BVD_DriftRotation_tooltip": "漂移并转向时施加给车辆的旋转力度。如果车滑得太外，请调高；如果车容易甩转失控，请调低。",
+
+    "Sandbox_BVD_TireGripModel": "轮胎抓地力模型",
+    "Sandbox_BVD_TireGripModel_tooltip": "不同类型的轮胎（磨损 / 标准 / 现代）在公路、雨天、雪地和越野路面上拥有各自不同的抓地力，而不是统一的固定值。",
+
+    "Sandbox_BVD_TireSlipWear": "车轮打滑磨损轮胎",
+    "Sandbox_BVD_TireSlipWear_tooltip": "当发动机驱动车轮的速度超过地面所能提供的抓地力时（例如在草地上猛踩油门），轮胎状态会随时间下降。这让你可以靠蛮力通过低抓地力路面，代价是之后轮胎会磨光。",
+
+    "Sandbox_BVD_TireSlipWearRate": "打滑造成的轮胎磨损速率",
+    "Sandbox_BVD_TireSlipWearRate_tooltip": "轮胎在打滑时损耗速度的倍率。1.0 为默认值（猛烈打滑几分钟就会明显磨损）。设为 0 可以在不禁用该模型的情况下关闭磨损。",
+
+    "Sandbox_BVD_LoadAffectsHandling": "载重影响操控",
+    "Sandbox_BVD_LoadAffectsHandling_tooltip": "重载的车辆起步缓慢，就像发动机在吃力地拖着重物。",
+
+    "Sandbox_BVD_LoadAffectsFuel": "载重影响油耗",
+    "Sandbox_BVD_LoadAffectsFuel_tooltip": "载着重物行驶时会额外消耗燃油。",
+
+    "Sandbox_BVD_LoadMaxPenalty": "满载时的最大起步惩罚",
+    "Sandbox_BVD_LoadMaxPenalty_tooltip": "满载车辆起步力的最大降幅（0.50 = 起步时力量最多减少 50%）。随着车速提高逐渐消退。需要启用“载重影响操控”。",
+
+    "Sandbox_BVD_StabilityGuard": "车辆陷地保护",
+    "Sandbox_BVD_StabilityGuard_tooltip": "多人游戏的安全措施：如果车辆沉入所在楼层地面之下很深的位置（即“被吸入地下”的不同步现象），会被拉回到该层地面上。仅在正常驾驶绝不会出现的状态下起作用，因此坡道、地下室和多层停车场不受影响。",
+
+    "Sandbox_BVD_StabilityGuardSinkTiles": "陷地触发深度（楼层）",
+    "Sandbox_BVD_StabilityGuardSinkTiles_tooltip": "车辆必须沉到自身所在楼层地面以下多深，保护机制才会将其重新放回，以楼层数计（0.75 = 一层楼的四分之三）。越低反应越快；如果自定义地图误触发了该功能，请调高。需要启用“车辆陷地保护”。",
+
+    "Sandbox_BVD_SteeringFactorLowSpeed": "转向响应（低速）",
+    "Sandbox_BVD_SteeringFactorLowSpeed_tooltip": "低速时车轮转向快慢的倍率。",
+
+    "Sandbox_BVD_SteeringFactorHighSpeed": "转向响应（高速）",
+    "Sandbox_BVD_SteeringFactorHighSpeed_tooltip": "高速时车轮转向快慢的倍率。",
+
+    "Sandbox_BVD_SteeringCenteringLowSpeed": "方向盘自动回正（低速）",
+    "Sandbox_BVD_SteeringCenteringLowSpeed_tooltip": "低速时车轮回到中间位置快慢的倍率。",
+
+    "Sandbox_BVD_SteeringCenteringHighSpeed": "方向盘自动回正（高速）",
+    "Sandbox_BVD_SteeringCenteringHighSpeed_tooltip": "高速时车轮回到中间位置快慢的倍率。",
+
+    "Sandbox_BVD_SteeringSnapback": "漂移时的转向响应",
+    "Sandbox_BVD_SteeringSnapback_tooltip": "按住漂移时车轮转向快慢的倍率。",
+
+    "Sandbox_BVD_SteeringHighSpeed": "高速阈值 (km/h)",
+    "Sandbox_BVD_SteeringHighSpeed_tooltip": "达到此速度 (km/h) 时，转向改用高速的响应和回正数值，而不是低速的数值。"
+}

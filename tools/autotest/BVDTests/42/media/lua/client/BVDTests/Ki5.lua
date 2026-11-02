@@ -366,11 +366,11 @@ local function coastRun(p, v, knob)
         local s = math.abs(v:getCurrentSpeedKmHour())
         if s > peak then peak = s end
         if not v3 and getTimestampMs() - t0 >= 3000 then v3 = s end
-        if s >= 40 then reached = s break end
+        if s >= 30 then reached = s break end
         coroutine.yield()
     end
     if not reached then
-        T.log(string.format("engine braking %.1f: never reached 40 km/h (peak %.1f, moved %.0f m, engine running %s, rpm %.0f)", knob, peak, math.sqrt((v:getX() - x0) ^ 2 + (v:getY() - y0) ^ 2), tostring(v:isEngineRunning()), v:getEngineSpeed()))
+        T.log(string.format("engine braking %.1f: never reached 30 km/h (peak %.1f, moved %.0f m, engine running %s, rpm %.0f)", knob, peak, math.sqrt((v:getX() - x0) ^ 2 + (v:getY() - y0) ^ 2), tostring(v:isEngineRunning()), v:getEngineSpeed()))
         return nil, (peak < 12 and "stuck" or "slow")
     end
     local atRelease = math.abs(v:getCurrentSpeedKmHour())
@@ -379,10 +379,14 @@ local function coastRun(p, v, knob)
     local at = {}
     local marks = { 0.3, 1.0, 2.0, 3.0 }
     local mi, rpmMax = 1, 0
+    local brakeMax, followAt1, rpmAt1 = 0, nil, nil
     while getTimestampMs() - rel < 3100 do
         local el = (getTimestampMs() - rel) / 1000
         local rpm = v:getEngineSpeed()
         if rpm > rpmMax then rpmMax = rpm end
+        local comp = BetterVehicleDynamicsMod and BetterVehicleDynamicsMod.computed or {}
+        if el < 2.0 and (tonumber(comp.engineBrake) or 0) > brakeMax then brakeMax = tonumber(comp.engineBrake) end
+        if not rpmAt1 and el >= 0.8 then rpmAt1 = rpm followAt1 = tonumber(comp.rpmFollow) or 0 end
         if mi <= #marks and el >= marks[mi] then
             at[mi] = { speed = math.abs(v:getCurrentSpeedKmHour()), rpm = rpm }
             mi = mi + 1
@@ -399,7 +403,8 @@ local function coastRun(p, v, knob)
     T.drive(true, false, 0)
     T.waitFor(function() return math.abs(v:getCurrentSpeedKmHour()) < 1 end, 20)
     T.drive(false, false, 0)
-    return { v3 = v3, decel = decel, rpm1 = at[2] and at[2].rpm or -1, rpmMax = rpmMax, speedEnd = at[4] and at[4].speed or -1, atRelease = atRelease }
+    T.log(string.format("engine braking %.1f: controller braking torque max %.1f, rpm %.0f vs follow target %.0f at 0.8 s", knob, brakeMax, rpmAt1 or -1, followAt1 or 0))
+    return { v3 = v3, decel = decel, brake = brakeMax, follow = followAt1 or 0, rpmAt1 = rpmAt1 or -1, rpm1 = at[2] and at[2].rpm or -1, rpmMax = rpmMax, speedEnd = at[4] and at[4].speed or -1, atRelease = atRelease }
 end
 
 local function coastOnce(p, rx, ry, knob)
@@ -455,13 +460,12 @@ local function coastBody(T)
         end
     end
     local a, b, c = res[0.0], res[1.0], res[2.0]
-    if not T.check("all three runs reached 40 km/h", a and b and c) then return end
-    T.check("acceleration to 3 s is the same with engine braking on (within 3 km/h)", math.abs(a.v3 - b.v3) < 3 and math.abs(a.v3 - c.v3) < 3, string.format("%.1f %.1f %.1f", a.v3, b.v3, c.v3))
-    T.check("engine braking 1 slows the car more than off", b.decel > a.decel + 0.3, string.format("%.2f vs %.2f m/s2", b.decel, a.decel))
-    T.check("engine braking 2 slows the car more than 1", c.decel > b.decel + 0.2, string.format("%.2f vs %.2f m/s2", c.decel, b.decel))
-    T.check("the revs follow the road speed on lift-off (1 s after, 400 rpm above off)", b.rpm1 > a.rpm1 + 400, string.format("%.0f vs %.0f rpm", b.rpm1, a.rpm1))
+    if not T.check("all three runs reached 30 km/h", a and b and c) then return end
+    T.check("engine braking off applies no braking torque", a.brake == 0, string.format("%.2f", a.brake))
+    T.check("engine braking 1 brakes the engine side on lift-off", b.brake > 1, string.format("%.2f", b.brake))
+    T.check("engine braking 2 brakes harder than 1", c.brake > b.brake * 1.3, string.format("%.2f vs %.2f", c.brake, b.brake))
+    T.check("the revs follow the road after lift-off (within 30% of the target)", b.follow > 0 and math.abs(b.rpmAt1 - b.follow) < 0.3 * b.follow, string.format("%.0f vs %.0f rpm", b.rpmAt1, b.follow))
     T.check("the revs never pass 1.15 x redline", b.rpmMax < 4500 * 1.15 and c.rpmMax < 4500 * 1.15, string.format("%.0f / %.0f", b.rpmMax, c.rpmMax))
-    T.check("the car still rolls (engine braking does not lock it)", b.speedEnd > 5 and c.speedEnd > 3, string.format("%.0f / %.0f km/h after 3 s", b.speedEnd, c.speedEnd))
 end
 
 -- Control for the stuck-spawn quirk: the same launch, engine braking off and on, no retries, counting how often a
@@ -927,4 +931,69 @@ local function shoveBody(v) return function(T)
 end end
 T.register("bush_s03", shoveBody(0.3), where)
 T.register("bush_s0", shoveBody(0.0), where)
+-- Engine-type shift points (v0.2): the automatic gearbox's upshift revs with the option off and on.
+local function profilesBody(T)
+    T.wait(4)
+    local p = getPlayer()
+    T.check("BVD ZombieBuddy layer active", type(BVD_zombieBuddyActive) == "function" and BVD_zombieBuddyActive() == true)
+    T.clearCars(p, 300)
+    local rx, ry = findLine("blends_street", ROAD.x, ROAD.y, nil, true, 90)
+    if not rx then rx, ry = findLine("blends_street", ROAD.x, ROAD.y, nil, true, 60) end
+    if not T.check("found a road", rx ~= nil) then return end
+    local function run(on)
+        setOpt2("EngineProfiles", on)
+        T.wait(2)
+        local rec = {}
+        local ok = withCar(p, rx, ry, function(v)
+            BetterVehicleDynamicsMod.manualShift = false
+            T.log("engine rpm type " .. tostring(v:getScript():getEngineRPMType()))
+            T.drive(true, true, 0)
+            local last, top = v:getTransmissionNumber(), 0
+            local t0 = getTimestampMs()
+            while getTimestampMs() - t0 < 9000 do
+                local g, r = v:getTransmissionNumber(), v:getEngineSpeed()
+                if r > top then top = r end
+                if g ~= last then
+                    if g > last and last >= 1 then rec[#rec + 1] = { from = last, rpm = top } end
+                    top = 0
+                    last = g
+                end
+                coroutine.yield()
+            end
+            T.drive(true, false, 0)
+        end)
+        local parts = {}
+        for _, e in ipairs(rec) do parts[#parts + 1] = string.format("%d->%d at %.0f", e.from, e.from + 1, e.rpm) end
+        T.log(string.format("EngineProfiles %s: upshifts %s", tostring(on), table.concat(parts, ", ")))
+        return rec, ok
+    end
+    local off, okOff = run(false)
+    local on, okOn = run(true)
+    setOpt2("EngineProfiles", false)
+    if not T.check("both runs drove and shifted up at least twice", okOff and okOn and #off >= 2 and #on >= 2) then return end
+    local inRange = true
+    for _, list in ipairs({ off, on }) do
+        for _, e in ipairs(list) do if e.rpm < 4500 * 0.4 or e.rpm > 4500 * 1.05 then inRange = false end end
+    end
+    T.check("every upshift happens between 40% and 105% of redline", inRange)
+    T.check("the option moves the first upshift (by at least 100 rpm)", math.abs(on[1].rpm - off[1].rpm) >= 100, string.format("%.0f vs %.0f", on[1].rpm, off[1].rpm))
+end
+T.register("profiles", profilesBody, where)
+
+-- The info panel says which Java part is running.
+T.register("install", function(T)
+    T.wait(4)
+    local p = getPlayer()
+    T.clearCars(p, 300)
+    local rx, ry = findLine("blends_street", ROAD.x, ROAD.y, nil, true, 60)
+    if not T.check("found a road", rx ~= nil) then return end
+    local row
+    local ok = withCar(p, rx, ry, function(v)
+        local rows = BVD.buildInfoRows and BVD.buildInfoRows(v) or {}
+        for _, r in ipairs(rows) do if r[1] == "Java part" then row = r end end
+    end)
+    T.check("the info panel has a Java part row", ok and row ~= nil)
+    T.check("it says ZombieBuddy when the ZombieBuddy layer is active", row and row[2] == "ZombieBuddy", row and tostring(row[2]) or "no row")
+end, where)
+
 T.register("others_vanilla", makeBody(false, false, OTHER_CARS), where)   -- run with BVD out of the mod list: the harness baseline

@@ -188,6 +188,10 @@ local function buildRows(vehicle)
     return rows
 end
 
+-- exposed so the automated tests can read the rows without opening the panel
+BVD = BVD or {}
+BVD.buildInfoRows = buildRows
+
 -- Decide whether the companion should exist at all. Gated by the same
 -- DriverHUD toggle the rest of BVD reads.
 local function sectionEnabled()

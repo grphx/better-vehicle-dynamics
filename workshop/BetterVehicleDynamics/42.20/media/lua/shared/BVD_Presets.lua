@@ -32,6 +32,7 @@ local PRESET_VALUES = {
         ShoveZombies     = 0.5,
         ShoveCorpses     = 0.5,
         ShoveFoliage     = 0.5,
+        EngineBraking    = 0.6,
         RealismHPWeight  = false,
         TrunkScaling     = false,
         TrunkCar         = 1.5,
@@ -40,6 +41,8 @@ local PRESET_VALUES = {
         TrunkTrailer     = 1.5,
     },
     -- Realistic/Hardcore intentionally leave RealismHPWeight to the player's toggle (no forced value).
+-- Only EngineBraking varies by preset (v0.2). ManualClutch, ManualStall, EngineProfiles and EngineBrakeLockup stay
+-- the player's own choice, the same way.
     Realistic = {
         EnginePower      = 1.0,
         GripLevel        = 1.0,
@@ -49,6 +52,7 @@ local PRESET_VALUES = {
         ShoveZombies     = 1.0,
         ShoveCorpses     = 1.0,
         ShoveFoliage     = 1.0,
+        EngineBraking    = 1.0,
         TrunkScaling     = true,
         TrunkCar         = 1.0,
         TrunkVan         = 1.0,
@@ -64,6 +68,7 @@ local PRESET_VALUES = {
         ShoveZombies     = 1.5,
         ShoveCorpses     = 1.5,
         ShoveFoliage     = 1.4,
+        EngineBraking    = 1.5,
         TrunkScaling     = true,
         TrunkCar         = 0.8,
         TrunkVan         = 0.8,

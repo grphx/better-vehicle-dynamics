@@ -1,8 +1,8 @@
 diff --git a/zombie/core/physics/CarController.java b/zombie/core/physics/CarController.java
-index e82625b..b67bf0c 100644
+index e82625b..a366cdf 100644
 --- a/zombie/core/physics/CarController.java
 +++ b/zombie/core/physics/CarController.java
-@@ -1,840 +1,2339 @@
+@@ -1,840 +1,2348 @@
  package zombie.core.physics;
  
 +import java.util.ArrayList;
@@ -373,6 +373,9 @@ index e82625b..b67bf0c 100644
 +   private float gripWetOut = 1.0F;
 +   private float gripSnowOut = 1.0F;
 +   private float gripOffroadOut = 1.0F;
++   // Engine braking (v0.2): the retarding torque applied this tick and the revs it pulls the engine toward, for the readout and tests.
++   private float engineBrakeOut = 0.0F;
++   private float rpmFollowOut = 0.0F;
 +   private String tireFamilyOut = "";
 +   private float ladenRatioOut = 1.0F;
 +   private float loadPenaltyOut = 0.0F;
@@ -642,6 +645,8 @@ index e82625b..b67bf0c 100644
 +      this.computedOut.rawset("gripWet", (double)this.gripWetOut);
 +      this.computedOut.rawset("gripSnow", (double)this.gripSnowOut);
 +      this.computedOut.rawset("gripOffroad", (double)this.gripOffroadOut);
++      this.computedOut.rawset("engineBrake", (double)this.engineBrakeOut);
++      this.computedOut.rawset("rpmFollow", (double)this.rpmFollowOut);
 +      this.computedOut.rawset("ladenRatio", (double)this.ladenRatioOut);
 +      this.computedOut.rawset("loadPenalty", (double)this.loadPenaltyOut);
 +      bridge.rawset("computed", this.computedOut);
@@ -2538,10 +2543,13 @@ index e82625b..b67bf0c 100644
 +      // Engine braking: lifted off in gear and the wheels are turning the engine faster than it runs. The
 +      // negative torque goes through the same path as a brake request below (it ends up as brakingForce).
 +      this.rpmFollowTarget = 0.0F;
++      this.engineBrakeOut = 0.0F;
++      this.rpmFollowOut = 0.0F;
 +      float engineBrakeKnob = this.getSandboxOption("BetterVehicleDynamics.EngineBraking", 1.0F);
 +      if (engineBrakeKnob > 0.0F && this.vehicleObject.isEngineRunning() && this.vehicleObject.throttle < ENGINE_BRAKE_THROTTLE
 +            && gearedWheelRpm > engineRpm + 50.0F && (!clutchMode || (!neutral && this.clutchEngage > 0.5F))) {
 +         this.rpmFollowTarget = Math.min(gearedWheelRpm, redline * RPM_FOLLOW_CEILING);
++         this.rpmFollowOut = this.rpmFollowTarget;
 +         // overrun: the wheels turn the engine, so the converter model must not also push the car forward
 +         wheelTorque = 0.0F;
 +         couple = 0.0F;
@@ -2551,6 +2559,7 @@ index e82625b..b67bf0c 100644
 +            engineBrake = gripLimit * 0.9F;
 +         }
 +         wheelTorque -= engineBrake;
++         this.engineBrakeOut = engineBrake;
 +      }
 +      wheelTorque -= this.brakingForce * brakeToTorque;
 +      this.burnout = 0.0F;
@@ -2924,7 +2933,7 @@ index e82625b..b67bf0c 100644
              this.vehicleObject.stopSound(this.vehicleObject.ramSound);
              this.vehicleObject.ramSound = 0L;
           }
-@@ -844,6 +2343,55 @@ public final class CarController {
+@@ -844,6 +2352,55 @@ public final class CarController {
        }
     }
  
@@ -2980,7 +2989,7 @@ index e82625b..b67bf0c 100644
     private void updateBackSignal() {
        if (this.isGasR && this.vehicleObject.isEngineRunning() && this.vehicleObject.hasBackSignal() && !this.vehicleObject.isBackSignalEmitting()) {
           if (GameClient.client) {
-@@ -933,56 +2481,106 @@ public final class CarController {
+@@ -933,56 +2490,106 @@ public final class CarController {
     }
  
     public void updateControls() {
@@ -3125,7 +3134,7 @@ index e82625b..b67bf0c 100644
        }
  
        this.isGas = this.wasGas = false;
-@@ -1292,4 +2890,28 @@ public final class CarController {
+@@ -1292,4 +2899,28 @@ public final class CarController {
           this.minRpm = rpm;
        }
     }

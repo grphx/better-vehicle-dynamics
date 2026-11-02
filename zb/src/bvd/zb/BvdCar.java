@@ -362,6 +362,9 @@ public final class BvdCar {
    private float gripWetOut = 1.0F;
    private float gripSnowOut = 1.0F;
    private float gripOffroadOut = 1.0F;
+   // Engine braking (v0.2): the retarding torque applied this tick and the revs it pulls the engine toward, for the readout and tests.
+   private float engineBrakeOut = 0.0F;
+   private float rpmFollowOut = 0.0F;
    private String tireFamilyOut = "";
    private float ladenRatioOut = 1.0F;
    private float loadPenaltyOut = 0.0F;
@@ -631,6 +634,8 @@ public final class BvdCar {
       this.computedOut.rawset("gripWet", (double)this.gripWetOut);
       this.computedOut.rawset("gripSnow", (double)this.gripSnowOut);
       this.computedOut.rawset("gripOffroad", (double)this.gripOffroadOut);
+      this.computedOut.rawset("engineBrake", (double)this.engineBrakeOut);
+      this.computedOut.rawset("rpmFollow", (double)this.rpmFollowOut);
       this.computedOut.rawset("ladenRatio", (double)this.ladenRatioOut);
       this.computedOut.rawset("loadPenalty", (double)this.loadPenaltyOut);
       bridge.rawset("computed", this.computedOut);
@@ -1936,10 +1941,13 @@ public final class BvdCar {
       // Engine braking: lifted off in gear and the wheels are turning the engine faster than it runs. The
       // negative torque goes through the same path as a brake request below (it ends up as brakingForce).
       this.rpmFollowTarget = 0.0F;
+      this.engineBrakeOut = 0.0F;
+      this.rpmFollowOut = 0.0F;
       float engineBrakeKnob = this.getSandboxOption("BetterVehicleDynamics.EngineBraking", 1.0F);
       if (engineBrakeKnob > 0.0F && this.cc.vehicleObject.isEngineRunning() && this.cc.vehicleObject.throttle < ENGINE_BRAKE_THROTTLE
             && gearedWheelRpm > engineRpm + 50.0F && (!clutchMode || (!neutral && this.clutchEngage > 0.5F))) {
          this.rpmFollowTarget = Math.min(gearedWheelRpm, redline * RPM_FOLLOW_CEILING);
+         this.rpmFollowOut = this.rpmFollowTarget;
          // overrun: the wheels turn the engine, so the converter model must not also push the car forward
          wheelTorque = 0.0F;
          couple = 0.0F;
@@ -1949,6 +1957,7 @@ public final class BvdCar {
             engineBrake = gripLimit * 0.9F;
          }
          wheelTorque -= engineBrake;
+         this.engineBrakeOut = engineBrake;
       }
       wheelTorque -= this.cc.brakingForce * brakeToTorque;
       this.burnout = 0.0F;

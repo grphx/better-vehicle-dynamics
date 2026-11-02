@@ -1,0 +1,160 @@
+{
+    "Sandbox_BetterVehicleDynamics": "Better Vehicle Dynamics",
+
+    "Sandbox_BetterVehicleDynamics_Handling": "BVD — Manejo",
+    "Sandbox_BetterVehicleDynamics_TiresLoad": "BVD — Neumáticos y carga",
+    "Sandbox_BetterVehicleDynamics_Drivetrain": "BVD — Tren motriz",
+    "Sandbox_BetterVehicleDynamics_Readout": "BVD — Indicadores y varios",
+
+    "Sandbox_BVD_Mode": "Preajuste de ajuste",
+    "Sandbox_BVD_Mode_tooltip": "Personalizado mantiene cada control deslizante de abajo tal como lo hayas configurado. Los demás preajustes fijan los valores de tren motriz, agarre y empuje a un perfil predefinido cuando se carga el mundo.",
+    "Sandbox_BVD_Mode_option1": "Personalizado",
+    "Sandbox_BVD_Mode_option2": "Relajado",
+    "Sandbox_BVD_Mode_option3": "Realista",
+    "Sandbox_BVD_Mode_option4": "Castigador",
+
+    "Sandbox_BVD_DriverHUD": "Panel de información del vehículo",
+    "Sandbox_BVD_DriverHUD_tooltip": "Añade un panel de Better Vehicle Dynamics junto a la ventana de mecánica del vehículo, que muestra el perfil de ajuste activo y los parámetros de agarre (los valores que el juego base no muestra).",
+
+    "Sandbox_BVD_SkidMarks": "Marcas de neumáticos",
+    "Sandbox_BVD_SkidMarks_tooltip": "Deja una marca en el suelo cuando un neumático pierde adherencia al acelerar o frenar con fuerza.",
+
+    "Sandbox_BVD_SkidSound": "Sonido de derrape de neumáticos",
+    "Sandbox_BVD_SkidSound_tooltip": "Reproduce un chirrido de neumáticos cuando un vehículo está derrapando. Es independiente de las marcas visuales. Desactívalo si te molesta el sonido o si choca con un mod de sonido.",
+
+    "Sandbox_BVD_EnginePower": "Potencia del motor",
+    "Sandbox_BVD_EnginePower_tooltip": "Escala la fuerza de tracción que genera cada motor. Por debajo de 1 se siente sin fuerza; por encima de 1, las cuestas y las embestidas resultan triviales.",
+
+    "Sandbox_BVD_LowSpeedGrunt": "Empuje a velocidad de arrastre",
+    "Sandbox_BVD_LowSpeedGrunt_tooltip": "Fuerza de tracción extra disponible a velocidades de rueda muy bajas: la fuerza que se usa para empujar restos de vehículos y abrirse paso entre multitudes. Redúcela para tener un arranque más débil y prudente.",
+
+    "Sandbox_BVD_ReverseTopSpeed": "Límite de velocidad en marcha atrás (km/h)",
+    "Sandbox_BVD_ReverseTopSpeed_tooltip": "Límite máximo de velocidad en marcha atrás.",
+
+    "Sandbox_BVD_GripLevel": "Agarre de los neumáticos",
+    "Sandbox_BVD_GripLevel_tooltip": "Presupuesto total de tracción. Cuanto más bajo, más fácilmente se desliza la trasera del coche y patinan las ruedas.",
+
+    "Sandbox_BVD_WetGrip": "Agarre bajo la lluvia",
+    "Sandbox_BVD_WetGrip_tooltip": "Fracción del agarre normal mientras llueve.",
+
+    "Sandbox_BVD_SnowGrip": "Agarre sobre nieve",
+    "Sandbox_BVD_SnowGrip_tooltip": "Fracción del agarre normal sobre terreno cubierto de nieve.",
+
+    "Sandbox_BVD_OffroadGrip": "Agarre fuera de carretera",
+    "Sandbox_BVD_OffroadGrip_tooltip": "Fuerza del agarre fuera de carretera. MÁS ALTO = más agarre (menos patinaje de los neumáticos) sobre tierra, hierba y grava. Por defecto 0.85 = patinaje moderado; 1.5 = sensación casi de asfalto. No cambia la resistencia a la rodadura: ajústala con Resistencia a la rodadura (campo).",
+
+    "Sandbox_BVD_OffroadFloor": "Mínimo de agarre fuera de carretera",
+    "Sandbox_BVD_OffroadFloor_tooltip": "Multiplicador mínimo de agarre fuera de carretera al que puede caer cualquier tipo de neumático. Sin él, los perfiles de neumáticos deportivos pueden bajar tanto el agarre fuera de carretera que un coche muy potente apenas se mueve sobre la hierba. Por defecto 0.55 permite avanzar a la fuerza (el coche patinará y desgastará los neumáticos, pero se moverá).",
+
+    "Sandbox_BVD_Drag": "Resistencia del aire",
+    "Sandbox_BVD_Drag_tooltip": "Escala de la resistencia aerodinámica. Más alta limita antes la velocidad máxima y hace perder inercia más rápido.",
+
+    "Sandbox_BVD_RollResistance": "Resistencia a la rodadura (carretera)",
+    "Sandbox_BVD_RollResistance_tooltip": "Resistencia de los neumáticos sobre superficies pavimentadas. Afecta a la marcha por inercia y a la velocidad constante.",
+
+    "Sandbox_BVD_RollResistanceOffroad": "Resistencia a la rodadura (campo)",
+    "Sandbox_BVD_RollResistanceOffroad_tooltip": "Resistencia a la rodadura adicional cuando se sale de la carretera pavimentada.",
+
+    "Sandbox_BVD_EngineBraking": "Freno motor",
+    "Sandbox_BVD_EngineBraking_tooltip": "Cuánto frena el motor al coche cuando sueltas el acelerador con una marcha puesta, y cómo siguen las revoluciones a la velocidad de la carretera (reducir de marcha las sube). 0 lo desactiva y devuelve el comportamiento antiguo, 1 es un motor de carretera normal, más alto es un diésel pesado o un motor de competición. Las marchas más cortas frenan más, como en un coche real.",
+    "Sandbox_BVD_EngineBrakeLockup": "Bloqueo de ruedas con una marcha demasiado corta",
+    "Sandbox_BVD_EngineBrakeLockup_tooltip": "Reducir a una marcha demasiado corta para tu velocidad bloquea un instante las ruedas motrices y puede hacer deslizar el coche. Desactivado por defecto.",
+
+    "Sandbox_BVD_ManualClutch": "Embrague manual",
+    "Sandbox_BVD_ManualClutch_tooltip": "Para jugadores que activaron el cambio manual: añade un embrague (mantén pulsada la tecla de embrague para desacoplar el motor), un punto muerto entre la marcha atrás y la primera, y una marcha atrás real. Desactivado mantiene el selector de marchas simple. Los coches automáticos no se ven afectados.",
+    "Sandbox_BVD_ManualStall": "Calado del motor",
+    "Sandbox_BVD_ManualStall_tooltip": "Requiere el embrague manual. Soltar el embrague con una marcha demasiado larga para tu velocidad y sin acelerar lo suficiente cala el motor y tienes que volver a arrancarlo. Desactivado por defecto.",
+
+    "Sandbox_BVD_EngineProfiles": "Puntos de cambio según el tipo de motor",
+    "Sandbox_BVD_EngineProfiles_tooltip": "Las cajas de cambios automáticas cambian de marcha según el patrón del tipo de motor del vehículo (furgonetas pronto, deportivos tarde), tomado de los datos de motor del propio juego, en lugar de un único punto de cambio para todos los coches. Desactivado por defecto.",
+
+    "Sandbox_BVD_RealismHPWeight": "Potencia y peso de referencia",
+    "Sandbox_BVD_RealismHPWeight_tooltip": "Opcional. Aplica las cifras de referencia de Better Vehicle Dynamics a todos los coches. Los vehículos con datos investigados reciben esa potencia y ese peso (nunca más débiles ni más ligeros de lo que los hizo el mod); cualquier otro coche con motor, incluidos los de mods, recibe el mismo aumento de potencia (4x, con límite). La potencia que se muestra es la fuerza del motor del juego, no caballos de fuerza, por eso parece alta. Desactivar la opción restaura los valores originales.",
+
+    "Sandbox_BVD_TrunkScaling": "Reescalado de capacidad de carga",
+    "Sandbox_BVD_TrunkScaling_tooltip": "Escala el almacenamiento de cada vehículo con un factor por tipo de carrocería en lugar de sobrescribirlo. Se desactiva automáticamente si está presente 'isoContainers'.",
+
+    "Sandbox_BVD_TrunkCar": "Factor de carga: coches",
+    "Sandbox_BVD_TrunkCar_tooltip": "Multiplicador del almacenamiento de referencia de este tipo de carrocería. 1.0 mantiene el valor de referencia.",
+
+    "Sandbox_BVD_TrunkVan": "Factor de carga: furgonetas",
+    "Sandbox_BVD_TrunkVan_tooltip": "Multiplicador del almacenamiento de referencia de este tipo de carrocería. 1.0 mantiene el valor de referencia.",
+
+    "Sandbox_BVD_TrunkTruck": "Factor de carga: camionetas",
+    "Sandbox_BVD_TrunkTruck_tooltip": "Multiplicador del almacenamiento de referencia de este tipo de carrocería. 1.0 mantiene el valor de referencia.",
+
+    "Sandbox_BVD_TrunkTrailer": "Factor de carga: remolques",
+    "Sandbox_BVD_TrunkTrailer_tooltip": "Multiplicador del almacenamiento de referencia de este tipo de carrocería. 1.0 mantiene el valor de referencia.",
+
+    "Sandbox_BVD_ThrottleStart": "Arrancar al acelerar",
+    "Sandbox_BVD_ThrottleStart_tooltip": "Si está desactivado, el motor debe arrancarse a propósito (tecla de arranque o icono del motor) en lugar de pulsar acelerar.",
+
+    "Sandbox_BVD_KeylessTow": "Remolcar sin llaves",
+    "Sandbox_BVD_KeylessTow_tooltip": "Si está desactivado, el remolque fácil necesita las llaves en el contacto o el freno de mano suelto.",
+
+    "Sandbox_BVD_ShoveFoliage": "Empuje de vegetación",
+    "Sandbox_BVD_ShoveFoliage_tooltip": "Cuánto frenan al coche los arbustos y las plantas pequeñas al contacto. 1.0 es el valor por defecto: los motores débiles se frenan, los fuertes se abren paso. 0 = los arbustos no hacen nada, más alto = más cerca del juego base, donde cualquier arbusto detiene a cualquier coche.",
+
+    "Sandbox_BVD_ShoveZombies": "Empuje de zombis",
+    "Sandbox_BVD_ShoveZombies_tooltip": "Fuerza transmitida a los zombis vivos golpeados por el vehículo.",
+
+    "Sandbox_BVD_ShoveCorpses": "Empuje de cadáveres",
+    "Sandbox_BVD_ShoveCorpses_tooltip": "Fuerza transmitida a los cuerpos y restos que hay en el suelo.",
+
+    "Sandbox_BVD_Drift": "Modo derrape",
+    "Sandbox_BVD_Drift_tooltip": "Mantén pulsada la tecla de derrape al tomar una curva a velocidad para soltar la trasera y conseguir un derrape de estilo arcade. Asigna la tecla en las opciones de mods.",
+
+    "Sandbox_BVD_DriftGrip": "Deslizamiento en derrape",
+    "Sandbox_BVD_DriftGrip_tooltip": "Agarre de los neumáticos que se conserva durante el derrape. Más bajo es más suelto y más difícil de mantener.",
+
+    "Sandbox_BVD_DriftMinSpeed": "Velocidad de activación del derrape (km/h)",
+    "Sandbox_BVD_DriftMinSpeed_tooltip": "Por debajo de esta velocidad se ignora la tecla de derrape, para que al aparcar no se deslice.",
+
+    "Sandbox_BVD_DriftSteer": "Ganancia de dirección en derrape",
+    "Sandbox_BVD_DriftSteer_tooltip": "Cuánto más rápido responden las ruedas delanteras mientras se mantiene el derrape.",
+
+    "Sandbox_BVD_DriftRotation": "Fuerza de rotación en derrape",
+    "Sandbox_BVD_DriftRotation_tooltip": "Intensidad de la rotación aplicada al coche mientras derrapas y giras. Súbela si se abre demasiado, bájala si hace un trompo.",
+
+    "Sandbox_BVD_TireGripModel": "Modelo de agarre de neumáticos",
+    "Sandbox_BVD_TireGripModel_tooltip": "Los distintos tipos de neumático (gastado / estándar / moderno) tienen un agarre distinto en carretera, lluvia, nieve y fuera de carretera, en lugar de un único valor fijo.",
+
+    "Sandbox_BVD_TireSlipWear": "Los neumáticos se desgastan al patinar",
+    "Sandbox_BVD_TireSlipWear_tooltip": "Cuando el motor fuerza las ruedas más rápido de lo que la superficie puede agarrar (por ejemplo, a fondo sobre hierba), los neumáticos pierden estado con el tiempo. Te permite avanzar a la fuerza por superficies de poco agarre, a costa de quedarte con los neumáticos lisos más adelante.",
+
+    "Sandbox_BVD_TireSlipWearRate": "Ritmo de desgaste por patinaje",
+    "Sandbox_BVD_TireSlipWearRate_tooltip": "Multiplicador de la rapidez con que se degradan los neumáticos mientras patinan. 1.0 es el valor por defecto (unos minutos de patinaje fuerte los degradan de forma notable). Ponlo en 0 para desactivar el desgaste sin desactivar el modelo.",
+
+    "Sandbox_BVD_LoadAffectsHandling": "La carga afecta al manejo",
+    "Sandbox_BVD_LoadAffectsHandling_tooltip": "Un vehículo muy cargado tarda en arrancar desde parado, como si el motor se esforzara contra el peso.",
+
+    "Sandbox_BVD_LoadAffectsFuel": "La carga afecta al consumo",
+    "Sandbox_BVD_LoadAffectsFuel_tooltip": "Llevar una carga pesada gasta combustible extra al conducir.",
+
+    "Sandbox_BVD_LoadMaxPenalty": "Penalización máxima de arranque a plena carga",
+    "Sandbox_BVD_LoadMaxPenalty_tooltip": "Mayor reducción de la fuerza de arranque para un vehículo a plena carga (0.50 = hasta un 50 por ciento menos de fuerza desde parado). Se desvanece a medida que el vehículo acelera. Requiere 'La carga afecta al manejo'.",
+
+    "Sandbox_BVD_StabilityGuard": "Protección contra hundimiento del vehículo",
+    "Sandbox_BVD_StabilityGuard_tooltip": "Red de seguridad para multijugador: si un vehículo se hunde muy por debajo del suelo del nivel en que está (la desincronización de 'tragado por el suelo'), se devuelve a ese suelo. Solo actúa en un estado que nunca se alcanza conduciendo con normalidad, así que no afecta a rampas, sótanos ni aparcamientos de varios niveles.",
+
+    "Sandbox_BVD_StabilityGuardSinkTiles": "Profundidad de activación de la protección (niveles)",
+    "Sandbox_BVD_StabilityGuardSinkTiles_tooltip": "Cuánto debe hundirse un vehículo por debajo del suelo de su propio nivel antes de que la protección lo recoloque, medido en niveles de suelo (0.75 = tres cuartos de un nivel). Más bajo reacciona antes; súbelo si un mapa personalizado la activa por error. Requiere 'Protección contra hundimiento del vehículo'.",
+
+    "Sandbox_BVD_SteeringFactorLowSpeed": "Respuesta de la dirección (baja velocidad)",
+    "Sandbox_BVD_SteeringFactorLowSpeed_tooltip": "Multiplicador de la rapidez con que giran las ruedas a baja velocidad.",
+
+    "Sandbox_BVD_SteeringFactorHighSpeed": "Respuesta de la dirección (alta velocidad)",
+    "Sandbox_BVD_SteeringFactorHighSpeed_tooltip": "Multiplicador de la rapidez con que giran las ruedas a alta velocidad.",
+
+    "Sandbox_BVD_SteeringCenteringLowSpeed": "Autocentrado de la dirección (baja velocidad)",
+    "Sandbox_BVD_SteeringCenteringLowSpeed_tooltip": "Multiplicador de la rapidez con que las ruedas vuelven al centro a baja velocidad.",
+
+    "Sandbox_BVD_SteeringCenteringHighSpeed": "Autocentrado de la dirección (alta velocidad)",
+    "Sandbox_BVD_SteeringCenteringHighSpeed_tooltip": "Multiplicador de la rapidez con que las ruedas vuelven al centro a alta velocidad.",
+
+    "Sandbox_BVD_SteeringSnapback": "Respuesta de la dirección en derrape",
+    "Sandbox_BVD_SteeringSnapback_tooltip": "Multiplicador de la rapidez con que giran las ruedas mientras se mantiene el derrape.",
+
+    "Sandbox_BVD_SteeringHighSpeed": "Umbral de alta velocidad (km/h)",
+    "Sandbox_BVD_SteeringHighSpeed_tooltip": "Velocidad (km/h) a partir de la cual la dirección usa los valores de respuesta y centrado de alta velocidad en lugar de los de baja velocidad."
+}

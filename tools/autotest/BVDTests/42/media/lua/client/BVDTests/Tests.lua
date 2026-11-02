@@ -47,7 +47,7 @@ local function driveBody(T)
     T.clearCars(p, 120)
     local v = spawnCar(p)
     if not T.check("car spawned", v ~= nil) then return end
-    T.check("BVD Java reports itself", BetterVehicleDynamicsMod.javaVersion == "3.4",
+    T.check("BVD Java reports itself", BetterVehicleDynamicsMod.javaVersion == "3.5",
         tostring(BetterVehicleDynamicsMod.javaVersion))
 
     -- the walk-to-door path sometimes gives up next to a fresh spawn; then seat
@@ -127,6 +127,28 @@ local function driveBody(T)
         local worn = T.waitFor(function() return rear:getCondition() < r0 end, 15)
         T.check("MP: server wore the rear tire part and sent it back", worn ~= nil and rear:getCondition() == r0 - 5 and front:getCondition() == f0,
             string.format("rear %d -> %d, front %d -> %d", r0, rear:getCondition(), f0, front:getCondition()))
+        -- v0.2: a stall goes through the game's own shut-off action, so the server has to accept it and tell everyone
+        local sv = SandboxVars.BetterVehicleDynamics
+        sv.ManualClutch = true
+        sv.ManualStall = true
+        getSandboxOptions():updateFromLua()
+        BVD.invalidateConfigCache()
+        local mod = BetterVehicleDynamicsMod
+        mod.manualShift = true
+        mod.forceGear = 3
+        BVD.testClutch = false
+        T.drive(false, false, 0)
+        local stalled = T.waitFor(function() return not v:isEngineRunning() or nil end, 12)
+        T.check("MP: a stall (third gear, no throttle) stops the engine through the server", stalled ~= nil)
+        BVD.testClutch = nil
+        mod.manualShift = false
+        sv.ManualClutch = false
+        sv.ManualStall = false
+        getSandboxOptions():updateFromLua()
+        BVD.invalidateConfigCache()
+        sendClientCommand(p, "vehicle", "startEngine", { haveKey = true })
+        T.check("MP: the engine starts again after the stall", T.waitFor(function() return v:isEngineRunning() end, 10) ~= nil)
+        T.wait(1)
         -- keep circling so client B can watch it move
         T.drive(true, true, 0.4)
         T.wait(20)

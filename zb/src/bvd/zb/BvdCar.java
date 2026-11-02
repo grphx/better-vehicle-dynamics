@@ -286,6 +286,7 @@ public final class BvdCar {
    // The driver's own throttle, read before the idle governor lifts vehicle.throttle to hold idle. The stall and
    // engine-braking checks use this one: the governor sits at about 0.175 at idle, which hid both.
    private float pedalThrottle = 0.0F;
+   private float driverThrottle = 0.0F;   // the same ramp as vehicle.throttle, but never lifted by the idle governor
    // Manual clutch (v0.2), only with a manual gearbox and the ManualClutch option. clutchEngage runs 0 (pedal down,
    // engine free) to 1 (fully engaged); the press is quick and the release slips for a moment, so a launch can be
    // feathered.
@@ -1070,6 +1071,14 @@ public final class BvdCar {
          }
       }
 
+      if (this.analogPedals) {
+         this.driverThrottle = this.pedalGas;
+      } else if (!this.isGas && !this.isGasR) {
+         this.driverThrottle -= dt * (slowDriver ? 6.0F : (fastDriver ? 2.0F : 4.0F));
+      } else {
+         this.driverThrottle += dt * (slowDriver ? 2.0F : (fastDriver ? 6.0F : 4.0F));
+      }
+      this.driverThrottle = PZMath.clamp(this.driverThrottle, 0.0F, 1.0F);
       this.overrev = PZMath.clamp(this.overrev, 0.0F, 1.0F);
       throttle = PZMath.clamp(throttle, 0.0F, 1.0F);
       this.cc.engineForce = 0.0F;
@@ -1797,7 +1806,7 @@ public final class BvdCar {
             this.cc.vehicleObject.setEngineSpeed(engineRpm);
          }
 
-         this.pedalThrottle = this.cc.vehicleObject.throttle;
+         this.pedalThrottle = this.cc.vehicleObject.isRegulator() ? this.cc.vehicleObject.throttle : this.driverThrottle;
          this.updateIdle(dt, enginePart);
          float signedSpeed = this.cc.vehicleObject.getCurrentSpeedKmHour() * BaseVehicle.getFakeSpeedModifier();
          float reverseCap = this.getSandboxOption("BetterVehicleDynamics.ReverseTopSpeed", 25.0F);

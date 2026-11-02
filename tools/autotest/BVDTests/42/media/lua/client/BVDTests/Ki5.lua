@@ -982,7 +982,7 @@ local function profilesBody(T)
     local off, okOff = run(false)
     local on, okOn = run(true)
     setOpt2("EngineProfiles", false)
-    if not T.check("both runs drove and shifted up at least twice", okOff and okOn and #off >= 2 and #on >= 2) then return end
+    if not T.check("both runs drove and shifted up at least twice", okOff and okOn and #off >= 2 and #on >= 2, string.format("drove off=%s on=%s, upshifts off=%d on=%d", tostring(okOff), tostring(okOn), #off, #on)) then return end
     local inRange = true
     for _, list in ipairs({ off, on }) do
         for _, e in ipairs(list) do if e.rpm < 4500 * 0.4 or e.rpm > 4500 * 1.05 then inRange = false end end

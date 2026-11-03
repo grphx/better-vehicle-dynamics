@@ -1373,4 +1373,66 @@ T.register("accel_extreme", function(T)
     if BVD.publishTireProfiles then BVD.publishTireProfiles() end
 end, where)
 
+-- A modded car whose own script ships a huge engine force (many do). Vehicle scripts are rewritten before the car is
+-- spawned, so its stored power is that value. Time to 50 and to 100 km/h, median of 3 runs, option off and on, at the
+-- shipped default ceiling and with the ceiling off.
+T.register("accel_hugeforce", function(T)
+    T.wait(4)
+    local p = getPlayer()
+    p:setGodMod(true); p:setGhostMode(true)
+    T.clearCars(p, 300)
+    local rx, ry = findLine("blends_street", ROAD.x, ROAD.y, nil, true, 90)
+    if not rx then rx, ry = findLine("blends_street", ROAD.x, ROAD.y, nil, true, 60) end
+    if not T.check("found a road", rx ~= nil) then return end
+    local sc = getScriptManager():getVehicle("Base.CarNormal")
+    local force0 = sc:getEngineForce()
+    local function median(t) table.sort(t) return t[math.ceil(#t / 2)] end
+    local race = { road = 3.0, wet = 3.0, snow = 3.0, offroad = 3.0 }
+    -- { label, script force, reference power option, ceiling, EnginePower, GripLevel, race tires }
+    local cases = {
+        { "stock force, default sliders",                              force0,  false, 4.0, 1.0, 1.0, false },
+        { "modded force 40000, Casual-like (power 1.4, grip 1.5), NO ceiling", 40000,  false, 0.0, 1.4, 1.5, false },
+        { "modded force 40000, Casual-like, ceiling 4",                40000,  false, 4.0, 1.4, 1.5, false },
+        { "modded force 120000, grip 2.0 + race tires, NO ceiling",    120000, false, 0.0, 1.0, 2.0, true },
+        { "modded force 120000, grip 2.0 + race tires, ceiling 4",     120000, false, 4.0, 1.0, 2.0, true },
+        { "modded force 120000, power 3, grip 2.0 + race tires, NO ceiling", 120000, false, 0.0, 3.0, 2.0, true },
+        { "modded force 120000, power 3, grip 2.0 + race tires, ceiling 4",  120000, false, 4.0, 3.0, 2.0, true },
+    }
+    for _, c in ipairs(cases) do
+        sc:Load("CarNormal", string.format("{ engineForce = %d, }", c[2]))
+        setOpt2("RealismHPWeight", c[3]); setOpt2("AccelCeiling", c[4]); setOpt2("EnginePower", c[5]); setOpt2("GripLevel", c[6])
+        T.wait(2)
+        if c[7] then BetterVehicleDynamicsMod.tireProfiles = { NormalTire = race, ModernTire = race, OldTire = race }
+        elseif BVD.publishTireProfiles then BVD.publishTireProfiles() end
+        local t50s, t100s, v3s, used, lim = {}, {}, {}, nil, nil
+        local attempts = 0
+        while #v3s < 3 and attempts < 7 do
+            attempts = attempts + 1
+            local t50, t100, v3
+            withCar(p, rx, ry, function(v)
+                BetterVehicleDynamicsMod.computed = nil
+                local t0 = getTimestampMs()
+                T.drive(true, true, 0)
+                while getTimestampMs() - t0 < 9000 do
+                    local el = (getTimestampMs() - t0) / 1000
+                    local sp = math.abs(v:getCurrentSpeedKmHour())
+                    if not t50 and sp >= 50 then t50 = el end
+                    if not t100 and sp >= 100 then t100 = el end
+                    if not v3 and el >= 3 then v3 = sp end
+                    local cc = BetterVehicleDynamicsMod.computed
+                    if cc then used = cc.powerUsed or used; lim = cc.driveLimit or lim end
+                    coroutine.yield()
+                end
+                T.drive(true, false, 0)
+            end)
+            if v3 and v3 > 5 then v3s[#v3s + 1] = v3; t50s[#t50s + 1] = t50 or 9.5; t100s[#t100s + 1] = t100 or 9.5 end
+        end
+        T.log(string.format("%-56s power %7s, limit %5.2f/kg   0-50 in %.1f s, 0-100 in %.1f s (9.5 = not in 9 s), %.0f km/h at 3 s",
+            c[1], tostring(used), lim or -1, #t50s > 0 and median(t50s) or -1, #t100s > 0 and median(t100s) or -1, #v3s > 0 and median(v3s) or -1))
+    end
+    sc:Load("CarNormal", string.format("{ engineForce = %d, }", force0))
+    setOpt2("RealismHPWeight", false); setOpt2("AccelCeiling", 4.0); setOpt2("EnginePower", 1.0); setOpt2("GripLevel", 1.0)
+    if BVD.publishTireProfiles then BVD.publishTireProfiles() end
+end, where)
+
 T.register("others_vanilla", makeBody(false, false, OTHER_CARS), where)   -- run with BVD out of the mod list: the harness baseline

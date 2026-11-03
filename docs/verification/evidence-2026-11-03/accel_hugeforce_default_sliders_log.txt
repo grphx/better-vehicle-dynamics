@@ -1,0 +1,17 @@
+===== sp accel_hugeforce =====
+[PZTEST] mode accel_hugeforce: launching test world
+[PZTEST] world started at 10586,11180
+[PZTEST] protect: invisible=true
+[PZTEST] cleared 58 parked vehicle(s)
+[PZTEST] PASS found a road
+[PZTEST] stock script force                                       power    4000, limit  2.09/kg   0-50 in 9.5 s, 0-100 in 9.5 s (9.5 = not in 9 s), 28 km/h at 3 s
+[PZTEST] modded script force 40000, option off                    power   40000, limit  2.50/kg   0-50 in 4.9 s, 0-100 in 9.5 s (9.5 = not in 9 s), 32 km/h at 3 s
+[PZTEST] modded script force 40000, option off, NO ceiling        power   40000, limit  2.09/kg   0-50 in 4.3 s, 0-100 in 9.5 s (9.5 = not in 9 s), 37 km/h at 3 s
+[PZTEST] modded script force 120000, option off                   power  120000, limit  2.09/kg   0-50 in 4.5 s, 0-100 in 9.5 s (9.5 = not in 9 s), 34 km/h at 3 s
+[PZTEST] modded script force 120000, option off, NO ceiling       power  120000, limit  2.09/kg   0-50 in 4.1 s, 0-100 in 9.5 s (9.5 = not in 9 s), 34 km/h at 3 s
+[PZTEST] modded script force 120000, option ON                    power  120000, limit  2.09/kg   0-50 in 4.7 s, 0-100 in 9.5 s (9.5 = not in 9 s), 33 km/h at 3 s
+[PZTEST] DONE pass=1 fail=0
+status: done
+console errors mentioning Better Vehicle Dynamics: 0
+Lua error lines: 0
+RESULT: PASS

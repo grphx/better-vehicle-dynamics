@@ -10,11 +10,12 @@ shows "Engine force" and "Launch limit". Tell me those two numbers, the car, and
 and I can look at exactly what it is doing.
 
 ## Info panel missing with CleanUI
-Thanks, I tried this with CleanUI and NeatUI Framework: the panel shows beside the mechanics window at 1920x1080 and
-above, and it only went missing when the game window was small (about 1280 px wide or less) or a big UI font made the
-mechanics window fill the screen. 0.2.2 now moves the panel below/above the window, or pins it to the screen edge,
-instead of hiding it. If you still do not see it, please tell me: your game resolution (windowed or fullscreen), the
-UI font size in the game options, which UI mods you run, and your CleanUI version.
+Thanks for reporting this. There turned out to be a real bug, fixed in 0.2.3: "Clean UI 2.0 - Rax's Reborn" opens its
+own Vehicle Mechanics window, and BVD's panel only attached to the vanilla one, so it never showed there. It does now
+(I checked it in game, same window before and after). Rocco's CleanUI itself worked for me, and in a small game window
+(about 1280 px wide or less, or a 1366x768 screen with the biggest UI font) the panel used to hide itself, which 0.2.2
+fixed. Which Clean UI do you use (the Workshop name or ID), and what is your game resolution? If it still does not show
+after updating to 0.2.3, tell me those two things and your other UI mods and I will look at it.
 
 ## Tire marks starting behind the car
 Fixed in 0.2.2, thank you. Each wheel kept its last mark and, when you braked, reversed or drifted again, drew a

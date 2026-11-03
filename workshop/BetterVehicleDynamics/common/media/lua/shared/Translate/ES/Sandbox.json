@@ -58,7 +58,7 @@
     "Sandbox_BVD_EngineBraking": "Freno motor",
     "Sandbox_BVD_EngineBraking_tooltip": "Cuánto frena el motor al coche cuando sueltas el acelerador con una marcha puesta, y cómo siguen las revoluciones a la velocidad de la carretera (reducir de marcha las sube). 0 lo desactiva y devuelve el comportamiento antiguo, 1 es un motor de carretera normal, más alto es un diésel pesado o un motor de competición. Las marchas más cortas frenan más, como en un coche real.",
     "Sandbox_BVD_AccelCeiling": "Techo de aceleración",
-    "Sandbox_BVD_AccelCeiling_tooltip": "Lo más fuerte que puede acelerar cualquier coche, sea cual sea su motor, sus neumáticos, el ajuste de agarre u otros mods. Se mide como fuerza de tracción por kg del vehículo, así que vale igual para todos los coches. 4 (el valor por defecto) es el arranque de un deportivo, de 0 a 100 km/h en unos 5 segundos; los coches con los deslizadores por defecto nunca lo alcanzan. 0 desactiva el techo.",
+    "Sandbox_BVD_AccelCeiling_tooltip": "Lo más fuerte que puede acelerar cualquier coche, sea cual sea su motor, sus neumáticos, el ajuste de agarre u otros mods. Se mide como fuerza de tracción por kg del vehículo, así que vale igual para todos los coches. El valor por defecto, 4, es algo menos del doble de lo que un coche con los deslizadores por defecto puede transmitir al suelo; el preset Casual y el agarre máximo lo superarían con creces. 0 desactiva el techo.",
     "Sandbox_BVD_EngineBrakeLockup": "Bloqueo de ruedas con una marcha demasiado corta",
     "Sandbox_BVD_EngineBrakeLockup_tooltip": "Reducir a una marcha demasiado corta para tu velocidad bloquea un instante las ruedas motrices y puede hacer deslizar el coche. Desactivado por defecto.",
 

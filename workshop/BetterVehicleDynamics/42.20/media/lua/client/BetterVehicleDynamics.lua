@@ -120,7 +120,7 @@ function BetterVehicleDynamicsVersionCheck()
 		modal:initialise()
 		modal:addToUIManager()
 		UIManager.getSpeedControls():SetCurrentGameSpeed(0);
-	elseif BetterVehicleDynamicsMod.javaVersion ~= "3.6" and not VersionCheckConfirmed then
+	elseif BetterVehicleDynamicsMod.javaVersion ~= "3.7" and not VersionCheckConfirmed then
 		VersionCheckConfirmed = true;
 		local width = 400;
 		local modal = ISModalDialog:new((getCore():getScreenWidth() - width) / 2,getCore():getScreenHeight() / 4, width, 150, getText("IGUI_BVD_Outdated"),false, nil, onConfirm, 0)

@@ -74,7 +74,7 @@ public final class BvdCar {
 
       KahluaTableImpl bridge = this.bvdBridge();
       if (bridge != null) {
-         bridge.rawset("javaVersion", "3.6");
+         bridge.rawset("javaVersion", "3.7");
          // One-shot policy-contract handshake: tells the Lua side which
          // bridge fields this build reads. Written here because this is
          // where BVD first resolves its bridge each world load; harmless

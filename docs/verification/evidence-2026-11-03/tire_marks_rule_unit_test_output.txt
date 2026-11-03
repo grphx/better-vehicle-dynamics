@@ -1,0 +1,6 @@
+PASS no previous drop starts a fresh streak
+PASS a drop 50 ms ago continues the streak
+PASS a drop 300 ms ago still continues (a frame hitch)
+PASS a drop 400 ms ago is an earlier skid
+PASS a drop from 5 s ago (the reported bug) is an earlier skid
+PASS a drop on another level starts fresh

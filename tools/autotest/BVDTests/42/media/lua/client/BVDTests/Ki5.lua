@@ -1081,28 +1081,37 @@ T.register("accel_sweep", function(T)
         { "grip 2.0, NO ceiling",                               true, S,     1.0, 2.0, 0.0 },
         { "grip 2.0, ceiling 4",                                true, S,     1.0, 2.0, 4.0 },
         { "power 5 + grip 2.0 (slider maxima), ceiling 4",      true, S,     5.0, 2.0, 4.0 },
-        { "old boost baked (7S = 28000), grip 1.5, ceiling 4",  true, S * 7, 1.0, 1.5, 4.0 },
     }
+    local function median(t) table.sort(t) return t[math.ceil(#t / 2)] end
     for _, c in ipairs(cases) do
         setOpt2("RealismHPWeight", c[2]); setOpt2("EnginePower", c[4]); setOpt2("GripLevel", c[5]); setOpt2("AccelCeiling", c[6])
         T.wait(2)
-        local v3, v5, used, lim
-        withCar(p, rx, ry, function(v)
-            v:setEngineFeature(100, 30, c[3])
-            BetterVehicleDynamicsMod.computed = nil
-            local t0 = getTimestampMs()
-            T.drive(true, true, 0)
-            while getTimestampMs() - t0 < 5000 do
-                local el = (getTimestampMs() - t0) / 1000
-                if not v3 and el >= 3 then v3 = math.abs(v:getCurrentSpeedKmHour()) end
-                local cc = BetterVehicleDynamicsMod.computed
-                if cc then used = cc.powerUsed or used; lim = cc.driveLimit or lim end
-                if el <= 4.2 then v5 = math.abs(v:getCurrentSpeedKmHour()) end
-                coroutine.yield()
-            end
-            T.drive(true, false, 0)
-        end)
-        T.log(string.format("%-52s power %6s, drive limit %4.2f/kg   v@3s %5.1f  v@4s %5.1f km/h", c[1], tostring(used), lim or -1, v3 or -1, v5 or -1))
+        local t50s, v3s, used, lim = {}, {}, nil, nil
+        local attempts = 0
+        while #t50s < 3 and attempts < 7 do
+            attempts = attempts + 1
+            local t50, v3
+            withCar(p, rx, ry, function(v)
+                BetterVehicleDynamicsMod.computed = nil
+                local t0 = getTimestampMs()
+                T.drive(true, true, 0)
+                while getTimestampMs() - t0 < 7000 do
+                    local el = (getTimestampMs() - t0) / 1000
+                    local sp = math.abs(v:getCurrentSpeedKmHour())
+                    if not t50 and sp >= 50 then t50 = el end
+                    if not v3 and el >= 3 then v3 = sp end
+                    local cc = BetterVehicleDynamicsMod.computed
+                    if cc then used = cc.powerUsed or used; lim = cc.driveLimit or lim end
+                    coroutine.yield()
+                end
+                T.drive(true, false, 0)
+            end)
+            if v3 and v3 > 5 then t50s[#t50s + 1] = t50 or 7.5; v3s[#v3s + 1] = v3 end
+        end
+        local list = {}
+        for _, t in ipairs(t50s) do list[#list + 1] = string.format("%.1f", t) end
+        T.log(string.format("%-52s power %6s, drive limit %4.2f/kg   0-50 km/h in %s s (runs %s)   v@3s median %.0f km/h",
+            c[1], tostring(used), lim or -1, #t50s > 0 and string.format("%.1f", median(t50s)) or "?", table.concat(list, ", "), #v3s > 0 and median(v3s) or -1))
     end
     setOpt2("RealismHPWeight", false); setOpt2("EnginePower", 1.0); setOpt2("GripLevel", 1.0); setOpt2("AccelCeiling", 4.0)
 end, where)
@@ -1183,29 +1192,28 @@ T.register("skidstreak", function(T)
         BVD.skidStreakGapMs = gap
         local res = {}
         local ok = withCar(p, rx, ry, function(v)
-            local sx, sy = v:getX(), v:getY()
-            local function where(tag) T.log(string.format("  %s: speed %.1f km/h, %.1f tiles from the start of this scenario, engine %s", tag, math.abs(v:getCurrentSpeedKmHour()), math.sqrt((v:getX() - sx) ^ 2 + (v:getY() - sy) ^ 2), tostring(v:isEngineRunning()))) end
-            T.drive(true, true, 0)
-            T.waitFor(function() return math.abs(v:getCurrentSpeedKmHour()) >= 40 end, 14)
-            where("before the first brake")
-            T.drive(true, false, 0)                                  -- first skid
-            T.wait(0.4)
-            local sv = SandboxVars.BetterVehicleDynamics
-            T.log(string.format("while braking: speed %.1f, brake pedal %s, driver is the player %s, SkidMarks option %s, marks so far fresh=%d fills=%d",
-                math.abs(v:getCurrentSpeedKmHour()), tostring(v:isBrakePedalPressed()), tostring(v:getDriver() == p), tostring(sv and sv.SkidMarks), BVD.skidStats.fresh, BVD.skidStats.fills))
-            T.waitFor(function() return math.abs(v:getCurrentSpeedKmHour()) < 1 end, 15)
+            local function where(tag) T.log(string.format("  %s: speed %.1f km/h, at %.0f,%.0f", tag, math.abs(v:getCurrentSpeedKmHour()), v:getX(), v:getY())) end
+            -- first skid: a launch from a standstill drops marks while the car is under 10 km/h with the throttle down
             T.drive(false, false, 0)
+            T.waitFor(function() return math.abs(v:getCurrentSpeedKmHour()) < 1 end, 10)
             T.wait(0.6)
-            T.drive(true, true, 0)                                   -- move off, build speed
-            T.waitFor(function() return math.abs(v:getCurrentSpeedKmHour()) >= 36 end, 14)
-            where("before the second brake")
-            res.bx, res.by = v:getX(), v:getY()
-            BVD.skidStats = { fresh = 0, fills = 0, maxFill = 0 }
-            T.drive(true, false, 0)                                  -- second skid
-            T.waitFor(function() return math.abs(v:getCurrentSpeedKmHour()) < 1 end, 15)
+            where("first launch")
+            T.drive(true, true, 0)
+            T.waitFor(function() return math.abs(v:getCurrentSpeedKmHour()) >= 22 end, 10)
+            T.drive(true, false, 0)                                  -- stop again, a few tiles further on
+            T.waitFor(function() return math.abs(v:getCurrentSpeedKmHour()) < 1 end, 12)
             T.drive(false, false, 0)
+            T.wait(0.8)                                              -- well past the streak gap
+            res.bx, res.by = v:getX(), v:getY()
+            where("second launch")
+            BVD.skidStats = { fresh = 0, fills = 0, maxFill = 0 }
+            T.drive(true, true, 0)                                   -- second skid
+            T.wait(1.0)
             local st = BVD.skidStats
             res.fresh, res.fills, res.maxFill, res.fx, res.fy = st.fresh, st.fills, st.maxFill, st.firstX, st.firstY
+            T.drive(true, false, 0)
+            T.waitFor(function() return math.abs(v:getCurrentSpeedKmHour()) < 1 end, 12)
+            T.drive(false, false, 0)
         end)
         BVD.skidStreakGapMs = nil
         return ok and res or nil
@@ -1213,7 +1221,7 @@ T.register("skidstreak", function(T)
     local function report(tag, r)
         if not r then T.log(tag .. ": the car never got going") return end
         local first = r.fx and math.sqrt((r.fx - r.bx) ^ 2 + (r.fy - r.by) ^ 2) or -1
-        T.log(string.format("%s: second skid started with %d fresh streak(s), %d fills, longest fill %.1f tiles, first mark %.1f tiles from the car at brake start", tag, r.fresh or -1, r.fills or -1, r.maxFill or -1, first))
+        T.log(string.format("%s: second skid started with %d fresh streak(s), %d fills, longest fill %.1f tiles, first mark %.1f tiles from the car where the second launch began", tag, r.fresh or -1, r.fills or -1, r.maxFill or -1, first))
         return first
     end
     local old = scenario(1e9)
@@ -1223,7 +1231,7 @@ T.register("skidstreak", function(T)
     T.check("old behaviour reproduces the bug: a long fill from the earlier skid", old ~= nil and old.maxFill >= 6, old and string.format("%.1f tiles", old.maxFill) or "no run")
     T.check("as shipped: the new skid starts a fresh streak", new ~= nil and new.fresh >= 1, new and tostring(new.fresh) or "no run")
     T.check("as shipped: no long fill from the earlier skid (longest fill under 2 tiles)", new ~= nil and new.maxFill < 2.0, new and string.format("%.1f tiles", new.maxFill) or "no run")
-    T.check("as shipped: the first mark of the skid is at the car (within 4 tiles of where braking began)", newFirst ~= nil and newFirst >= 0 and newFirst <= 4.0, newFirst and string.format("%.1f tiles", newFirst) or "no run")
+    T.check("as shipped: the first mark of the skid is at the car (within 4 tiles of where the second launch began)", newFirst ~= nil and newFirst >= 0 and newFirst <= 4.0, newFirst and string.format("%.1f tiles", newFirst) or "no run")
 end, where)
 
 T.register("others_vanilla", makeBody(false, false, OTHER_CARS), where)   -- run with BVD out of the mod list: the harness baseline

@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.2.2] - 2026-11-03 - Acceleration ceiling, tire marks, panel docking, new shifter
+
+Reported on the Workshop page: modded cars feel extremely fast after the update; tire marks are drawn from where the
+car was to where it is; the info panel in the mechanics window does not show with CleanUI.
+
+- **Modded cars no longer double-boost.** A car's power is stored per car when it spawns and saved with the world.
+  Cars that spawned while 0.1.19 - 0.2.0 wrote the reference-power boost into the vehicle scripts already carry
+  it, and 0.2.1 boosted them a second time (up to 28000). A car whose stored power is already above its script's
+  own is now left as it is.
+- **New: acceleration ceiling** (Drivetrain page, default 4, 0 = off). The hardest any car can accelerate, as drive
+  force per kg of the car, so it holds the same for every car, vanilla or modded, whatever its engine or tires. It
+  is there because the grip slider is applied twice in the launch force (a setting of 1.5 acts like 2.25, and the
+  Casual preset uses 1.5), which let launches run far past anything a default car can do. In my tests the drive
+  limit read 4.71 per kg for the Casual-like settings and 10.0 at the highest grip setting; with the ceiling both
+  read 4.00. Cars on the default sliders (about 2) are not affected.
+- **Tire marks start at the car.** Each wheel remembered its last mark and, when you next braked, drifted or
+  launched, drew a line from that old spot to the car, so a new skid began well behind it (17.5 tiles in my
+  reproduction). A mark now only joins the streak if the previous one was placed under 0.3 s ago.
+- **The info panel can no longer vanish.** Next to the mechanics window it used to hide itself when there was no room
+  on either side. It now tries right, left, below and above, and as a last resort sits at the screen edge over the
+  window. I could not reproduce the CleanUI case (CleanUI [B42] with NeatUI Framework on 42.21 shows the panel
+  normally), so if it still does not show for you, tell me your screen size, UI scale and the other UI mods.
+- **New shifter look.** The on-screen shifter is a thin H gate with a leather-wrapped knob that slides between the
+  slots; an amber halo with the clutch in and a pulsing red one when stalled. The knob texture was generated with
+  fal.ai (FLUX.1 schnell).
+- Java version 3.7: manual-install users copy the `zombie` folder again.
+
 ## [0.2.1] - 2026-11-03 - The vehicle window shows the script's own power
 
 Reported twice on the Workshop page: with "Reference power & weight" on, the vehicle window shows engine power

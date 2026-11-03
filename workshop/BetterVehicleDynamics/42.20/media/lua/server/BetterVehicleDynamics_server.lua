@@ -8,7 +8,7 @@ function BetterVehicleDynamicsVersionCheckServer()
 	VersionCheckConfirmed = true
 	if BetterVehicleDynamicsMod.javaVersion == "not installed" then
 		print("Better Vehicle Dynamics: no Java side on this server - that is expected, only players need it.")
-	elseif BetterVehicleDynamicsMod.javaVersion ~= "3.6" then
+	elseif BetterVehicleDynamicsMod.javaVersion ~= "3.7" then
 		print("Better Vehicle Dynamics: this server has an old Java side (" .. tostring(BetterVehicleDynamicsMod.javaVersion) .. "). The server does not need it; it is safe to remove.")
 	end
 end

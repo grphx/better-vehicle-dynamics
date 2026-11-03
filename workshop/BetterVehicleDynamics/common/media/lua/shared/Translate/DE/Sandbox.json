@@ -58,7 +58,7 @@
     "Sandbox_BVD_EngineBraking": "Motorbremse",
     "Sandbox_BVD_EngineBraking_tooltip": "Wie stark der Motor das Auto abbremst, wenn du im Gang vom Gas gehst, und wie die Drehzahl der Fahrgeschwindigkeit folgt (Herunterschalten erhöht sie). 0 schaltet sie aus und gibt das alte Verhalten, 1 ist ein normaler Straßenmotor, höher entspricht einem schweren Diesel oder einem Rennmotor. Niedrigere Gänge bremsen stärker, wie in einem echten Auto.",
     "Sandbox_BVD_AccelCeiling": "Beschleunigungsgrenze",
-    "Sandbox_BVD_AccelCeiling_tooltip": "Die stärkste Beschleunigung, die ein Auto erreichen kann, egal welcher Motor, welche Reifen, welche Grip-Einstellung oder welche anderen Mods. Gemessen als Antriebskraft pro kg Fahrzeug, daher gilt sie für jedes Auto gleich. 4 (Standard) entspricht dem Start eines Sportwagens, 0 auf 100 km/h in etwa 5 Sekunden; Autos mit den Standardreglern erreichen sie nie. 0 schaltet die Grenze ab.",
+    "Sandbox_BVD_AccelCeiling_tooltip": "Die stärkste Beschleunigung, die ein Auto erreichen kann, egal welcher Motor, welche Reifen, welche Grip-Einstellung oder welche anderen Mods. Gemessen als Antriebskraft pro kg Fahrzeug, daher gilt sie für jedes Auto gleich. Der Standardwert 4 liegt etwas unter dem Doppelten dessen, was ein Auto mit den Standardreglern auf die Straße bringt; das Casual-Preset und der höchste Grip würden ihn sonst weit überschreiten. 0 schaltet die Grenze ab.",
     "Sandbox_BVD_EngineBrakeLockup": "Blockierende Räder bei zu niedrigem Gang",
     "Sandbox_BVD_EngineBrakeLockup_tooltip": "Wer in einen für die Geschwindigkeit viel zu niedrigen Gang herunterschaltet, blockiert kurz die Antriebsräder und kann ins Rutschen geraten. Standardmäßig aus.",
 

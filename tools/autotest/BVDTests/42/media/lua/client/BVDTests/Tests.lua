@@ -47,7 +47,7 @@ local function driveBody(T)
     T.clearCars(p, 120)
     local v = spawnCar(p)
     if not T.check("car spawned", v ~= nil) then return end
-    T.check("BVD Java reports itself", BetterVehicleDynamicsMod.javaVersion == "3.6",
+    T.check("BVD Java reports itself", BetterVehicleDynamicsMod.javaVersion == "3.7",
         tostring(BetterVehicleDynamicsMod.javaVersion))
 
     -- the walk-to-door path sometimes gives up next to a fresh spawn; then seat

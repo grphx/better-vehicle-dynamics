@@ -1,0 +1,7 @@
+PASS 1600x900, 800 px window: docks on the right  -- side x=1208 y=150
+PASS 1280x720, window too far right: docks on the left  -- side x=12 y=150
+PASS a wide window with no room at the sides: stacked below it  -- stacked x=100 y=538
+PASS no room at the sides or below: stacked above it  -- stacked x=100 y=152
+PASS no free spot at all: pinned to the screen edge instead of hiding  -- overlap x=1000 y=60
+PASS 1920x1080: docks on the right  -- side x=1368 y=240
+PASS over thousands of screen/window layouts the panel is always fully on screen  -- 0 off-screen

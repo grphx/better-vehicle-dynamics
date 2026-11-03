@@ -58,7 +58,7 @@
     "Sandbox_BVD_EngineBraking": "Engine braking",
     "Sandbox_BVD_EngineBraking_tooltip": "How hard the engine slows the car when you lift off the throttle in gear, and how the revs follow the road speed (a downshift raises them). 0 turns it off and gives the old behaviour, 1 is a normal road engine, higher is a heavy diesel or a race engine. Lower gears brake harder, as in a real car.",
     "Sandbox_BVD_AccelCeiling": "Acceleration ceiling",
-    "Sandbox_BVD_AccelCeiling_tooltip": "The hardest any car can accelerate, whatever its engine, its tires, the grip setting or other mods. It is measured as drive force per kg of vehicle, so it holds the same for every car. 4 (the default) is about a sports car's launch, 0 to 100 km/h in roughly 5 seconds; cars on the default sliders never reach it. 0 turns the ceiling off.",
+    "Sandbox_BVD_AccelCeiling_tooltip": "The hardest any car can accelerate, whatever its engine, its tires, the grip setting or other mods. It is measured as drive force per kg of vehicle, so it holds the same for every car. The default of 4 is a little under twice what a car on the default sliders can put down; the Casual preset and the highest grip setting would otherwise go well past it. 0 turns the ceiling off.",
     "Sandbox_BVD_EngineBrakeLockup": "Wheel lock-up on a too-low gear",
     "Sandbox_BVD_EngineBrakeLockup_tooltip": "Dropping into a gear far too low for your speed locks the driven wheels for a moment and can slide the car. Off by default.",
 

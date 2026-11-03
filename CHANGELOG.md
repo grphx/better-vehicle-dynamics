@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.3] - 2026-11-04 - The info panel on "Clean UI 2.0 (Rax's Reborn)"
+
+Reported: with a Clean UI mod installed, BVD's panel beside the mechanics window (grips, load penalty...) does not show.
+
+- **The info panel now appears on windows that other mods derive from the vanilla mechanics window.** "Clean UI 2.0 -
+  Rax's Reborn" opens its own mechanics window class (`NR_VehicleMechanicsPanel`) that overrides update, prerender,
+  close and setVisible. BVD attached its panel by wrapping those methods on the vanilla class only, so that window never
+  got one. BVD now also wraps every such derived window class it finds once the game has started. Checked in game: the
+  same Rax window had no panel before and shows it, with all rows, beside the window after.
+- The panel logs one line to the console when it attaches to such a class, or if it ever cannot place itself.
+- Lua only: no Java change, nothing to recopy for manual installs.
+
 ## [0.2.2] - 2026-11-03 - Acceleration ceiling, tire marks, panel docking, new shifter
 
 Reported on the Workshop page: modded cars feel extremely fast after the update; tire marks are drawn from where the

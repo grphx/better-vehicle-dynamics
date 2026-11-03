@@ -1,0 +1,31 @@
+===== sp mechanics_cleanui =====
+[PZTEST] mode mechanics_cleanui: launching test world
+[PZTEST] world started at 10586,11180
+[PZTEST] protect: invisible=true
+[PZTEST] CleanUI loaded: true, Rax Clean UI 2.0 loaded: false
+[PZTEST] cleared 66 parked vehicle(s)
+[PZTEST] PASS found a road
+[PZTEST] PASS spawned a car
+[PZTEST] PASS entered the car
+[PZTEST] PASS the mechanics window opens
+[PZTEST] mechanics window class: ISVehicleMechanics, prerender is the one BVD wrapped: true
+[PZTEST] PASS BVD created its info panel for the window
+[PZTEST] PASS the info panel is visible
+[PZTEST] PASS the info panel has rows (grips, load, Java part)  -- 11
+[PZTEST]   row: Tuning profile = Custom
+[PZTEST]   row: Java part = ZombieBuddy
+[PZTEST]   row: Tire type = OldTire
+[PZTEST]   row: Road grip = 0.99
+[PZTEST]   row: Wet grip = 0.99
+[PZTEST]   row: Snow grip = 0.99
+[PZTEST]   row: Off-road grip = 0.99
+[PZTEST]   row: Engine force = 4000
+[PZTEST]   row: Launch limit = 2.0 per kg
+[PZTEST]   row: Cargo load = 5.1
+[PZTEST]   row: Load penalty = -42% launch
+[PZTEST] PASS the panel sits beside the window, not over it  -- window x 400..1200, panel x 1208..1488
+[PZTEST] DONE pass=8 fail=0
+status: done
+console errors mentioning Better Vehicle Dynamics: 0
+Lua error lines: 0
+RESULT: PASS

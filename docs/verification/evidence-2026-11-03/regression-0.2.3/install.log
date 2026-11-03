@@ -1,0 +1,13 @@
+===== sp install =====
+[PZTEST] mode install: launching test world
+[PZTEST] world started at 10586,11180
+[PZTEST] protect: invisible=true
+[PZTEST] cleared 51 parked vehicle(s)
+[PZTEST] PASS found a road
+[PZTEST] PASS the info panel has a Java part row
+[PZTEST] PASS it says ZombieBuddy when the ZombieBuddy layer is active  -- ZombieBuddy
+[PZTEST] DONE pass=3 fail=0
+status: done
+console errors mentioning Better Vehicle Dynamics: 0
+Lua error lines: 0
+RESULT: PASS

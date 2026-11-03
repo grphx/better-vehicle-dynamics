@@ -1,0 +1,34 @@
+\\wsl.localhost\Ubuntu\home\grphx\zomboid\better-vehicle-dynamics\zb\src\bvd\zb\Splat.java:47: warning: Unsafe is internal proprietary API and may be removed in a future release
+         sun.misc.Unsafe unsafe = (sun.misc.Unsafe)uf.get(null);
+                 ^
+\\wsl.localhost\Ubuntu\home\grphx\zomboid\better-vehicle-dynamics\zb\src\bvd\zb\Splat.java:47: warning: Unsafe is internal proprietary API and may be removed in a future release
+         sun.misc.Unsafe unsafe = (sun.misc.Unsafe)uf.get(null);
+                                           ^
+Note: \\wsl.localhost\Ubuntu\home\grphx\zomboid\better-vehicle-dynamics\zb\src\bvd\zb\Splat.java uses or overrides a deprecated API that is marked for removal.
+Note: Recompile with -Xlint:removal for details.
+2 warnings
+===== sp sp =====
+[PZTEST] mode sp: launching test world
+[PZTEST] world started at 10586,11180
+[PZTEST] protect: invisible=true
+[PZTEST] BVD loaded from C:\Users\Grphx\PZTest\mods\BetterVehicleDynamics
+[PZTEST] PASS ZombieBuddy layer active  -- BVD_zombieBuddyActive = function 0x311246990
+[PZTEST] PASS tyre-mark texture helper exposed
+[PZTEST] cleared 68 parked vehicle(s)
+[PZTEST] PASS car spawned
+[PZTEST] PASS BVD Java reports itself  -- 3.7
+[PZTEST] PASS entered driver seat
+[PZTEST] PASS engine starts
+[PZTEST] PASS car accelerates  -- top 45.0 km/h, moved 36.2 tiles
+[PZTEST] PASS BVD drivetrain drives the car  -- gripRoad 0.9900000095367432 tire OldTire laden 1.399999976158142
+[PZTEST] PASS vanilla getters see BVD pedal state
+[PZTEST] PASS steering turns the car  -- travel direction changed 92.1 deg (moved 3.09 / 3.40 tiles per window)
+[PZTEST] PASS car brakes to a stop  -- speed 1.0
+[PZTEST] PASS car did not sink  -- z 0.00 -> 0.00
+[PZTEST] drive done at 10574,11288
+[PZTEST] DONE pass=12 fail=0
+status: done
+console errors mentioning Better Vehicle Dynamics: 0
+Lua error lines: 0
+forbidden-pattern hits: 0
+RESULT: PASS

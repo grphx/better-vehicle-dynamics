@@ -68,6 +68,8 @@ A public Lua API lets other mods register vehicle reference data, tyre-grip prof
 [h1]Compatibility[/h1]
 Works alongside vehicle-skin and content mods. Run only one vehicle-physics overhaul at a time. Build 42.21+.
 
+The mechanics-window info panel also works with CleanUI and Clean UI 2.0 (Rax's Reborn).
+
 [b]Maskarad's Summer Car:[/b] works from v0.1.17 (earlier versions crashed with it). Its engine adds about 150 kg, which BVD's load penalty counts as cargo, so those cars launch a little slower.
 
 Other manual-install Java mods clash only if they ship the same class files. BVD ships only [code]CarController[/code], [code]WorldSimulation[/code], [code]Texture[/code] and [code]IsoFloorBloodSplat[/code]; if another Java mod ships one of those, only one copy can be active. With ZombieBuddy (option A), BVD replaces no game files at all, so this clash goes away.

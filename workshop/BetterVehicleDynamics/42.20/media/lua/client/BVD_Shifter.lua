@@ -14,16 +14,15 @@ BVD = BVD or {}
 
 BetterVehicleDynamicsMod = BetterVehicleDynamicsMod or {}
 
-local W, H = 210, 180
+local W, H = 210, 160
 local STALL_FLASH_MS = 1200
 
--- textures: a brushed-steel plate, a leather-wrapped knob and a soft halo; if any fails to load the panel falls back
--- to flat shapes
+-- textures: a leather-wrapped knob and a soft halo (clutch amber, stall red); if either fails to load the panel falls
+-- back to flat shapes
 local tex = nil
 local function textures()
     if tex == nil then
         tex = {
-            plate = getTexture("media/textures/BVD_shifter_plate.png"),
             knob = getTexture("media/textures/BVD_shifter_knob.png"),
             glow = getTexture("media/textures/BVD_shifter_glow.png"),
         }
@@ -83,10 +82,10 @@ end
 
 -- Gate geometry: forward gears go in pairs per column (odd on top, even below), reverse sits top right after the
 -- last column, neutral is the channel between the rows.
-local TOP_Y, MID_Y, BOT_Y = 48, 90, 132
+local TOP_Y, MID_Y, BOT_Y = 40, 74, 108
 local function slot(self, gear, count)
     local columns = math.ceil(count / 2) + 1   -- the last column carries reverse
-    local left, right = 40, W - 40
+    local left, right = 46, W - 46
     local step = (right - left) / math.max(1, columns - 1)
     local function colX(c) return left + (c - 1) * step end
     if gear == -1 then return colX(columns), TOP_Y end
@@ -95,11 +94,10 @@ local function slot(self, gear, count)
     return colX(c), (gear % 2 == 1) and TOP_Y or BOT_Y
 end
 
--- a recessed groove: dark inside, a thin lit edge on the lower right
-local function groove(self, x, y, w, h)
-    self:drawRect(x, y, w, h, 0.95, 0.015, 0.015, 0.02)
-    self:drawRect(x + w, y + 1, 1, h, 0.5, 0.55, 0.55, 0.6)
-    self:drawRect(x + 1, y + h, w, 1, 0.5, 0.55, 0.55, 0.6)
+-- text with a one-pixel shadow so it reads on any road
+local function label(self, str, x, y, a, r, g, b)
+    self:drawTextCentre(str, x + 1, y + 1, 0, 0, 0, a * 0.8, UIFont.Small)
+    self:drawTextCentre(str, x, y, r, g, b, a, UIFont.Small)
 end
 
 function BVDShifterPanel:render()
@@ -111,63 +109,55 @@ function BVDShifterPanel:render()
     local flashing = now < self.stallUntil
     local t = textures()
 
-    -- plate
-    if t.plate then
-        self:drawTextureScaled(t.plate, 0, 0, W, H, 1, 1, 1, 1)
-        self:drawRect(0, 0, W, H, 0.35, 0, 0, 0)
-    else
-        self:drawRect(0, 0, W, H, 0.55, 0.05, 0.05, 0.06)
-    end
-    self:drawRectBorder(0, 0, W, H, 0.9, 0.5, 0.52, 0.55)
-    self:drawRectBorder(1, 1, W - 2, H - 2, 0.6, 0.1, 0.1, 0.12)
+    -- a faint backing, so the thin lines read on a light road
+    self:drawRect(0, 0, W, H, 0.17, 0, 0, 0)
 
-    -- gate: a groove per column and the horizontal channel
+    -- gate: one thin line per column and the crossbar
     local columns = math.ceil(count / 2) + 1
     local x1 = slot(self, 1, count)
     local xl = select(1, slot(self, -1, count))
-    groove(self, x1 - 5, MID_Y - 5, xl - x1 + 10, 10)
+    self:drawRect(x1, MID_Y - 1, xl - x1 + 1, 2, 0.6, 1, 1, 1)
     for c = 1, columns do
         local x = select(1, slot(self, c * 2 - 1, count))
         if c == columns then x = xl end
-        groove(self, x - 5, TOP_Y - 5, 10, BOT_Y - TOP_Y + 10)
+        self:drawRect(x - 1, TOP_Y, 2, BOT_Y - TOP_Y, 0.6, 1, 1, 1)
     end
 
-    -- engraved labels
+    -- small gear labels at the ends of the lines, the current one brighter
     for g = 1, count do
         local x, y = slot(self, g, count)
-        self:drawTextCentre(tostring(g), x, (y < MID_Y) and (TOP_Y - 36) or (BOT_Y + 14), 0.78, 0.8, 0.84, 1, UIFont.Small)
+        label(self, tostring(g), x, (y < MID_Y) and (TOP_Y - 29) or (BOT_Y + 13), (g == gear) and 0.95 or 0.45, 1, 1, 1)
     end
     local rx = slot(self, -1, count)
-    self:drawTextCentre("R", rx, TOP_Y - 36, 0.78, 0.8, 0.84, 1, UIFont.Small)
-    self:drawText("N", x1 - 22, MID_Y - 8, 0.55, 0.57, 0.6, 1, UIFont.Small)
+    label(self, "R", rx, TOP_Y - 29, (gear == -1) and 0.95 or 0.45, 1, 1, 1)
 
     -- knob, eased toward its slot
     local tx, ty = slot(self, math.max(-1, math.min(gear, count)), count)
     if not self.knobX then self.knobX, self.knobY = tx, ty end
     self.knobX = self.knobX + (tx - self.knobX) * 0.35
     self.knobY = self.knobY + (ty - self.knobY) * 0.35
-    local r, g, b, glowA = 0.35, 0.85, 0.45, 0.22
-    if held then r, g, b, glowA = 1.0, 0.75, 0.2, 0.85 end
+    local r, g, b, glowA = 0.35, 0.85, 0.45, 0.0
+    if held then r, g, b, glowA = 1.0, 0.75, 0.2, 0.95 end
     if flashing then
         r, g, b = 0.95, 0.2, 0.2
-        glowA = 0.6 + 0.4 * math.abs(math.sin(now / 140))
+        glowA = 0.65 + 0.35 * math.abs(math.sin(now / 140))
     end
     if t.knob then
-        local K = 44
-        if t.glow then self:drawTextureScaled(t.glow, self.knobX - 44, self.knobY - 44, 88, 88, glowA, r, g, b) end
-        self:drawTextureScaled(t.knob, self.knobX - K / 2 + 3, self.knobY - K / 2 + 6, K, K, 0.5, 0, 0, 0)   -- shadow
+        local K = 30
+        if glowA > 0 and t.glow then self:drawTextureScaled(t.glow, self.knobX - 36, self.knobY - 36, 72, 72, glowA, r, g, b) end
+        self:drawTextureScaled(t.knob, self.knobX - K / 2 + 2, self.knobY - K / 2 + 4, K, K, 0.5, 0, 0, 0)   -- shadow
         self:drawTextureScaled(t.knob, self.knobX - K / 2, self.knobY - K / 2, K, K, 1, 1, 1, 1)
     else
+        if glowA <= 0 then r, g, b = 0.9, 0.9, 0.92 end
         self:drawRect(self.knobX - 7, self.knobY - 7, 14, 14, 1, r, g, b)
         self:drawRectBorder(self.knobX - 7, self.knobY - 7, 14, 14, 1, 0, 0, 0)
     end
 
-    -- gear read-out, clutch light and stall text
-    local label = (gear == -1) and "R" or ((gear == 0) and "N" or tostring(gear))
-    self:drawText(label, 12, H - 34, 0.85, 0.87, 0.9, 1, UIFont.Large)
-    self:drawText(held and getText("IGUI_BVD_ShifterClutch") or "", 48, H - 19, 1.0, 0.75, 0.2, 1, UIFont.Small)
+    -- clutch light and stall text
     if flashing then
-        self:drawTextCentre(getText("IGUI_BVD_ShifterStalled"), W / 2 + 28, H - 19, 0.95, 0.25, 0.25, 1, UIFont.Small)
+        label(self, getText("IGUI_BVD_ShifterStalled"), W / 2, H - 17, 1, 0.95, 0.25, 0.25)
+    elseif held then
+        label(self, getText("IGUI_BVD_ShifterClutch"), W / 2, H - 17, 1, 1.0, 0.75, 0.2)
     end
 end
 

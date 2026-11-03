@@ -62,12 +62,12 @@ local function makeBody(expectMsc)
     T.wait(1)
 
     T.drive(true, true, 0)
-    local top, tEnd = 0, getTimestampMs() + 6000
+    local top, tEnd = 0, getTimestampMs() + 3500   -- long enough to see it move; a longer run can reach the end of the loaded road
     while getTimestampMs() < tEnd do
         top = math.max(top, math.abs(v:getCurrentSpeedKmHour()))
         coroutine.yield()
     end
-    T.log(string.format("top speed after 6 s: %.1f km/h", top))
+    T.log(string.format("top speed after 3.5 s: %.1f km/h", top))
     T.check("car moves", top > 10, string.format("%.1f km/h", top))
 
     -- the part-pack code would leave an MSC car with no steering, no drive force and weak brakes if it ran

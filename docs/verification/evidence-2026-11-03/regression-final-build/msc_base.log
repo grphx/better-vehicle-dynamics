@@ -1,0 +1,24 @@
+===== sp msc_base =====
+[PZTEST] mode msc_base: launching test world
+[PZTEST] world started at 10586,11180
+[PZTEST] protect: invisible=true
+[PZTEST] PASS BVD ZombieBuddy layer active
+[PZTEST] cleared 64 parked vehicle(s)
+[PZTEST] PASS car spawned
+[PZTEST] car: script mass 800, total mass 1113, 38 parts with items (308.7 kg)
+[PZTEST] engine part: container false, - items; script engineForce 4000, vehicle enginePower 4000
+[PZTEST] MSC state: false, traction multiplier nil
+[PZTEST] PASS entered driver seat
+[PZTEST] engine running: true
+[PZTEST] top speed after 6 s: 41.7 km/h
+[PZTEST] PASS car moves  -- 41.7 km/h
+[PZTEST] FAIL MSC car steers  -- 31.2 deg
+[PZTEST] PASS MSC car brakes to a stop  -- 0.0 km/h
+[PZTEST] PASS BVD ZombieBuddy layer survived driving the MSC car
+[PZTEST] BVD readout: gripRoad 1.4537601470947266 laden 1.3912500143051147 loadPenalty 0.42656248807907104
+[PZTEST] DONE pass=6 fail=1
+status: done
+console errors mentioning Better Vehicle Dynamics: 0
+Lua error lines: 0
+forbidden-pattern hits: 0
+RESULT: FAIL

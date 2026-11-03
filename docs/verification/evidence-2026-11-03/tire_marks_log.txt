@@ -2,18 +2,27 @@
 [PZTEST] mode skidstreak: launching test world
 [PZTEST] world started at 10586,11180
 [PZTEST] protect: invisible=true
-[PZTEST] cleared 56 parked vehicle(s)
+[PZTEST] cleared 53 parked vehicle(s)
 [PZTEST] PASS found a road
 [PZTEST] PASS the skid mark code is loaded
-[PZTEST]   first launch: speed 0.9 km/h, at 10528,11165
-[PZTEST]   second launch: speed 0.4 km/h, at 10530,11147
-[PZTEST] old behaviour (every earlier drop connects): second skid started with 0 fresh streak(s), 38 fills, longest fill 17.5 tiles, first mark -1.0 tiles from the car where the second launch began
-[PZTEST]   first launch: speed 0.9 km/h, at 10521,11166
-[PZTEST]   second launch: speed 0.4 km/h, at 10520,11144
-[PZTEST] as shipped: second skid started with 2 fresh streak(s), 32 fills, longest fill 0.1 tiles, first mark 1.3 tiles from the car where the second launch began
-[PZTEST] PASS old behaviour reproduces the bug: a long fill from the earlier skid  -- 17.5 tiles
+[PZTEST]   first launch: speed 0.5 km/h, at 10520,11182
+[PZTEST]   second launch: speed 0.0 km/h, at 10519,11179
+[PZTEST]   the launches were 3 tiles apart, trying again
+[PZTEST]   first launch: speed 0.5 km/h, at 10529,11166
+[PZTEST]   second launch: speed 0.4 km/h, at 10532,11150
+[PZTEST] old behaviour (every earlier drop connects) (launches 16 tiles apart): second skid started with 0 fresh streak(s), 34 fills, longest fill 13.7 tiles, first mark -1.0 tiles from the car where the second launch began
+[PZTEST]   first launch: speed 0.5 km/h, at 10520,11182
+[PZTEST]   second launch: speed 0.1 km/h, at 10520,11179
+[PZTEST]   the launches were 3 tiles apart, trying again
+[PZTEST]   first launch: speed 0.9 km/h, at 10522,11172
+[PZTEST]   second launch: speed 2.2 km/h, at 10521,11143
+[PZTEST]   the launches were 30 tiles apart, trying again
+[PZTEST]   first launch: speed 0.5 km/h, at 10521,11177
+[PZTEST]   second launch: speed 0.1 km/h, at 10520,11165
+[PZTEST] as shipped (launches 12 tiles apart): second skid started with 2 fresh streak(s), 36 fills, longest fill 0.0 tiles, first mark 1.3 tiles from the car where the second launch began
+[PZTEST] PASS old behaviour reproduces the bug: a long fill from the earlier skid  -- 13.7 tiles
 [PZTEST] PASS as shipped: the new skid starts a fresh streak  -- 2
-[PZTEST] PASS as shipped: no long fill from the earlier skid (longest fill under 2 tiles)  -- 0.1 tiles
+[PZTEST] PASS as shipped: no long fill from the earlier skid (longest fill under 2 tiles)  -- 0.0 tiles
 [PZTEST] PASS as shipped: the first mark of the skid is at the car (within 4 tiles of where the second launch began)  -- 1.3 tiles
 [PZTEST] DONE pass=6 fail=0
 status: done

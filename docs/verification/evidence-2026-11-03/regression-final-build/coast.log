@@ -1,0 +1,28 @@
+===== sp coast =====
+[PZTEST] mode coast: launching test world
+[PZTEST] world started at 10586,11180
+[PZTEST] protect: invisible=true
+[PZTEST] PASS BVD ZombieBuddy layer active
+[PZTEST] cleared 66 parked vehicle(s)
+[PZTEST] road start 10523,11204
+[PZTEST] PASS found a long road
+[PZTEST] PASS spawned the car for engine braking 0
+[PZTEST] engine braking 0.0: released at 30 km/h, accel to 3 s 27.1 km/h; after lift-off speed 32/29/1/0 km/h, rpm 2696/1670/847/633, rpm max 4529; decel 3.28 m/s2; run 25 m
+[PZTEST] engine braking 0.0: controller braking torque max 0.0, rpm 1955 vs follow target 0 at 0.8 s
+[PZTEST] PASS spawned the car for engine braking 1
+[PZTEST] engine braking 1.0: released at 30 km/h, accel to 3 s 27.1 km/h; after lift-off speed 33/31/28/24 km/h, rpm 2747/2456/2211/3159, rpm max 4500; decel 0.91 m/s2; run 38 m
+[PZTEST] engine braking 1.0: controller braking torque max 128.6, rpm 2508 vs follow target 2679 at 0.8 s
+[PZTEST] PASS spawned the car for engine braking 2
+[PZTEST] engine braking 2.0: released at 30 km/h, accel to 3 s 27.1 km/h; after lift-off speed 33/29/23/14 km/h, rpm 2735/2346/3059/1993, rpm max 4498; decel 1.91 m/s2; run 35 m
+[PZTEST] engine braking 2.0: controller braking torque max 551.7, rpm 2430 vs follow target 2580 at 0.8 s
+[PZTEST] PASS all three runs reached 30 km/h
+[PZTEST] PASS engine braking off applies no braking torque  -- 0.00
+[PZTEST] PASS engine braking 1 brakes the engine side on lift-off  -- 128.65
+[PZTEST] PASS engine braking 2 brakes harder than 1  -- 551.67 vs 128.65
+[PZTEST] PASS the revs follow the road after lift-off (within 30% of the target)  -- 2508 vs 2679 rpm
+[PZTEST] PASS the revs never pass 1.15 x redline  -- 4500 / 4498
+[PZTEST] DONE pass=11 fail=0
+status: done
+console errors mentioning Better Vehicle Dynamics: 0
+Lua error lines: 0
+RESULT: PASS

@@ -1198,8 +1198,9 @@ T.register("skidstreak", function(T)
             T.waitFor(function() return math.abs(v:getCurrentSpeedKmHour()) < 1 end, 10)
             T.wait(0.6)
             where("first launch")
+            res.ax, res.ay = v:getX(), v:getY()
             T.drive(true, true, 0)
-            T.waitFor(function() return math.abs(v:getCurrentSpeedKmHour()) >= 22 end, 10)
+            T.waitFor(function() return math.abs(v:getCurrentSpeedKmHour()) >= 18 end, 10)
             T.drive(true, false, 0)                                  -- stop again, a few tiles further on
             T.waitFor(function() return math.abs(v:getCurrentSpeedKmHour()) < 1 end, 12)
             T.drive(false, false, 0)
@@ -1216,17 +1217,28 @@ T.register("skidstreak", function(T)
             T.drive(false, false, 0)
         end)
         BVD.skidStreakGapMs = nil
+        if ok and res.ax and res.bx then res.gap = math.sqrt((res.bx - res.ax) ^ 2 + (res.by - res.ay) ^ 2) end
         return ok and res or nil
+    end
+    -- the two launches must be 4 to 19 tiles apart (the old code only connects drops closer than 20): try again if not
+    local function scenarioInRange(gap)
+        local r
+        for attempt = 1, 4 do
+            r = scenario(gap)
+            if r and r.gap and r.gap >= 4 and r.gap <= 19 then return r end
+            T.log(string.format("  the launches were %s tiles apart, trying again", r and r.gap and string.format("%.0f", r.gap) or "?"))
+        end
+        return r
     end
     local function report(tag, r)
         if not r then T.log(tag .. ": the car never got going") return end
         local first = r.fx and math.sqrt((r.fx - r.bx) ^ 2 + (r.fy - r.by) ^ 2) or -1
-        T.log(string.format("%s: second skid started with %d fresh streak(s), %d fills, longest fill %.1f tiles, first mark %.1f tiles from the car where the second launch began", tag, r.fresh or -1, r.fills or -1, r.maxFill or -1, first))
+        T.log(string.format("%s (launches %.0f tiles apart): second skid started with %d fresh streak(s), %d fills, longest fill %.1f tiles, first mark %.1f tiles from the car where the second launch began", tag, r.gap or -1, r.fresh or -1, r.fills or -1, r.maxFill or -1, first))
         return first
     end
-    local old = scenario(1e9)
+    local old = scenarioInRange(1e9)
     local oldFirst = report("old behaviour (every earlier drop connects)", old)
-    local new = scenario(nil)
+    local new = scenarioInRange(nil)
     local newFirst = report("as shipped", new)
     T.check("old behaviour reproduces the bug: a long fill from the earlier skid", old ~= nil and old.maxFill >= 6, old and string.format("%.1f tiles", old.maxFill) or "no run")
     T.check("as shipped: the new skid starts a fresh streak", new ~= nil and new.fresh >= 1, new and tostring(new.fresh) or "no run")

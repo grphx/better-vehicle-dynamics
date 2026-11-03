@@ -1,0 +1,36 @@
+===== sp wheels_off =====
+[PZTEST] mode wheels_off: launching test world
+[PZTEST] world started at 10586,11180
+[PZTEST] protect: invisible=true
+[PZTEST] PASS BVD ZombieBuddy layer active
+[PZTEST] TireSlipWear in effect: false
+[PZTEST] PASS option default matches the mode
+[PZTEST] PASS a minute of slip is about 30 points at any frame rate  -- 10 fps 30, 60 fps 29, 240 fps 29
+[PZTEST] PASS nothing counts before the dwell
+[PZTEST] PASS rate 2 doubles it
+[PZTEST] PASS rate 0 is off
+[PZTEST] cleared 59 parked vehicle(s)
+[PZTEST] PASS car spawned
+[PZTEST] PASS entered driver seat
+[PZTEST] PASS engine starts
+[PZTEST] before driving: FrontLeft part 100 item 100.0 | FrontRight part 100 item 100.0 | RearLeft part 100 item 100.0 | RearRight part 100 item 100.0
+[PZTEST] after 3 launches: FrontLeft part 100 item 100.0 | FrontRight part 100 item 100.0 | RearLeft part 100 item 100.0 | RearRight part 100 item 100.0
+[PZTEST] PASS three ordinary launches wear nothing
+[PZTEST] after 12 s of counted slip: FrontLeft part 100 item 100.0 | FrontRight part 100 item 100.0 | RearLeft part 100 item 100.0 | RearRight part 100 item 100.0
+[PZTEST] PASS with the option off counted slip wears nothing  -- 
+[PZTEST] PASS both rear tires wore the same
+[PZTEST] after a wear request: FrontLeft part 100 item 100.0 | FrontRight part 100 item 100.0 | RearLeft part 100 item 100.0 | RearRight part 100 item 100.0
+[PZTEST] PASS with the option off a wear request changes nothing  -- 
+[PZTEST] removed TireFrontLeft: part showed 100, tire item in inventory 100.0, broken=false
+[PZTEST] removed TireFrontRight: part showed 100, tire item in inventory 100.0, broken=false
+[PZTEST] removed TireRearLeft: part showed 100, tire item in inventory 100.0, broken=false
+[PZTEST] removed TireRearRight: part showed 100, tire item in inventory 100.0, broken=false
+[PZTEST] PASS all four wheels came off  -- 4/4
+[PZTEST] PASS no removed wheel is broken  -- 0 broken, lowest condition 100.0
+[PZTEST] PASS each removed wheel has the condition the mechanics window showed  -- 0 differ
+[PZTEST] DONE pass=16 fail=0
+status: done
+console errors mentioning Better Vehicle Dynamics: 0
+Lua error lines: 0
+forbidden-pattern hits: 0
+RESULT: PASS

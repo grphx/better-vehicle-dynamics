@@ -1,0 +1,21 @@
+===== sp accel_sweep =====
+[PZTEST] mode accel_sweep: launching test world
+[PZTEST] world started at 10586,11180
+[PZTEST] protect: invisible=true
+[PZTEST] cleared 58 parked vehicle(s)
+[PZTEST] PASS found a road
+[PZTEST] default sliders, option on, ceiling 4 (shipped)      power  16000, drive limit 2.09/kg   0-50 km/h in 7.5 s (runs 7.5, 3.7, 7.5)   v@3s median 16 km/h
+[PZTEST] casual-like (power 1.4, grip 1.5), NO ceiling        power  16000, drive limit 4.71/kg   0-50 km/h in 2.6 s (runs 1.8, 2.6, 2.6)   v@3s median 60 km/h
+[PZTEST] casual-like (power 1.4, grip 1.5), ceiling 4         power  16000, drive limit 4.00/kg   0-50 km/h in 3.0 s (runs 2.5, 3.0, 3.0)   v@3s median 50 km/h
+[PZTEST] grip 2.0, NO ceiling                                 power  16000, drive limit 10.00/kg   0-50 km/h in 2.2 s (runs 2.6, 1.9, 2.2)   v@3s median 63 km/h
+[PZTEST] grip 2.0, ceiling 4                                  power  16000, drive limit 4.00/kg   0-50 km/h in 7.5 s (runs 7.5, 7.5, 3.2)   v@3s median 45 km/h
+[PZTEST] power 5 + grip 2.0 (slider maxima), ceiling 4        power  16000, drive limit 4.00/kg   0-50 km/h in 3.2 s (runs 3.2, 3.1, 7.5)   v@3s median 47 km/h
+[PZTEST] DONE pass=1 fail=0
+status: done
+console errors mentioning Better Vehicle Dynamics: 4
+  LOG  : General      f:92163> ERROR: DoubleConfigOption.setValue() "BetterVehicleDynamics.EnginePower" 5.0 is greater than max=3.0
+  LOG  : General      f:92163> ERROR: DoubleConfigOption.setValue() "BetterVehicleDynamics.EnginePower" 5.0 is greater than max=3.0
+  LOG  : General      f:92163> ERROR: DoubleConfigOption.setValue() "BetterVehicleDynamics.EnginePower" 5.0 is greater than max=3.0
+  LOG  : General      f:103737> ERROR: DoubleConfigOption.setValue() "BetterVehicleDynamics.EnginePower" 5.0 is greater than max=3.0
+Lua error lines: 0
+RESULT: FAIL

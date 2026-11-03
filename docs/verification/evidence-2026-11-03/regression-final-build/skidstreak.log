@@ -1,0 +1,22 @@
+===== sp skidstreak =====
+[PZTEST] mode skidstreak: launching test world
+[PZTEST] world started at 10586,11180
+[PZTEST] protect: invisible=true
+[PZTEST] cleared 70 parked vehicle(s)
+[PZTEST] PASS found a road
+[PZTEST] PASS the skid mark code is loaded
+[PZTEST]   first launch: speed 0.9 km/h, at 10525,11165
+[PZTEST]   second launch: speed 2.5 km/h, at 10527,11130
+[PZTEST] old behaviour (every earlier drop connects): second skid started with 0 fresh streak(s), 36 fills, longest fill 0.1 tiles, first mark -1.0 tiles from the car where the second launch began
+[PZTEST]   first launch: speed 0.5 km/h, at 10521,11178
+[PZTEST]   second launch: speed 0.1 km/h, at 10519,11165
+[PZTEST] as shipped: second skid started with 2 fresh streak(s), 36 fills, longest fill 0.0 tiles, first mark 1.3 tiles from the car where the second launch began
+[PZTEST] FAIL old behaviour reproduces the bug: a long fill from the earlier skid  -- 0.1 tiles
+[PZTEST] PASS as shipped: the new skid starts a fresh streak  -- 2
+[PZTEST] PASS as shipped: no long fill from the earlier skid (longest fill under 2 tiles)  -- 0.0 tiles
+[PZTEST] PASS as shipped: the first mark of the skid is at the car (within 4 tiles of where the second launch began)  -- 1.3 tiles
+[PZTEST] DONE pass=5 fail=1
+status: done
+console errors mentioning Better Vehicle Dynamics: 0
+Lua error lines: 0
+RESULT: FAIL

@@ -1,0 +1,16 @@
+===== sp rules =====
+[PZTEST] mode rules: launching test world
+[PZTEST] world started at 10586,11180
+[PZTEST] protect: invisible=true
+[PZTEST] PASS BVD.realismTarget exists
+[PZTEST] 480 combinations of script force, mass and registration checked
+[PZTEST] PASS realism rules hold for every combination  -- 
+[PZTEST] PASS an ordinary unregistered car keeps its script force and its mass (the gain is in the Java)  -- 4000/nil
+[PZTEST] PASS a strong engine's script force is left alone  -- 15000
+[PZTEST] PASS a registered car takes its researched power when that is higher (hp x 10)  -- 2000
+[PZTEST] PASS a registered heavy truck is not made lighter  -- 2600
+[PZTEST] DONE pass=6 fail=0
+status: done
+console errors mentioning Better Vehicle Dynamics: 0
+Lua error lines: 0
+RESULT: PASS

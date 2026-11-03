@@ -1,0 +1,59 @@
+\\wsl.localhost\Ubuntu\home\grphx\zomboid\better-vehicle-dynamics\zb\src\bvd\zb\Splat.java:47: warning: Unsafe is internal proprietary API and may be removed in a future release
+         sun.misc.Unsafe unsafe = (sun.misc.Unsafe)uf.get(null);
+                 ^
+\\wsl.localhost\Ubuntu\home\grphx\zomboid\better-vehicle-dynamics\zb\src\bvd\zb\Splat.java:47: warning: Unsafe is internal proprietary API and may be removed in a future release
+         sun.misc.Unsafe unsafe = (sun.misc.Unsafe)uf.get(null);
+                                           ^
+Note: \\wsl.localhost\Ubuntu\home\grphx\zomboid\better-vehicle-dynamics\zb\src\bvd\zb\Splat.java uses or overrides a deprecated API that is marked for removal.
+Note: Recompile with -Xlint:removal for details.
+2 warnings
+server started
+===== mpA =====
+[PZTEST] mode mpA: connecting as admin
+[PZTEST] character creation: profession -> next
+[PZTEST] character creation: play
+[PZTEST] joined server as admin
+[PZTEST] protect: invisible=false  (cheats need a -debug launch in singleplayer)
+[PZTEST] BVD loaded from C:\Users\Grphx\PZTestA\mods\BetterVehicleDynamics
+[PZTEST] PASS ZombieBuddy layer active  -- BVD_zombieBuddyActive = function 0x787222488
+[PZTEST] PASS tyre-mark texture helper exposed
+[PZTEST] players online: 2
+[PZTEST] PASS car spawned
+[PZTEST] PASS BVD Java reports itself  -- 3.7
+[PZTEST] PASS entered driver seat
+[PZTEST] PASS engine starts
+[PZTEST] PASS car accelerates  -- top 29.6 km/h, moved 15.2 tiles
+[PZTEST] PASS BVD drivetrain drives the car  -- gripRoad 1.4559999704360962 tire ModernTire laden 1.3962500095367432
+[PZTEST] PASS vanilla getters see BVD pedal state
+[PZTEST] PASS steering turns the car  -- travel direction changed 149.5 deg (moved 2.90 / 2.41 tiles per window)
+[PZTEST] PASS car brakes to a stop  -- speed 1.0
+[PZTEST] PASS MP: server wore the rear tire part and sent it back  -- rear 100 -> 95, front 100 -> 100
+[PZTEST] PASS MP: a stall (third gear, no throttle) stops the engine through the server
+[PZTEST] PASS MP: the engine starts again after the stall
+[PZTEST] PASS car did not sink  -- z 0.00 -> 0.00
+[PZTEST] drive done at 10548,11168
+[PZTEST] DONE pass=15 fail=0
+status: done
+console errors mentioning Better Vehicle Dynamics: 0
+Lua error lines: 0
+forbidden-pattern hits: 0
+RESULT: PASS
+===== mpB =====
+[PZTEST] mode mpB: connecting as bob
+[PZTEST] character creation: profession -> next
+[PZTEST] character creation: play
+[PZTEST] joined server as bob
+[PZTEST] protect: invisible=false  (cheats need a -debug launch in singleplayer)
+[PZTEST] PASS ZombieBuddy layer active on B
+[PZTEST] PASS B sees A's car with a driver
+[PZTEST] PASS B sees A's car move  -- moved 13.0 tiles
+[PZTEST] PASS BVD readout stays local to the driver
+[PZTEST] PASS B sees the worn rear tire that A's server-side wear produced  -- rear tire condition 95
+[PZTEST] DONE pass=5 fail=0
+status: done
+console errors mentioning Better Vehicle Dynamics: 0
+Lua error lines: 0
+forbidden-pattern hits: 0
+RESULT: PASS
+===== server: 0 errors mentioning Better Vehicle Dynamics =====
+MP RESULT: PASS

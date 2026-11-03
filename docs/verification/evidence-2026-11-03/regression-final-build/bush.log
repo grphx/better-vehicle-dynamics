@@ -1,0 +1,20 @@
+===== sp bush =====
+[PZTEST] mode bush: launching test world
+[PZTEST] world started at 10586,11180
+[PZTEST] protect: invisible=true
+[PZTEST] ZombieBuddy layer active: true
+[PZTEST] cleared 53 parked vehicle(s)
+[PZTEST] bush sprite found: f_bushes_1_9
+[PZTEST] clear patch 10529,11159
+[PZTEST] light 1100/4000                    no bushes  speed at 2..8 s: 12/18/22/26/30/34/35  peak 36  moved 46 m
+[PZTEST] heavy 2000/6000                    no bushes  speed at 2..8 s: 18/26/34/39/43/45/46  peak 46  moved 67 m
+[PZTEST] heavy strong 2000/16000            no bushes  speed at 2..8 s: 26/41/52/62/67/16/1  peak 68  moved 65 m
+[PZTEST] 63 bushes placed; first one isBush=true
+[PZTEST] light 1100/4000                    BUSHES  speed at 2..8 s: 18/18/15/21/28/36/41  peak 42  moved 46 m
+[PZTEST] heavy 2000/6000                    BUSHES  speed at 2..8 s: 14/13/10/9/10/10/10  peak 16  moved 22 m
+[PZTEST] heavy strong 2000/16000            BUSHES  speed at 2..8 s: 25/23/26/30/42/55/62  peak 63  moved 69 m
+[PZTEST] DONE pass=0 fail=0
+status: done
+console errors mentioning Better Vehicle Dynamics: 0
+Lua error lines: 0
+RESULT: PASS

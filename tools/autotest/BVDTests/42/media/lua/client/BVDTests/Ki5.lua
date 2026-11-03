@@ -610,16 +610,37 @@ local function clutchBody(T)
         T.log(string.format("running: engine %s", tostring(v:isEngineRunning())))
         r.launchRunning = v:isEngineRunning()
         BVD.testClutch = true    -- a real driver presses the clutch to stop; braking with it out would stall the engine
-        stopCar(v)
+        -- stop with a trace, once a second: when, and with what state, an engine dies on the way to a standstill
+        T.drive(true, false, 0)
+        local ts = getTimestampMs()
+        local lastLog, wasRunning = 0, true
+        while getTimestampMs() - ts < 15000 and math.abs(v:getCurrentSpeedKmHour()) >= 1 do
+            local el = (getTimestampMs() - ts) / 1000
+            local run = v:isEngineRunning()
+            if run ~= wasRunning or el - lastLog >= 1.0 then
+                lastLog = el
+                T.log(string.format("  stopping %.1fs: speed %.1f, engine %s, clutch key %s (mod.clutch=%s), gear %s, rpm %.0f, brake %s",
+                    el, v:getCurrentSpeedKmHour(), tostring(run), tostring(BVD.testClutch), tostring(mod.clutch), tostring(mod.forceGear), v:getEngineSpeed(), tostring(v:isBrakePedalPressed())))
+                wasRunning = run
+            end
+            coroutine.yield()
+        end
+        T.drive(false, false, 0)
         BVD.testClutch = false
         -- 4. reverse gear
         mod.forceGear = -1
         T.wait(0.5)
+        -- the car must really be at a standstill before the reverse is judged: a car still rolling forward from the launch
+        -- would fool both the speed and the direction check (seen once, 0.2.3 regression run)
+        local stopped = T.waitFor(function() return math.abs(v:getCurrentSpeedKmHour()) < 1 end, 25)
+        if not stopped then T.log("the car was still rolling before the reverse step") end
         local x0, y0 = v:getX(), v:getY()
         local fx, fy = v:getForwardVector(Vector3f.new()):x(), 0
         T.log(string.format("before reverse: engine %s, speed %.1f, forceGear %s, clutch %s, rpm %.0f", tostring(v:isEngineRunning()), v:getCurrentSpeedKmHour(), tostring(mod.forceGear), tostring(mod.clutch), v:getEngineSpeed()))
         T.drive(true, true, 0)
-        r.reverseSpeed = runFor(v, 3)
+        local minSigned = 0
+        r.reverseSpeed = runFor(v, 3, function(car) minSigned = math.min(minSigned, car:getCurrentSpeedKmHour()) end)
+        r.reverseSpeed = -minSigned   -- speed BACKWARDS: the signed speed is negative when the car moves in reverse
         T.log(string.format("after reverse: engine %s, speed %.1f, gear %s, rpm %.0f, throttle %.2f", tostring(v:isEngineRunning()), v:getCurrentSpeedKmHour(), tostring(v:getTransmissionNumber()), v:getEngineSpeed(), v.throttle or -1))
         local dx, dy = v:getX() - x0, v:getY() - y0
         local fv = v:getForwardVector(Vector3f.new())

@@ -1,0 +1,28 @@
+===== sp clutch =====
+[PZTEST] mode clutch: launching test world
+[PZTEST] world started at 10586,11180
+[PZTEST] protect: invisible=true
+[PZTEST] PASS BVD ZombieBuddy layer active
+[PZTEST] cleared 61 parked vehicle(s)
+[PZTEST] PASS found a road
+[PZTEST] running: engine true
+[PZTEST] before reverse: engine true, speed -1.0, forceGear -1, clutch false, rpm 1236
+[PZTEST] after reverse: engine true, speed -16.8, gear -1, rpm 2795, throttle -1.00
+[PZTEST] PASS the test car moved on its own first
+[PZTEST] PASS in neutral the car does not move (under 3 km/h)  -- 0.5 km/h
+[PZTEST] PASS in neutral the revs rise freely  -- 5103 rpm
+[PZTEST] PASS the on-screen shifter is up in manual mode with the clutch
+[PZTEST] PASS clutch held in first: the car does not move (under 3 km/h)  -- 0.4 km/h
+[PZTEST] PASS clutch held in first: the revs rise  -- 5103 rpm
+[PZTEST] PASS letting the clutch out with the throttle down launches the car  -- 13.5 km/h
+[PZTEST] PASS the launch does not stall the engine
+[PZTEST] PASS reverse gear drives the car backwards  -- 16.7 km/h, dot -6.50
+[PZTEST] PASS a start in third gear with no throttle stalls the engine
+[PZTEST] the car did not get going (spawn quirk), attempt 1
+[PZTEST] PASS clutch out in first gear at a standstill with no throttle stalls the engine
+[PZTEST] PASS with stalling off the same start keeps the engine running
+[PZTEST] DONE pass=14 fail=0
+status: done
+console errors mentioning Better Vehicle Dynamics: 0
+Lua error lines: 0
+RESULT: PASS

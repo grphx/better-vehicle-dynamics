@@ -1,0 +1,22 @@
+===== sp accel_extreme =====
+[PZTEST] mode accel_extreme: launching test world
+[PZTEST] world started at 10586,11180
+[PZTEST] protect: invisible=true
+[PZTEST] cleared 57 parked vehicle(s)
+[PZTEST] PASS found a road
+[PZTEST] default sliders (reference power on)                       drive limit  2.09/kg   0-50 in 3.8 s, 0-100 in 9.5 s (9.5 = not reached in 9 s), speed at 3 s 37 km/h (3 runs)
+[PZTEST] EXTREME: race tires 3.0, grip 2.0, power 5, NO ceiling     drive limit 30.00/kg   0-50 in 2.2 s, 0-100 in 9.5 s (9.5 = not reached in 9 s), speed at 3 s 63 km/h (3 runs)
+[PZTEST] EXTREME: race tires 3.0, grip 2.0, power 5, ceiling 4      drive limit  4.00/kg   0-50 in 2.5 s, 0-100 in 9.5 s (9.5 = not reached in 9 s), speed at 3 s 60 km/h (3 runs)
+[PZTEST] DONE pass=1 fail=0
+status: done
+console errors mentioning Better Vehicle Dynamics: 8
+  LOG  : General      f:19549> ERROR: DoubleConfigOption.setValue() "BetterVehicleDynamics.EnginePower" 5.0 is greater than max=3.0
+  LOG  : General      f:19549> ERROR: DoubleConfigOption.setValue() "BetterVehicleDynamics.EnginePower" 5.0 is greater than max=3.0
+  LOG  : General      f:19549> ERROR: DoubleConfigOption.setValue() "BetterVehicleDynamics.EnginePower" 5.0 is greater than max=3.0
+  LOG  : General      f:46604> ERROR: DoubleConfigOption.setValue() "BetterVehicleDynamics.EnginePower" 5.0 is greater than max=3.0
+  LOG  : General      f:46604> ERROR: DoubleConfigOption.setValue() "BetterVehicleDynamics.EnginePower" 5.0 is greater than max=3.0
+  LOG  : General      f:46604> ERROR: DoubleConfigOption.setValue() "BetterVehicleDynamics.EnginePower" 5.0 is greater than max=3.0
+  LOG  : General      f:46604> ERROR: DoubleConfigOption.setValue() "BetterVehicleDynamics.EnginePower" 5.0 is greater than max=3.0
+  LOG  : General      f:62124> ERROR: DoubleConfigOption.setValue() "BetterVehicleDynamics.EnginePower" 5.0 is greater than max=3.0
+Lua error lines: 0
+RESULT: FAIL

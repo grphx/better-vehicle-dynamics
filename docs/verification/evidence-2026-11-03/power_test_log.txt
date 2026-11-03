@@ -3,14 +3,16 @@
 [PZTEST] world started at 10586,11180
 [PZTEST] protect: invisible=true
 [PZTEST] PASS BVD ZombieBuddy layer active
-[PZTEST] cleared 54 parked vehicle(s)
+[PZTEST] cleared 61 parked vehicle(s)
 [PZTEST] PASS found a road
 [PZTEST] script engine force 4000
 [PZTEST] PASS option off: the stored power is used as it is  -- 4000
 [PZTEST] PASS option on: a normal car gets the 4x (capped at 28000)  -- 16000
 [PZTEST] PASS option on: a worn engine (70% power) is boosted from its own value  -- 11200
 [PZTEST] PASS option on: a car that spawned with the old boost already in its power is NOT boosted again  -- 16000
-[PZTEST] DONE pass=6 fail=0
+[PZTEST] the same car with the guard switched off (0.2.1 behaviour): power used 28000
+[PZTEST] PASS without the guard the same car is boosted a second time (the reported bug)  -- 28000
+[PZTEST] DONE pass=7 fail=0
 status: done
 console errors mentioning Better Vehicle Dynamics: 0
 Lua error lines: 0

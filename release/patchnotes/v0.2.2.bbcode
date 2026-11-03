@@ -12,7 +12,8 @@
 [*][b]Cars no longer get the reference-power boost twice.[/b] A car's power is saved with the world, and cars that spawned in 0.1.19 to 0.2.0 already carried the boost, which 0.2.1 then added again. That is why some cars suddenly felt far too fast. Fixed.
 [*][b]New option: Acceleration ceiling[/b] (Drivetrain page, default 4, 0 turns it off). The hardest any car can accelerate, whatever its engine, tires, the grip setting or other mods. The grip slider counted twice in the launch force, so the Casual preset and high grip settings could launch a car far harder than a normal one. Cars on the default settings are not affected.
 [*][b]Tire marks start where the car is.[/b] Marks used to be drawn from where the car last skidded to where it is now when you braked, reversed or drifted, so they started well behind you. They start at the car now.
-[*][b]The vehicle info panel no longer hides itself[/b] when there is no room beside the mechanics window: it moves below or above the window instead. With CleanUI and NeatUI Framework on 42.21 it already showed fine for me; if it still does not show for you, tell me your screen size, UI scale and which UI mods you use.
+[*][b]The info panel shows two new rows,[/b] Engine force and Launch limit, so you can see what the drivetrain is really using (handy if a car feels too fast).
+[*][b]The vehicle info panel no longer hides itself[/b] when there is no room beside the mechanics window: it moves below or above the window instead. I reproduced it with CleanUI and NeatUI Framework in a small game window, where the old code left the panel hidden; the new one keeps it on screen. If it still does not show for you, tell me your screen size, UI scale and which UI mods you use.
 [*][b]New shifter look:[/b] a thin H gate with a leather knob that slides between the gears, with an amber glow when the clutch is in and a red one when you stall.
 [/list]
 

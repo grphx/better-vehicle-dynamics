@@ -9,7 +9,7 @@
 [PZTEST] PASS nothing counts before the dwell
 [PZTEST] PASS rate 2 doubles it
 [PZTEST] PASS rate 0 is off
-[PZTEST] cleared 58 parked vehicle(s)
+[PZTEST] cleared 57 parked vehicle(s)
 [PZTEST] PASS car spawned
 [PZTEST] PASS entered driver seat
 [PZTEST] PASS engine starts

@@ -4,20 +4,20 @@
 [PZTEST] protect: invisible=true
 [PZTEST] PASS MSC is enabled
 [PZTEST] PASS BVD ZombieBuddy layer active
-[PZTEST] cleared 56 parked vehicle(s)
+[PZTEST] cleared 62 parked vehicle(s)
 [PZTEST] PASS car spawned
-[PZTEST] car: script mass 800, total mass 1296, 38 parts with items (312.7 kg)
+[PZTEST] car: script mass 800, total mass 1289, 38 parts with items (312.7 kg)
 [PZTEST] engine part: container true, 1 items; script engineForce 4000, vehicle enginePower 4000
-[PZTEST] MSC state: true, traction multiplier 0.9820265044031283
+[PZTEST] MSC state: true, traction multiplier 0.9948635601023682
 [PZTEST] PASS car has an engine container (MSC)
 [PZTEST] PASS entered driver seat
 [PZTEST] engine running: true
-[PZTEST] top speed after 6 s: 37.4 km/h
-[PZTEST] PASS car moves  -- 37.4 km/h
-[PZTEST] PASS MSC car steers  -- 121.8 deg
-[PZTEST] PASS MSC car brakes to a stop  -- 1.0 km/h
+[PZTEST] top speed after 3.5 s: 26.1 km/h
+[PZTEST] PASS car moves  -- 26.1 km/h
+[PZTEST] PASS MSC car steers  -- 134.0 deg
+[PZTEST] PASS MSC car brakes to a stop  -- 0.0 km/h
 [PZTEST] PASS BVD ZombieBuddy layer survived driving the MSC car
-[PZTEST] BVD readout: gripRoad 1.4537601470947266 laden 1.6200000047683716 loadPenalty 0.48572102189064026
+[PZTEST] BVD readout: gripRoad 1.4559999704360962 laden 1.6112500429153442 loadPenalty 0.5
 [PZTEST] DONE pass=9 fail=0
 status: done
 console errors mentioning Better Vehicle Dynamics: 0

@@ -3,15 +3,15 @@
 [PZTEST] world started at 10586,11180
 [PZTEST] protect: invisible=true
 [PZTEST] PASS BVD ZombieBuddy layer active
-[PZTEST] cleared 57 parked vehicle(s)
+[PZTEST] cleared 62 parked vehicle(s)
 [PZTEST] PASS found a road
 [PZTEST] engine rpm type jeep
-[PZTEST] EngineProfiles false: upshifts 1->2 at 4536, 2->3 at 4556
+[PZTEST] EngineProfiles false: upshifts 1->2 at 4535, 2->3 at 4557
 [PZTEST] engine rpm type jeep
-[PZTEST] EngineProfiles true: upshifts 1->2 at 2534, 2->3 at 2844
-[PZTEST] PASS both runs drove and shifted up  -- drove off=true on=true, upshifts off=2 on=2
+[PZTEST] EngineProfiles true: upshifts 1->2 at 2792
+[PZTEST] PASS both runs drove and shifted up  -- drove off=true on=true, upshifts off=2 on=1
 [PZTEST] PASS every upshift happens between 40% and 105% of redline
-[PZTEST] PASS the option moves the first upshift (by at least 100 rpm)  -- 2534 vs 4536
+[PZTEST] PASS the option moves the first upshift (by at least 100 rpm)  -- 2792 vs 4535
 [PZTEST] DONE pass=5 fail=0
 status: done
 console errors mentioning Better Vehicle Dynamics: 0

@@ -18,10 +18,13 @@ car was to where it is; the info panel in the mechanics window does not show wit
 - **Tire marks start at the car.** Each wheel remembered its last mark and, when you next braked, drifted or
   launched, drew a line from that old spot to the car, so a new skid began well behind it (17.5 tiles in my
   reproduction). A mark now only joins the streak if the previous one was placed under 0.3 s ago.
+- **The info panel shows the real numbers**: two new rows, "Engine force" (what the drivetrain uses after the reference-power
+  boost) and "Launch limit" (per kg, traction or the ceiling), so a "too fast" report can quote them.
 - **The info panel can no longer vanish.** Next to the mechanics window it used to hide itself when there was no room
   on either side. It now tries right, left, below and above, and as a last resort sits at the screen edge over the
-  window. I could not reproduce the CleanUI case (CleanUI [B42] with NeatUI Framework on 42.21 shows the panel
-  normally), so if it still does not show for you, tell me your screen size, UI scale and the other UI mods.
+  window. With CleanUI [B42] and NeatUI Framework loaded in a 1024x768 window the old placement hid the panel
+  and the new one keeps it on screen (checked in game); at 1600x900 it showed fine before and after. If it still does
+  not show for you, tell me your screen size, UI scale and the other UI mods.
 - **New shifter look.** The on-screen shifter is a thin H gate with a leather-wrapped knob that slides between the
   slots; an amber halo with the clutch in and a pulsing red one when stalled. The knob texture was generated with
   fal.ai (FLUX.1 schnell).

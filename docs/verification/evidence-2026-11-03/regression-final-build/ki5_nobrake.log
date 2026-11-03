@@ -4,53 +4,53 @@
 [PZTEST] protect: invisible=true
 [PZTEST] PASS BVD ZombieBuddy layer active
 [PZTEST] RealismHPWeight in effect: false
-[PZTEST] cleared 55 parked vehicle(s)
+[PZTEST] cleared 60 parked vehicle(s)
 [PZTEST] road start 10523,11153   clear grass 10532,11189   overgrown grass 10559,11153
 [PZTEST]   clear grass objects: blends_natural_01_53
 [PZTEST]   overgrown grass objects: blends_natural_01_21, f_bushes_1_8
 [PZTEST] PASS found a clear grass patch
-[PZTEST] Base.CarNormal               road  tires FrontLeft=NormalTire2/100 FrontRight=NormalTire2/100 RearLeft=NormalTire2/100 RearRight=NormalTire2/100 | at spawn 4 of 4 | id 203
+[PZTEST] Base.CarNormal               road  tires FrontLeft=NormalTire2/100 FrontRight=NormalTire2/100 RearLeft=NormalTire2/100 RearRight=NormalTire2/100 | at spawn 4 of 4 | id 220
 [PZTEST] Base.CarNormal               road  physics static=nil active=nil -> static=nil active=nil
-[PZTEST] Base.CarNormal               road  mass  1109  power   4000  v@3s  27.4  v@5s  43.4  t->30 3.3s  dist 31.0  rpm max  4531/4500 pinned   5%  [NormalTire 1.25 off 1.25 eff 1.00]
-[PZTEST] Base.CarNormal               clear tires FrontLeft=NormalTire2/100 FrontRight=NormalTire2/100 RearLeft=NormalTire2/100 RearRight=NormalTire2/100 | at spawn 4 of 4 | id 203
+[PZTEST] Base.CarNormal               road  mass  1114  power   4000  v@3s  27.1  v@5s  43.2  t->30 3.3s  dist 30.7  rpm max  4542/4500 pinned   6%  [NormalTire 1.25 off 1.25 eff 1.00]
+[PZTEST] Base.CarNormal               clear tires FrontLeft=NormalTire2/100 FrontRight=NormalTire2/100 RearLeft=NormalTire2/100 RearRight=NormalTire2/100 | at spawn 4 of 4 | id 220
 [PZTEST] Base.CarNormal               clear physics static=nil active=nil -> static=nil active=nil
-[PZTEST] Base.CarNormal               clear mass  1110  power   4000  v@3s  15.3  v@5s  27.1  t->30 never  dist 17.4  rpm max  4053/4500 pinned   0%  [NormalTire 1.25 off 1.05 eff 1.00]
-[PZTEST] Base.63beetle                road  tires FrontLeft=NormalTire2/100 FrontRight=NormalTire2/100 RearLeft=NormalTire2/100 RearRight=NormalTire2/100 | at spawn 4 of 4 | id 203
+[PZTEST] Base.CarNormal               clear mass  1112  power   4000  v@3s  12.2  v@5s  24.5  t->30 never  dist 14.1  rpm max  3678/4500 pinned   0%  [NormalTire 1.25 off 1.05 eff 1.00]
+[PZTEST] Base.63beetle                road  tires FrontLeft=NormalTire2/100 FrontRight=NormalTire2/100 RearLeft=NormalTire2/100 RearRight=NormalTire2/100 | at spawn 4 of 4 | id 220
 [PZTEST] Base.63beetle                road  physics static=nil active=nil -> static=nil active=nil
-[PZTEST] Base.63beetle                road  mass  1288  power   4560  v@3s  26.4  v@5s  42.5  t->30 3.4s  dist 29.8  rpm max  4539/4500 pinned   5%  [NormalTire 1.25 off 1.25 eff 0.82]
-[PZTEST] Base.63beetle                clear tires FrontLeft=NormalTire2/100 FrontRight=NormalTire2/100 RearLeft=NormalTire2/100 RearRight=NormalTire2/100 | at spawn 4 of 4 | id 203
+[PZTEST] Base.63beetle                road  mass  1283  power   4560  v@3s  26.4  v@5s  42.7  t->30 3.4s  dist 30.0  rpm max  4537/4500 pinned   5%  [NormalTire 1.25 off 1.25 eff 0.82]
+[PZTEST] Base.63beetle                clear tires FrontLeft=NormalTire2/100 FrontRight=NormalTire2/100 RearLeft=NormalTire2/100 RearRight=NormalTire2/100 | at spawn 4 of 4 | id 220
 [PZTEST] Base.63beetle                clear physics static=nil active=nil -> static=nil active=nil
-[PZTEST] Base.63beetle                clear mass  1281  power   4560  v@3s  12.9  v@5s  25.0  t->30 never  dist 15.3  rpm max  3962/4500 pinned   0%  [NormalTire 1.25 off 1.02 eff 0.82]
-[PZTEST] Base.91nissan240sx           road  tires FrontLeft=NormalTire2/100 FrontRight=NormalTire2/100 RearLeft=NormalTire2/100 RearRight=NormalTire2/100 | at spawn 4 of 4 | id 203
+[PZTEST] Base.63beetle                clear mass  1286  power   4560  v@3s  12.4  v@5s  23.5  t->30 never  dist 13.8  rpm max  3815/4500 pinned   0%  [NormalTire 1.25 off 1.02 eff 0.82]
+[PZTEST] Base.91nissan240sx           road  tires FrontLeft=NormalTire2/100 FrontRight=NormalTire2/100 RearLeft=NormalTire2/100 RearRight=NormalTire2/100 | at spawn 4 of 4 | id 220
 [PZTEST] Base.91nissan240sx           road  physics static=nil active=nil -> static=nil active=nil
-[PZTEST] Base.91nissan240sx           road  mass  1052  power   4500  v@3s  26.6  v@5s  45.4  t->30 3.4s  dist 29.9  rpm max  4541/4500 pinned   7%  [NormalTire 1.25 off 1.25 eff 0.84]
-[PZTEST] Base.91nissan240sx           clear tires FrontLeft=NormalTire2/100 FrontRight=NormalTire2/100 RearLeft=NormalTire2/100 RearRight=NormalTire2/100 | at spawn 4 of 4 | id 203
+[PZTEST] Base.91nissan240sx           road  mass  1052  power   4500  v@3s  23.6  v@5s  33.2  t->30 4.6s  dist 15.8  rpm max  3890/4500 pinned   0%  [NormalTire 1.25 off 1.25 eff 0.84]
+[PZTEST] Base.91nissan240sx           clear tires FrontLeft=NormalTire2/100 FrontRight=NormalTire2/100 RearLeft=NormalTire2/100 RearRight=NormalTire2/100 | at spawn 4 of 4 | id 220
 [PZTEST] Base.91nissan240sx           clear physics static=nil active=nil -> static=nil active=nil
-[PZTEST] Base.91nissan240sx           clear mass  1052  power   4500  v@3s  11.6  v@5s  23.9  t->30 never  dist 14.0  rpm max  2934/4500 pinned   0%  [NormalTire 1.25 off 1.03 eff 0.84]
-[PZTEST] Base.78lamboCountachLP400    road  tires FrontLeft=NormalTire2/100 FrontRight=NormalTire2/100 RearLeft=NormalTire2/100 RearRight=NormalTire2/100 | at spawn 4 of 4 | id 203
+[PZTEST] Base.91nissan240sx           clear mass  1052  power   4500  v@3s  10.4  v@5s  20.5  t->30 never  dist 10.3  rpm max  2664/4500 pinned   0%  [NormalTire 1.25 off 1.03 eff 0.84]
+[PZTEST] Base.78lamboCountachLP400    road  tires FrontLeft=NormalTire2/100 FrontRight=NormalTire2/100 RearLeft=NormalTire2/100 RearRight=NormalTire2/100 | at spawn 4 of 4 | id 220
 [PZTEST] Base.78lamboCountachLP400    road  physics static=nil active=nil -> static=nil active=nil
-[PZTEST] Base.78lamboCountachLP400    road  mass   922  power   6150  v@3s  32.5  v@5s  54.3  t->30 2.8s  dist 36.0  rpm max  4537/4500 pinned   8%  [NormalTire 1.25 off 1.03 eff 0.85]
-[PZTEST] Base.78lamboCountachLP400    clear tires FrontLeft=NormalTire2/100 FrontRight=NormalTire2/100 RearLeft=NormalTire2/100 RearRight=NormalTire2/100 | at spawn 4 of 4 | id 203
+[PZTEST] Base.78lamboCountachLP400    road  mass   927  power   6150  v@3s  30.9  v@5s  55.9  t->30 3.0s  dist 34.9  rpm max  4530/4500 pinned   8%  [NormalTire 1.25 off 1.25 eff 0.85]
+[PZTEST] Base.78lamboCountachLP400    clear tires FrontLeft=NormalTire2/100 FrontRight=NormalTire2/100 RearLeft=NormalTire2/100 RearRight=NormalTire2/100 | at spawn 4 of 4 | id 220
 [PZTEST] Base.78lamboCountachLP400    clear physics static=nil active=nil -> static=nil active=nil
-[PZTEST] Base.78lamboCountachLP400    clear mass   926  power   6150  v@3s  10.7  v@5s  17.3  t->30 never  dist 11.9  rpm max  4292/4500 pinned   1%  [NormalTire 1.25 off 1.03 eff 0.85]
-[PZTEST] Base.89fordBronco            road  tires FrontLeft=NormalTire2/100 FrontRight=NormalTire2/100 RearLeft=NormalTire2/100 RearRight=NormalTire2/100 | at spawn 4 of 4 | id 203
+[PZTEST] Base.78lamboCountachLP400    clear mass   930  power   6150  v@3s   2.7  v@5s   4.9  t->30 never  dist  0.9  rpm max  4043/4500 pinned   0%  [NormalTire 1.25 off 1.03 eff 0.85]
+[PZTEST] Base.89fordBronco            road  tires FrontLeft=NormalTire2/100 FrontRight=NormalTire2/100 RearLeft=NormalTire2/100 RearRight=NormalTire2/100 | at spawn 4 of 4 | id 220
 [PZTEST] Base.89fordBronco            road  physics static=nil active=nil -> static=nil active=nil
-[PZTEST] Base.89fordBronco            road  mass  1349  power   4100  v@3s  23.7  v@5s  32.8  t->30 3.8s  dist 25.5  rpm max  4533/4500 pinned   6%  [NormalTire 1.25 off 1.06 eff 1.07]
-[PZTEST] Base.89fordBronco            clear tires FrontLeft=NormalTire2/100 FrontRight=NormalTire2/100 RearLeft=NormalTire2/100 RearRight=NormalTire2/100 | at spawn 4 of 4 | id 203
+[PZTEST] Base.89fordBronco            road  mass  1345  power   4100  v@3s  19.4  v@5s  33.0  t->30 4.5s  dist 17.7  rpm max  4475/4500 pinned   2%  [NormalTire 1.25 off 1.25 eff 1.07]
+[PZTEST] Base.89fordBronco            clear tires FrontLeft=NormalTire2/100 FrontRight=NormalTire2/100 RearLeft=NormalTire2/100 RearRight=NormalTire2/100 | at spawn 4 of 4 | id 220
 [PZTEST] Base.89fordBronco            clear physics static=nil active=nil -> static=nil active=nil
-[PZTEST] Base.89fordBronco            clear mass  1357  power   4100  v@3s  12.4  v@5s  21.9  t->30 never  dist 14.1  rpm max  3697/4500 pinned   0%  [NormalTire 1.25 off 1.06 eff 1.07]
-[PZTEST] Base.89defender90            road  tires FrontLeft=NormalTire2/100 FrontRight=NormalTire2/100 RearLeft=NormalTire2/100 RearRight=NormalTire2/100 | at spawn 4 of 4 | id 203
+[PZTEST] Base.89fordBronco            clear mass  1353  power   4100  v@3s   8.2  v@5s  18.4  t->30 never  dist  9.6  rpm max  3160/4500 pinned   0%  [NormalTire 1.25 off 1.06 eff 1.07]
+[PZTEST] Base.89defender90            road  tires FrontLeft=NormalTire2/100 FrontRight=NormalTire2/100 RearLeft=NormalTire2/100 RearRight=NormalTire2/100 | at spawn 4 of 4 | id 220
 [PZTEST] Base.89defender90            road  physics static=nil active=nil -> static=nil active=nil
-[PZTEST] Base.89defender90            road  mass  1051  power   4300  v@3s  31.7  v@5s  47.5  t->30 2.9s  dist 33.6  rpm max  4548/4500 pinned  14%  [NormalTire 1.25 off 1.25 eff 1.15]
-[PZTEST] Base.89defender90            clear tires FrontLeft=NormalTire2/100 FrontRight=NormalTire2/100 RearLeft=NormalTire2/100 RearRight=NormalTire2/100 | at spawn 4 of 4 | id 203
+[PZTEST] Base.89defender90            road  mass  1056  power   4300  v@3s  12.7  v@5s  34.2  t->30 4.6s  dist 14.0  rpm max  4485/4500 pinned  23%  [NormalTire 1.25 off 1.25 eff 1.15]
+[PZTEST] Base.89defender90            clear tires FrontLeft=NormalTire2/100 FrontRight=NormalTire2/100 RearLeft=NormalTire2/100 RearRight=NormalTire2/100 | at spawn 4 of 4 | id 220
 [PZTEST] Base.89defender90            clear physics static=nil active=nil -> static=nil active=nil
-[PZTEST] Base.89defender90            clear mass  1060  power   4300  v@3s  14.3  v@5s  24.5  t->30 never  dist 15.8  rpm max  4461/4500 pinned   8%  [NormalTire 1.25 off 1.07 eff 1.15]
-[PZTEST] Base.78amgeneralM35A2        road  tires FrontLeft=NormalTire2/100 FrontRight=NormalTire2/100 RearLeft=NormalTire2/100 RearRight=NormalTire2/100 | at spawn 4 of 4 | id 203
+[PZTEST] Base.89defender90            clear mass  1059  power   4300  v@3s  14.3  v@5s  24.2  t->30 never  dist 15.8  rpm max  4491/4500 pinned   5%  [NormalTire 1.25 off 1.07 eff 1.15]
+[PZTEST] Base.78amgeneralM35A2        road  tires FrontLeft=NormalTire2/100 FrontRight=NormalTire2/100 RearLeft=NormalTire2/100 RearRight=NormalTire2/100 | at spawn 4 of 4 | id 220
 [PZTEST] Base.78amgeneralM35A2        road  physics static=nil active=nil -> static=nil active=nil
-[PZTEST] Base.78amgeneralM35A2        road  mass  1347  power   4350  v@3s  29.3  v@5s  43.2  t->30 3.1s  dist 32.0  rpm max  4541/4500 pinned  12%  [NormalTire 1.25 off 1.25 eff 1.20]
-[PZTEST] Base.78amgeneralM35A2        clear tires FrontLeft=NormalTire2/100 FrontRight=NormalTire2/100 RearLeft=NormalTire2/100 RearRight=NormalTire2/100 | at spawn 4 of 4 | id 203
+[PZTEST] Base.78amgeneralM35A2        road  mass  1345  power   4350  v@3s  29.2  v@5s  43.3  t->30 3.1s  dist 32.0  rpm max  4530/4500 pinned  13%  [NormalTire 1.25 off 1.25 eff 1.20]
+[PZTEST] Base.78amgeneralM35A2        clear tires FrontLeft=NormalTire2/100 FrontRight=NormalTire2/100 RearLeft=NormalTire2/100 RearRight=NormalTire2/100 | at spawn 4 of 4 | id 220
 [PZTEST] Base.78amgeneralM35A2        clear physics static=nil active=nil -> static=nil active=nil
-[PZTEST] Base.78amgeneralM35A2        clear mass  1340  power   4350  v@3s  15.4  v@5s  29.1  t->30 never  dist 17.6  rpm max  4542/4500 pinned  25%  [NormalTire 1.25 off 1.25 eff 1.20]
+[PZTEST] Base.78amgeneralM35A2        clear mass  1337  power   4350  v@3s  12.1  v@5s  18.9  t->30 never  dist 11.5  rpm max  4927/4500 pinned   7%  [NormalTire 1.25 off 1.07 eff 1.20]
 [PZTEST] DONE pass=2 fail=0
 status: done
 console errors mentioning Better Vehicle Dynamics: 0

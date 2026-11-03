@@ -3,14 +3,14 @@
 [PZTEST] world started at 10586,11180
 [PZTEST] protect: invisible=true
 [PZTEST] CleanUI loaded: false
-[PZTEST] cleared 61 parked vehicle(s)
+[PZTEST] cleared 59 parked vehicle(s)
 [PZTEST] PASS found a road
 [PZTEST] PASS spawned a car
 [PZTEST] PASS entered the car
 [PZTEST] PASS the mechanics window opens
 [PZTEST] PASS BVD created its info panel for the window
 [PZTEST] PASS the info panel is visible
-[PZTEST] PASS the info panel has rows (grips, load, Java part)  -- 9
+[PZTEST] PASS the info panel has rows (grips, load, Java part)  -- 11
 [PZTEST]   row: Tuning profile = Custom
 [PZTEST]   row: Java part = ZombieBuddy
 [PZTEST]   row: Tire type = ModernTire
@@ -18,8 +18,10 @@
 [PZTEST]   row: Wet grip = 1.46
 [PZTEST]   row: Snow grip = 1.46
 [PZTEST]   row: Off-road grip = 1.46
-[PZTEST]   row: Cargo load = 3.8
-[PZTEST]   row: Load penalty = -42% launch
+[PZTEST]   row: Engine force = 4000
+[PZTEST]   row: Launch limit = 2.9 per kg
+[PZTEST]   row: Cargo load = 4.9
+[PZTEST]   row: Load penalty = -43% launch
 [PZTEST] PASS the panel sits beside the window, not over it  -- window x 400..1200, panel x 1208..1488
 [PZTEST] DONE pass=8 fail=0
 status: done

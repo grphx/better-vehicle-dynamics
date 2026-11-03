@@ -53,14 +53,7 @@ Use one option, not both. If both are present the manual install wins and the Zo
 A zombie folder already copied onto a server is harmless; you can delete it.
 
 [h2]Updating from 0.1.15 or older[/h2]
-[b]Easiest:[/b] switch to ZombieBuddy (option A). Run Steam's [i]Verify integrity of game files[/i] to remove the old copied classes, enable ZombieBuddy, done.
-
-Staying on the manual install? Copy the new [b]zombie[/b] folder over the old one as usual, then [b]delete these two files[/b] from your Project Zomboid folder. Copying over the old folder does not remove them, and they are no longer part of the mod:
-[list]
-[*][code]zombie\iso\IsoChunkMap.class[/code]
-[*][code]zombie\iso\sprite\IsoSprite.class[/code] (plus the two [code]IsoSprite$...class[/code] files next to it)
-[/list]
-Or run Steam's [i]Verify integrity of game files[/i] and then copy the new zombie folder.
+Easiest: switch to ZombieBuddy (option A) and run Steam's [i]Verify integrity of game files[/i] to remove the old copied classes. Staying on the manual install? Copy the new [b]zombie[/b] folder over the old one, then delete [code]zombie\iso\IsoChunkMap.class[/code] and [code]zombie\iso\sprite\IsoSprite.class[/code] (plus the two [code]IsoSprite$...class[/code] files next to it) from your Project Zomboid folder: they are no longer part of the mod.
 
 [h1]For modders[/h1]
 A public Lua API lets other mods register vehicle reference data, tyre-grip profiles and content packs without touching this mod's files. Full reference: [url=https://branched-almanac-460.notion.site/Better-Vehicle-Dynamics-Public-Lua-API-36542ef13d238106a7afda59a82181f6]Better Vehicle Dynamics - Public Lua API[/url]

@@ -1,0 +1,21 @@
+===== sp mechanics_narrow =====
+[PZTEST] mode mechanics_narrow: launching test world
+[PZTEST] world started at 10586,11180
+[PZTEST] protect: invisible=true
+[PZTEST] CleanUI loaded: true, game window 1920x1061
+[PZTEST] cleared 62 parked vehicle(s)
+[PZTEST] PASS found a road
+[PZTEST] PASS spawned a car
+[PZTEST] PASS entered the car
+[PZTEST] PASS the mechanics window opens
+[PZTEST]   placement before 0.2.2: window x 560..1680 of 1920, panel exists, visible=true at x 272..552
+[PZTEST]   placement now: window x 560..1680 of 1920, panel exists, visible=true at x 272..552
+[PZTEST] FAIL the old placement hides the panel when there is no room (the failure)
+[PZTEST] PASS the current placement keeps the panel visible
+[PZTEST] PASS and it still has its rows
+[PZTEST] PASS and it is fully on screen
+[PZTEST] DONE pass=7 fail=1
+status: done
+console errors mentioning Better Vehicle Dynamics: 0
+Lua error lines: 0
+RESULT: FAIL

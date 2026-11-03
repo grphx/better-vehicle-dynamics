@@ -372,6 +372,8 @@ public final class BvdCar {
    private float gripOffroadOut = 1.0F;
    // Engine braking (v0.2): the retarding torque applied this tick and the revs it pulls the engine toward, for the readout and tests.
    private float engineBrakeOut = 0.0F;
+   private float driveLimitOut = 0.0F;   // the drive force limit per kg this tick (traction or the acceleration ceiling, whichever is lower)
+   private float powerUsedOut = 0.0F;   // the engine force the drivetrain used this tick (after the reference-power gain), for the readout and tests
    private float rpmFollowOut = 0.0F;
    private String tireFamilyOut = "";
    private float ladenRatioOut = 1.0F;
@@ -644,6 +646,8 @@ public final class BvdCar {
       this.computedOut.rawset("gripOffroad", (double)this.gripOffroadOut);
       this.computedOut.rawset("engineBrake", (double)this.engineBrakeOut);
       this.computedOut.rawset("rpmFollow", (double)this.rpmFollowOut);
+      this.computedOut.rawset("powerUsed", (double)this.powerUsedOut);
+      this.computedOut.rawset("driveLimit", (double)this.driveLimitOut);
       this.computedOut.rawset("ladenRatio", (double)this.ladenRatioOut);
       this.computedOut.rawset("loadPenalty", (double)this.loadPenaltyOut);
       bridge.rawset("computed", this.computedOut);
@@ -1780,15 +1784,21 @@ public final class BvdCar {
          this.cc.vehicleObject.transmissionNumber = TransmissionNumber.N;
       }
 
-      // The engine power is used as it is. The realism option's extra gain is applied to the vehicle
-      // scripts for every vehicle, registered or not (BVD_Overhaul.lua), not here for registered ones only.
       // The reference-power option (RealismHPWeight) boosts every car's power here, in the physics, instead of by
       // rewriting the script's engine force: the vehicle window then keeps showing the script's own number
       // (it prints engine force / 10 as "hp"), and the boost never compounds with a script reload.
       float scriptPower = this.cc.vehicleObject.getEnginePower();
       if (this.getSandboxOptionBoolean("BetterVehicleDynamics.RealismHPWeight", false)) {
-         scriptPower = Math.max(scriptPower, Math.min(scriptPower * REALISM_POWER_GAIN, REALISM_FORCE_CAP));
+         // A vehicle's power is stored per car when it spawns (script force x a quality factor of 0.6 to 1.0) and saved
+         // with the world. A car that spawned while 0.1.19 - 0.2.0 wrote the 4x into the scripts already carries it:
+         // its stored power is well above the script's own value now, so it is not boosted a second time.
+         float scriptForce = this.cc.vehicleObject.getScript().getEngineForce();
+         boolean alreadyBoosted = scriptForce > 0.0F && scriptPower > scriptForce * 1.05F;
+         if (!alreadyBoosted) {
+            scriptPower = Math.max(scriptPower, Math.min(scriptPower * REALISM_POWER_GAIN, REALISM_FORCE_CAP));
+         }
       }
+      this.powerUsedOut = scriptPower;
       float powerUnit = scriptPower / 10.0F;
 
       float engineRpm = (float)this.cc.vehicleObject.getEngineSpeed();
@@ -1960,6 +1970,16 @@ public final class BvdCar {
 
       float gripLimit = this.cc.vehicleObject.getMass() * 2.0F * this.gripFactor * this.getSandboxOption("BetterVehicleDynamics.GripLevel", 1.0F);
       this.lastGripLimit = gripLimit;
+      // Acceleration ceiling: whatever the engine, tyres or the GripLevel slider (it is applied in the grip factor AND
+      // here, so 1.5 acts like 2.25 on a launch) the drive force never exceeds mass x this. The default sits above
+      // what default-slider cars can put down (about 3), so it only bites when the sliders or a mod push past it. It is
+      // a mass-based limit, so it holds the same for every vehicle, vanilla or modded. 0 turns it off.
+      float accelCeiling = this.getSandboxOption("BetterVehicleDynamics.AccelCeiling", 4.0F);
+      float driveLimit = gripLimit;
+      if (accelCeiling > 0.0F) {
+         driveLimit = Math.min(gripLimit, this.cc.vehicleObject.getMass() * accelCeiling);
+      }
+      this.driveLimitOut = driveLimit / Math.max(1.0F, this.cc.vehicleObject.getMass());
       float forceScale = 1.0F;
       float brakeToTorque = 50.0F;
       // Engine braking: lifted off in gear and the wheels are turning the engine faster than it runs. The
@@ -1987,18 +2007,18 @@ public final class BvdCar {
       this.burnout = 0.0F;
       float vehSpeed = this.cc.vehicleObject.getCurrentSpeedKmHour() * BaseVehicle.getFakeSpeedModifier();
       if (gear == 0) {
-         this.drivenWheelSpeed -= (wheelTorque - gripLimit) * dt * 0.02F;
+         this.drivenWheelSpeed -= (wheelTorque - driveLimit) * dt * 0.02F;
          this.drivenWheelSpeed = Math.min(this.drivenWheelSpeed, vehSpeed);
          this.burnout = Math.max(vehSpeed - this.drivenWheelSpeed - 3.0F, 0.0F);
       } else {
-         this.drivenWheelSpeed += (wheelTorque - gripLimit) * dt * 0.02F;
+         this.drivenWheelSpeed += (wheelTorque - driveLimit) * dt * 0.02F;
          this.drivenWheelSpeed = Math.max(this.drivenWheelSpeed, vehSpeed);
          this.burnout = Math.max(this.drivenWheelSpeed - vehSpeed - 3.0F, 0.0F);
       }
 
-      if (wheelTorque > gripLimit) {
-         forceScale = gripLimit / Math.max(1.0F, wheelTorque);
-         wheelTorque = gripLimit;
+      if (wheelTorque > driveLimit) {
+         forceScale = driveLimit / Math.max(1.0F, wheelTorque);
+         wheelTorque = driveLimit;
       }
 
       if (gear == 0) {

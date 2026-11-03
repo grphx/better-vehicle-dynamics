@@ -57,6 +57,8 @@
 
     "Sandbox_BVD_EngineBraking": "Freio-motor",
     "Sandbox_BVD_EngineBraking_tooltip": "A intensidade com que o motor freia o carro quando você tira o pé do acelerador com uma marcha engatada, e como o giro acompanha a velocidade na pista (reduzir a marcha o aumenta). 0 desativa e restaura o comportamento antigo, 1 é um motor de rua normal, valores maiores equivalem a um diesel pesado ou a um motor de corrida. Marchas mais baixas freiam mais, como em um carro de verdade.",
+    "Sandbox_BVD_AccelCeiling": "Teto de aceleração",
+    "Sandbox_BVD_AccelCeiling_tooltip": "O mais forte que qualquer carro pode acelerar, seja qual for o motor, os pneus, o ajuste de aderência ou outros mods. É medido como força de tração por kg do veículo, então vale igual para todos os carros. 4 (o padrão) é a arrancada de um carro esportivo, de 0 a 100 km/h em cerca de 5 segundos; carros nos controles padrão nunca chegam nele. 0 desliga o teto.",
     "Sandbox_BVD_EngineBrakeLockup": "Travamento das rodas com marcha baixa demais",
     "Sandbox_BVD_EngineBrakeLockup_tooltip": "Engatar uma marcha muito baixa para a sua velocidade trava as rodas motrizes por um instante e pode fazer o carro derrapar. Desativado por padrão.",
 

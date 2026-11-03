@@ -328,9 +328,31 @@ local function ensureCompanion(mw)
     return p
 end
 
--- Position the companion adjacent to the mechanics window: right by
--- default, left if the right edge would run off-screen, with y clamped
--- on-screen and height clamped to the window height.
+--- Where the companion goes next to a window. Pure geometry, so it can be tested without the game. Tries the right
+--- side, the left side, below and above the window, in that order; the first spot that is fully on screen and clear
+--- of the window wins. If none is, the panel is pinned to the right edge of the screen over the window ("overlap"):
+--- a readable panel over the window is better than one that silently never shows.
+function BVD.dockCompanion(mx, my, mw, mh, pw, ph, sw, sh, gap)
+    local function clamp(v, lo, hi) if hi < lo then return lo end return math.max(lo, math.min(v, hi)) end
+    local function fits(x, y) return x >= 0 and y >= 0 and x + pw <= sw and y + ph <= sh end
+    local function clear(x, y) return x + pw <= mx or x >= mx + mw or y + ph <= my or y >= my + mh end
+    local spots = {
+        { mx + mw + gap, clamp(my, 0, sh - ph) },           -- right
+        { mx - pw - gap, clamp(my, 0, sh - ph) },           -- left
+        { clamp(mx, 0, sw - pw), my + mh + gap },           -- below
+        { clamp(mx, 0, sw - pw), my - ph - gap },           -- above
+    }
+    for i, spot in ipairs(spots) do
+        if fits(spot[1], spot[2]) and clear(spot[1], spot[2]) then
+            return spot[1], spot[2], (i <= 2) and "side" or "stacked"
+        end
+    end
+    return clamp(sw - pw, 0, sw), clamp(my, 0, sh - ph), "overlap"
+end
+
+local dockWarned = false
+
+-- Position the companion next to the mechanics window (see BVD.dockCompanion).
 local function repositionCompanion(mw, p)
     local rows = mw._bvdRows
     if not rows then
@@ -341,43 +363,28 @@ local function repositionCompanion(mw, p)
 
     local screenW = getCore():getScreenWidth()
     local screenH = getCore():getScreenHeight()
-
-    -- Height: prefer the panel's own content height, but never taller
-    -- than the mechanics window (keeps it visually paired and on-screen).
     local mwX, mwY = mw:getX(), mw:getY()
     local mwW, mwH = mw:getWidth(), mw:getHeight()
+
+    -- Height: the panel's own content height, at most the screen height (and, beside the window, the window's).
     local h = p:contentHeight()
-    if h > mwH then h = mwH end
     if h < 60 then h = 60 end
-
-    -- X: dock right by default; fall back to left if the right dock
-    -- would push the panel off the right screen edge.
-    local x = mwX + mwW + GAP
-    if x + PANEL_W > screenW then
-        x = mwX - PANEL_W - GAP
+    if h > screenH then h = screenH end
+    local sideH = math.min(h, mwH)
+    local x, y, mode = BVD.dockCompanion(mwX, mwY, mwW, mwH, PANEL_W, sideH, screenW, screenH, GAP)
+    if mode == "stacked" then
+        x, y, mode = BVD.dockCompanion(mwX, mwY, mwW, mwH, PANEL_W, h, screenW, screenH, GAP)
     end
-    -- Last-resort clamp so it always stays fully on-screen horizontally.
-    if x < 0 then x = 0 end
-    if x + PANEL_W > screenW then x = screenW - PANEL_W end
-
-    -- Y: align to the window top, then clamp so the whole panel is
-    -- on-screen vertically.
-    local y = mwY
-    if y + h > screenH then y = screenH - h end
-    if y < 0 then y = 0 end
-
-    -- If neither dock could clear the window (pathological narrow screen /
-    -- very wide window), hide rather than draw stacked over it — the whole
-    -- point of this panel is to never obscure the mechanics screen.
-    if x < mwX + mwW and x + PANEL_W > mwX then
-        if p:isVisible() then p:setVisible(false) end
-        return
+    if mode == "overlap" and not dockWarned then
+        dockWarned = true
+        print(string.format("[BVD] info panel: no free spot next to the mechanics window (window %dx%d at %d,%d, screen %dx%d); pinned to the screen edge",
+            mwW, mwH, mwX, mwY, screenW, screenH))
     end
 
     p:setX(x)
     p:setY(y)
     p:setWidth(PANEL_W)
-    p:setHeight(h)
+    p:setHeight((mode == "stacked") and h or sideH)
     if not p:isVisible() then p:setVisible(true) end
     -- Keep the companion painted above the mechanics window.
     p:bringToTop()

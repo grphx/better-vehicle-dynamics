@@ -57,6 +57,8 @@
 
     "Sandbox_BVD_EngineBraking": "Hamowanie silnikiem",
     "Sandbox_BVD_EngineBraking_tooltip": "Jak mocno silnik zwalnia samochód, gdy zdejmiesz nogę z gazu na wybranym biegu, oraz jak obroty podążają za prędkością jazdy (redukcja biegu je podnosi). 0 wyłącza ten mechanizm i przywraca dawne zachowanie, 1 to zwykły silnik drogowy, wyższe wartości oznaczają ciężki diesel lub silnik wyścigowy. Niższe biegi hamują mocniej, jak w prawdziwym samochodzie.",
+    "Sandbox_BVD_AccelCeiling": "Limit przyspieszenia",
+    "Sandbox_BVD_AccelCeiling_tooltip": "Maksymalne przyspieszenie dowolnego auta, niezależnie od silnika, opon, ustawienia przyczepności czy innych modów. Mierzone jako siła napędowa na kg pojazdu, więc działa tak samo dla każdego auta. 4 (domyślnie) to start sportowego auta, 0-100 km/h w około 5 sekund; auta na domyślnych suwakach go nie osiągają. 0 wyłącza limit.",
     "Sandbox_BVD_EngineBrakeLockup": "Blokowanie kół na zbyt niskim biegu",
     "Sandbox_BVD_EngineBrakeLockup_tooltip": "Wrzucenie biegu zdecydowanie zbyt niskiego jak na twoją prędkość na chwilę blokuje koła napędowe i może wprowadzić auto w poślizg. Domyślnie wyłączone.",
 

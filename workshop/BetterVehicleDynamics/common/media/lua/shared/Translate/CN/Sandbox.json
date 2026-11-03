@@ -57,6 +57,8 @@
 
     "Sandbox_BVD_EngineBraking": "发动机制动",
     "Sandbox_BVD_EngineBraking_tooltip": "挂挡时松开油门，发动机让车减速的力度，以及转速如何跟随车速变化（降挡会使转速升高）。0 为关闭，恢复旧有表现；1 为普通公路发动机；更高则相当于重型柴油机或赛车发动机。与真实车辆一样，挡位越低，制动越强。",
+    "Sandbox_BVD_AccelCeiling": "加速上限",
+    "Sandbox_BVD_AccelCeiling_tooltip": "无论发动机、轮胎、抓地力设置或其他模组如何，任何车辆能达到的最大加速度。以每公斤车重的驱动力计算，因此对所有车辆一视同仁。4（默认值）约相当于跑车起步，0 到 100 公里/小时约 5 秒；使用默认滑块的车辆不会达到该值。设为 0 可关闭上限。",
     "Sandbox_BVD_EngineBrakeLockup": "挡位过低时车轮抱死",
     "Sandbox_BVD_EngineBrakeLockup_tooltip": "以远低于当前车速所适合的挡位强行降挡时，驱动轮会瞬间抱死，并可能使车辆打滑。默认关闭。",
 

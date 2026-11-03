@@ -57,6 +57,8 @@
 
     "Sandbox_BVD_EngineBraking": "Frein moteur",
     "Sandbox_BVD_EngineBraking_tooltip": "Intensité avec laquelle le moteur ralentit la voiture quand vous levez le pied de l'accélérateur avec une vitesse engagée, et la façon dont le régime suit la vitesse sur route (un rétrogradage l'augmente). 0 le désactive et redonne l'ancien comportement, 1 correspond à un moteur de route normal, plus haut à un gros diesel ou un moteur de course. Les vitesses basses freinent plus fort, comme dans une vraie voiture.",
+    "Sandbox_BVD_AccelCeiling": "Plafond d'accélération",
+    "Sandbox_BVD_AccelCeiling_tooltip": "L'accélération maximale que peut atteindre n'importe quelle voiture, quels que soient son moteur, ses pneus, le réglage d'adhérence ou d'autres mods. Elle se mesure en force motrice par kg de véhicule, donc elle vaut pareil pour toutes les voitures. 4 (par défaut) correspond au départ d'une voiture de sport, 0 à 100 km/h en environ 5 secondes ; les voitures aux curseurs par défaut ne l'atteignent jamais. 0 désactive le plafond.",
     "Sandbox_BVD_EngineBrakeLockup": "Blocage des roues sur une vitesse trop basse",
     "Sandbox_BVD_EngineBrakeLockup_tooltip": "Rétrograder sur une vitesse beaucoup trop basse pour votre vitesse bloque brièvement les roues motrices et peut faire glisser la voiture. Désactivé par défaut.",
 

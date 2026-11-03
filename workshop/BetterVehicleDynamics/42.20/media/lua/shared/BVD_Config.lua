@@ -115,6 +115,7 @@ local function buildCfg()
         -- Drivetrain
         EnginePower     = num("EnginePower",    1.0),
         EngineBraking     = num("EngineBraking",     1.0),
+        AccelCeiling      = num("AccelCeiling",      4.0),
         EngineBrakeLockup = boolFalse("EngineBrakeLockup"),
         ManualClutch      = boolFalse("ManualClutch"),
         ManualStall       = boolFalse("ManualStall"),

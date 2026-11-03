@@ -57,6 +57,8 @@
 
     "Sandbox_BVD_EngineBraking": "Motor freni",
     "Sandbox_BVD_EngineBraking_tooltip": "Vitesteyken gazdan ayağınızı çektiğinizde motorun aracı ne kadar sert yavaşlattığı ve devrin yol hızını nasıl takip ettiği (vites küçültmek devri yükseltir). 0 kapatır ve eski davranışı verir, 1 normal bir yol motorudur, daha yüksek değerler ağır bir dizel ya da yarış motorudur. Gerçek bir arabada olduğu gibi düşük vitesler daha sert frenler.",
+    "Sandbox_BVD_AccelCeiling": "Hızlanma sınırı",
+    "Sandbox_BVD_AccelCeiling_tooltip": "Motoru, lastikleri, tutuş ayarı veya diğer modlar ne olursa olsun, herhangi bir arabanın yapabileceği en güçlü hızlanma. Araç kütlesinin kilogramı başına çekiş kuvveti olarak ölçülür, bu yüzden her araç için aynı geçerlidir. 4 (varsayılan) bir spor arabanın kalkışına yakındır, 0'dan 100 km/s'ye yaklaşık 5 saniye; varsayılan ayarlardaki arabalar buna ulaşmaz. 0 sınırı kapatır.",
     "Sandbox_BVD_EngineBrakeLockup": "Çok düşük vitesde teker kilitlenmesi",
     "Sandbox_BVD_EngineBrakeLockup_tooltip": "Hızınıza göre çok düşük bir vitese düşmek, çekiş tekerlerini bir anlığına kilitler ve aracı kaydırabilir. Varsayılan olarak kapalı.",
 

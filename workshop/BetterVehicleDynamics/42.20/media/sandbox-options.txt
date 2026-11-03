@@ -36,6 +36,12 @@ option BetterVehicleDynamics.EngineBraking
     page = BetterVehicleDynamics_Drivetrain, translation = BVD_EngineBraking,
 }
 
+option BetterVehicleDynamics.AccelCeiling
+{
+    type = double, min = 0.0, max = 10.0, default = 4.0,
+    page = BetterVehicleDynamics_Drivetrain, translation = BVD_AccelCeiling,
+}
+
 option BetterVehicleDynamics.EngineBrakeLockup
 {
     type = boolean, default = false,

@@ -1,3 +1,4 @@
+BVD = BVD or {}
 local MIN_INTERVAL_MS = 50     -- sample the path often (low lag, smooth arcs)
 local DEDUPE_MS       = 1500
 local BURNOUT_SPEED   = 10
@@ -14,6 +15,19 @@ local CELL_TILES    = 0.15     -- dedupe / interpolation cell size (tiles).
                                -- stamps overlap heavily and read as a
                                -- continuous line, not a string of dots.
 local MAX_FILL_DIST = 20.0     -- skip the fill past this (teleport/chunk load)
+-- A skid is one continuous streak only while the drops keep coming. Samples are 50 ms apart; past this gap the
+-- previous drop belongs to an earlier skid, and drawing from it to the car (or taking the heading from it) would
+-- put the start of the new marks far behind the car.
+local STREAK_GAP_MS = 300
+local function streakGap() return BVD.skidStreakGapMs or STREAK_GAP_MS end   -- BVD.skidStreakGapMs: test override
+
+-- Counters the automated test reads: how streaks start and how long the fills between drops are.
+BVD.skidStats = { fresh = 0, fills = 0, maxFill = 0 }
+
+--- Does a drop at `now` on level `z` carry on the streak that ended with `prev` ({x, y, z, ts} or nil)?
+function BVD.skidStreakContinues(prev, now, z)
+    return prev ~= nil and prev.z == z and prev.ts ~= nil and (now - prev.ts) <= streakGap()
+end
 
 local TYPE_V, TYPE_H, TYPE_D1, TYPE_D2 = 21, 22, 23, 24
 
@@ -68,7 +82,9 @@ local function vehicleHeadingDeg(v)
     local id = v.getId and v:getId() or tostring(v)
     local x, y = v:getX(), v:getY()
     local prev = lastPos[id]
-    lastPos[id] = { x = x, y = y, ts = (getTimestampMs and getTimestampMs() or 0) }
+    local nowMs = (getTimestampMs and getTimestampMs() or 0)
+    lastPos[id] = { x = x, y = y, ts = nowMs }
+    if prev and prev.ts and (nowMs - prev.ts) > streakGap() then prev = nil end   -- a new skid: no stale heading
     if prev then
         local dx, dy = x - prev.x, y - prev.y
         if (dx * dx + dy * dy) > 0.0004 then   -- ~0.02 tile of motion
@@ -332,10 +348,13 @@ local function dropMark(v, sq)
     for _, p in ipairs(wheels) do
         local key  = vid .. ":" .. p.idx
         local prev = lastDropPerWheel[key]
-        if prev and prev.z == vz then
+        if BVD.skidStreakContinues(prev, now, vz) then
             local dx, dy = p.x - prev.x, p.y - prev.y
             local dist = math.sqrt(dx * dx + dy * dy)
             if dist > 0.0 and dist <= MAX_FILL_DIST then
+                local st = BVD.skidStats
+                st.fills = st.fills + 1
+                if dist > st.maxFill then st.maxFill = dist end
                 local steps = math.ceil(dist / CELL_TILES)
                 for i = 1, steps do
                     local f = i / steps
@@ -345,6 +364,9 @@ local function dropMark(v, sq)
                 placeSplatAt(p.x, p.y, vz, t, now)
             end
         else
+            local st = BVD.skidStats
+            st.fresh = st.fresh + 1
+            if not st.firstX then st.firstX, st.firstY = p.x, p.y end
             placeSplatAt(p.x, p.y, vz, t, now)
         end
         lastDropPerWheel[key] = { x = p.x, y = p.y, z = vz, ts = now }

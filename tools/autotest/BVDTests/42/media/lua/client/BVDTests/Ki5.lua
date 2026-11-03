@@ -133,6 +133,8 @@ local function measureOnce(p, script, surface, x, y)
     T.drive(false, false, 0)
     pcall(ISVehicleMenu.onExit, p)
     T.waitFor(function() return p:getVehicle() == nil end, 5)
+    pcall(ISTimedActionQueue.clear, p)   -- a finished exit action must not stop() against a removed car
+    T.wait(0.4)
     v:permanentlyRemove()
     T.log(string.format("%-28s %-5s mass %5.0f  power %6.0f  v@3s %5.1f  v@5s %5.1f  t->30 %s  dist %4.1f  rpm max %5.0f/%d pinned %3.0f%%  [%s]",
         script, surface, mass, power, v3 or -1, v6, t30 and string.format("%.1fs", t30) or "never", dist, maxRpm, redline, 100 * pinned / math.max(1, samples), gripNote))
@@ -435,6 +437,8 @@ local function coastOnce(p, rx, ry, knob)
     local r, why = coastRun(p, v, knob)
     pcall(ISVehicleMenu.onExit, p)
     T.waitFor(function() return p:getVehicle() == nil end, 5)
+    pcall(ISTimedActionQueue.clear, p)   -- a finished exit action must not stop() against a removed car
+    T.wait(0.4)
     v:permanentlyRemove()
     T.wait(1)
     return r, why
@@ -542,6 +546,8 @@ local function withCar(p, rx, ry, fn)
         end
         pcall(ISVehicleMenu.onExit, p)
         T.waitFor(function() return p:getVehicle() == nil end, 5)
+        pcall(ISTimedActionQueue.clear, p)   -- a finished exit action must not stop() against a removed car
+        T.wait(0.4)
         v:permanentlyRemove()
         T.wait(1)
         if moved then return true end
@@ -866,6 +872,8 @@ local function bushRun(p, x, y, label, bushes)
     T.drive(false, false, 0)
     pcall(ISVehicleMenu.onExit, p)
     T.waitFor(function() return p:getVehicle() == nil end, 5)
+    pcall(ISTimedActionQueue.clear, p)   -- a finished exit action must not stop() against a removed car
+    T.wait(0.4)
     v:permanentlyRemove()
     T.wait(1)
 end
@@ -1013,6 +1021,209 @@ T.register("install", function(T)
     end)
     T.check("the info panel has a Java part row", ok and row ~= nil)
     T.check("it says ZombieBuddy when the ZombieBuddy layer is active", row and row[2] == "ZombieBuddy", row and tostring(row[2]) or "no row")
+end, where)
+
+-- Reference power & weight on: a car's stored power (script force x quality, saved with the world) decides what the
+-- drivetrain uses. A car that spawned while 0.1.19 - 0.2.0 wrote the 4x into the scripts already carries it and must
+-- not be boosted a second time (0.2.1 did, up to 28000: "modded cars feel extremely fast after the update").
+T.register("power", function(T)
+    T.wait(4)
+    local p = getPlayer()
+    T.check("BVD ZombieBuddy layer active", type(BVD_zombieBuddyActive) == "function" and BVD_zombieBuddyActive() == true)
+    T.clearCars(p, 300)
+    local rx, ry = findLine("blends_street", ROAD.x, ROAD.y, nil, true, 90)
+    if not rx then rx, ry = findLine("blends_street", ROAD.x, ROAD.y, nil, true, 60) end
+    if not T.check("found a road", rx ~= nil) then return end
+    local script = getScriptManager():getVehicle("Base.CarNormal")
+    T.log("script engine force " .. tostring(script:getEngineForce()))
+    local function used(option, stored)
+        setOpt2("RealismHPWeight", option)
+        T.wait(2)
+        local got
+        local ok = withCar(p, rx, ry, function(v)
+            v:setEngineFeature(100, 30, stored)
+            BetterVehicleDynamicsMod.computed = nil
+            T.drive(true, true, 0)
+            T.wait(1.5)
+            local c = BetterVehicleDynamicsMod.computed
+            got = c and tonumber(c.powerUsed)
+            T.drive(true, false, 0)
+        end)
+        return ok and got or nil
+    end
+    local S = script:getEngineForce()
+    T.check("option off: the stored power is used as it is", used(false, S) == S, tostring(used(false, S)))
+    local normal = used(true, S)
+    T.check("option on: a normal car gets the 4x (capped at 28000)", normal == math.min(S * 4, 28000), tostring(normal))
+    local damaged = used(true, math.floor(S * 0.7))
+    T.check("option on: a worn engine (70% power) is boosted from its own value", damaged == math.min(math.floor(S * 0.7) * 4, 28000), tostring(damaged))
+    local old = used(true, math.min(S * 4, 28000))
+    T.check("option on: a car that spawned with the old boost already in its power is NOT boosted again", old == math.min(S * 4, 28000), tostring(old))
+    setOpt2("RealismHPWeight", false)
+end, where)
+
+-- How fast does a plain car pull under the settings that could make a car "do 120 in 3 seconds"? Speed at 3 s from
+-- a standstill for stored power x option x sandbox sliders.
+T.register("accel_sweep", function(T)
+    T.wait(4)
+    local p = getPlayer()
+    p:setGodMod(true); p:setGhostMode(true)
+    T.clearCars(p, 300)
+    local rx, ry = findLine("blends_street", ROAD.x, ROAD.y, nil, true, 90)
+    if not rx then rx, ry = findLine("blends_street", ROAD.x, ROAD.y, nil, true, 60) end
+    if not T.check("found a road", rx ~= nil) then return end
+    local S = getScriptManager():getVehicle("Base.CarNormal"):getEngineForce()
+    -- { label, reference power option, stored power, EnginePower, GripLevel, AccelCeiling }
+    local cases = {
+        { "default sliders, option on, ceiling 4 (shipped)",   true, S,     1.0, 1.0, 4.0 },
+        { "casual-like (power 1.4, grip 1.5), NO ceiling",      true, S,     1.4, 1.5, 0.0 },
+        { "casual-like (power 1.4, grip 1.5), ceiling 4",       true, S,     1.4, 1.5, 4.0 },
+        { "grip 2.0, NO ceiling",                               true, S,     1.0, 2.0, 0.0 },
+        { "grip 2.0, ceiling 4",                                true, S,     1.0, 2.0, 4.0 },
+        { "power 5 + grip 2.0 (slider maxima), ceiling 4",      true, S,     5.0, 2.0, 4.0 },
+        { "old boost baked (7S = 28000), grip 1.5, ceiling 4",  true, S * 7, 1.0, 1.5, 4.0 },
+    }
+    for _, c in ipairs(cases) do
+        setOpt2("RealismHPWeight", c[2]); setOpt2("EnginePower", c[4]); setOpt2("GripLevel", c[5]); setOpt2("AccelCeiling", c[6])
+        T.wait(2)
+        local v3, v5, used, lim
+        withCar(p, rx, ry, function(v)
+            v:setEngineFeature(100, 30, c[3])
+            BetterVehicleDynamicsMod.computed = nil
+            local t0 = getTimestampMs()
+            T.drive(true, true, 0)
+            while getTimestampMs() - t0 < 5000 do
+                local el = (getTimestampMs() - t0) / 1000
+                if not v3 and el >= 3 then v3 = math.abs(v:getCurrentSpeedKmHour()) end
+                local cc = BetterVehicleDynamicsMod.computed
+                if cc then used = cc.powerUsed or used; lim = cc.driveLimit or lim end
+                if el <= 4.2 then v5 = math.abs(v:getCurrentSpeedKmHour()) end
+                coroutine.yield()
+            end
+            T.drive(true, false, 0)
+        end)
+        T.log(string.format("%-52s power %6s, drive limit %4.2f/kg   v@3s %5.1f  v@4s %5.1f km/h", c[1], tostring(used), lim or -1, v3 or -1, v5 or -1))
+    end
+    setOpt2("RealismHPWeight", false); setOpt2("EnginePower", 1.0); setOpt2("GripLevel", 1.0); setOpt2("AccelCeiling", 4.0)
+end, where)
+
+-- The vehicle info panel next to the mechanics window ("Better Vehicle Dynamics": grips, load penalty, Java part...).
+-- Run alone and with CleanUI + NeatUI Framework loaded: the panel must exist, be visible, have rows, and sit beside the
+-- window. A screenshot of the window is saved for the record.
+local function mechBody(T)
+    T.wait(4)
+    local p = getPlayer()
+    p:setGodMod(true); p:setGhostMode(true)
+    local cleanUI = false
+    pcall(function()
+        local mods = getActivatedMods()
+        for i = 0, mods:size() - 1 do if tostring(mods:get(i)):find("CleanUI", 1, true) then cleanUI = true end end
+    end)
+    T.log("CleanUI loaded: " .. tostring(cleanUI))
+    T.clearCars(p, 300)
+    local rx, ry = findLine("blends_street", ROAD.x, ROAD.y, nil, true, 60)
+    if not T.check("found a road", rx ~= nil) then return end
+    p:setX(rx + 0.5); p:setY(ry + 3.5); p:setZ(0)
+    p:setLastX(rx + 0.5); p:setLastY(ry + 3.5); p:setLastZ(0)
+    T.wait(3)
+    local v
+    for k = 1, 6 do
+        v = addVehicleDebug("Base.CarNormal", IsoDirections.N, nil, getCell():getGridSquare(rx, ry, 0))
+        if v then break end
+        T.wait(1.5)
+    end
+    if not T.check("spawned a car", v ~= nil) then return end
+    T.wait(1.5)
+    BVDTestsFix(v)
+    if not T.check("entered the car", enter(p, v)) then return end
+    v:tryStartEngine(true)
+    T.waitFor(function() return v:isEngineRunning() end, 8)
+    T.wait(1)
+    ISVehicleMechanics.cheat = true
+    ISVehicleMenu.onMechanic(p, v)
+    local ui
+    T.check("the mechanics window opens", T.waitFor(function()
+        ui = getPlayerMechanicsUI(0)
+        return ui and ui:isReallyVisible() or nil
+    end, 10) ~= nil)
+    T.wait(2.5)
+    local panel = ui and ui._bvdPanel
+    T.check("BVD created its info panel for the window", panel ~= nil)
+    T.check("the info panel is visible", panel ~= nil and panel:isVisible())
+    local rows = panel and panel._rows
+    T.check("the info panel has rows (grips, load, Java part)", rows ~= nil and #rows >= 5, rows and tostring(#rows) or "no rows")
+    if rows then
+        for _, r in ipairs(rows) do T.log(string.format("  row: %s = %s", tostring(r[1]), tostring(r[2]))) end
+    end
+    if panel and ui then
+        local beside = panel:getX() >= ui:getX() + ui:getWidth() - 1 or panel:getX() + panel:getWidth() <= ui:getX() + 1
+        T.check("the panel sits beside the window, not over it", beside, string.format("window x %d..%d, panel x %d..%d", ui:getX(), ui:getX() + ui:getWidth(), panel:getX(), panel:getX() + panel:getWidth()))
+    end
+    takeScreenshot(cleanUI and "mechanics_with_cleanui.png" or "mechanics_plain.png")
+    T.wait(1.5)
+    if ui then pcall(function() ui:close() end) end
+    ISVehicleMechanics.cheat = false
+end
+T.register("mechanics", mechBody, where)
+T.register("mechanics_cleanui", mechBody, where)
+
+-- Tire marks: a new skid must start at the car, not at the end of an earlier skid. Brake hard, move off, build speed
+-- and brake again; the second skid's marks may not be drawn from the old spot to the car. Run once with the old
+-- behaviour forced (BVD.skidStreakGapMs huge) to show the test sees the bug, and once as shipped.
+T.register("skidstreak", function(T)
+    T.wait(4)
+    local p = getPlayer()
+    p:setGodMod(true); p:setGhostMode(true)
+    T.clearCars(p, 300)
+    local rx, ry = findLine("blends_street", ROAD.x, ROAD.y, nil, true, 90)
+    if not rx then rx, ry = findLine("blends_street", ROAD.x, ROAD.y, nil, true, 60) end
+    if not T.check("found a road", rx ~= nil) then return end
+    T.check("the skid mark code is loaded", BVD.skidStats ~= nil and type(BVD.skidStreakContinues) == "function")
+    local function scenario(gap)
+        BVD.skidStreakGapMs = gap
+        local res = {}
+        local ok = withCar(p, rx, ry, function(v)
+            local sx, sy = v:getX(), v:getY()
+            local function where(tag) T.log(string.format("  %s: speed %.1f km/h, %.1f tiles from the start of this scenario, engine %s", tag, math.abs(v:getCurrentSpeedKmHour()), math.sqrt((v:getX() - sx) ^ 2 + (v:getY() - sy) ^ 2), tostring(v:isEngineRunning()))) end
+            T.drive(true, true, 0)
+            T.waitFor(function() return math.abs(v:getCurrentSpeedKmHour()) >= 40 end, 14)
+            where("before the first brake")
+            T.drive(true, false, 0)                                  -- first skid
+            T.wait(0.4)
+            local sv = SandboxVars.BetterVehicleDynamics
+            T.log(string.format("while braking: speed %.1f, brake pedal %s, driver is the player %s, SkidMarks option %s, marks so far fresh=%d fills=%d",
+                math.abs(v:getCurrentSpeedKmHour()), tostring(v:isBrakePedalPressed()), tostring(v:getDriver() == p), tostring(sv and sv.SkidMarks), BVD.skidStats.fresh, BVD.skidStats.fills))
+            T.waitFor(function() return math.abs(v:getCurrentSpeedKmHour()) < 1 end, 15)
+            T.drive(false, false, 0)
+            T.wait(0.6)
+            T.drive(true, true, 0)                                   -- move off, build speed
+            T.waitFor(function() return math.abs(v:getCurrentSpeedKmHour()) >= 36 end, 14)
+            where("before the second brake")
+            res.bx, res.by = v:getX(), v:getY()
+            BVD.skidStats = { fresh = 0, fills = 0, maxFill = 0 }
+            T.drive(true, false, 0)                                  -- second skid
+            T.waitFor(function() return math.abs(v:getCurrentSpeedKmHour()) < 1 end, 15)
+            T.drive(false, false, 0)
+            local st = BVD.skidStats
+            res.fresh, res.fills, res.maxFill, res.fx, res.fy = st.fresh, st.fills, st.maxFill, st.firstX, st.firstY
+        end)
+        BVD.skidStreakGapMs = nil
+        return ok and res or nil
+    end
+    local function report(tag, r)
+        if not r then T.log(tag .. ": the car never got going") return end
+        local first = r.fx and math.sqrt((r.fx - r.bx) ^ 2 + (r.fy - r.by) ^ 2) or -1
+        T.log(string.format("%s: second skid started with %d fresh streak(s), %d fills, longest fill %.1f tiles, first mark %.1f tiles from the car at brake start", tag, r.fresh or -1, r.fills or -1, r.maxFill or -1, first))
+        return first
+    end
+    local old = scenario(1e9)
+    local oldFirst = report("old behaviour (every earlier drop connects)", old)
+    local new = scenario(nil)
+    local newFirst = report("as shipped", new)
+    T.check("old behaviour reproduces the bug: a long fill from the earlier skid", old ~= nil and old.maxFill >= 6, old and string.format("%.1f tiles", old.maxFill) or "no run")
+    T.check("as shipped: the new skid starts a fresh streak", new ~= nil and new.fresh >= 1, new and tostring(new.fresh) or "no run")
+    T.check("as shipped: no long fill from the earlier skid (longest fill under 2 tiles)", new ~= nil and new.maxFill < 2.0, new and string.format("%.1f tiles", new.maxFill) or "no run")
+    T.check("as shipped: the first mark of the skid is at the car (within 4 tiles of where braking began)", newFirst ~= nil and newFirst >= 0 and newFirst <= 4.0, newFirst and string.format("%.1f tiles", newFirst) or "no run")
 end, where)
 
 T.register("others_vanilla", makeBody(false, false, OTHER_CARS), where)   -- run with BVD out of the mod list: the harness baseline

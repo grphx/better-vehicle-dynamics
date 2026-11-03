@@ -1,8 +1,8 @@
 diff --git a/zombie/core/physics/CarController.java b/zombie/core/physics/CarController.java
-index e82625b..48f4d4d 100644
+index e82625b..e3ee2ac 100644
 --- a/zombie/core/physics/CarController.java
 +++ b/zombie/core/physics/CarController.java
-@@ -1,840 +1,2392 @@
+@@ -1,840 +1,2395 @@
  package zombie.core.physics;
  
 +import java.util.ArrayList;
@@ -2291,6 +2291,9 @@ index e82625b..48f4d4d 100644
 +         // its stored power is well above the script's own value now, so it is not boosted a second time.
 +         float scriptForce = this.vehicleObject.getScript().getEngineForce();
 +         boolean alreadyBoosted = scriptForce > 0.0F && scriptPower > scriptForce * 1.05F;
++         if (bridge != null && bridge.rawgetBool("testNoBoostGuard")) {
++            alreadyBoosted = false;   // test switch: the 0.2.1 behaviour, to show the bug the guard fixes
++         }
 +         if (!alreadyBoosted) {
 +            scriptPower = Math.max(scriptPower, Math.min(scriptPower * REALISM_POWER_GAIN, REALISM_FORCE_CAP));
 +         }
@@ -2977,7 +2980,7 @@ index e82625b..48f4d4d 100644
              this.vehicleObject.stopSound(this.vehicleObject.ramSound);
              this.vehicleObject.ramSound = 0L;
           }
-@@ -844,6 +2396,55 @@ public final class CarController {
+@@ -844,6 +2399,55 @@ public final class CarController {
        }
     }
  
@@ -3033,7 +3036,7 @@ index e82625b..48f4d4d 100644
     private void updateBackSignal() {
        if (this.isGasR && this.vehicleObject.isEngineRunning() && this.vehicleObject.hasBackSignal() && !this.vehicleObject.isBackSignalEmitting()) {
           if (GameClient.client) {
-@@ -933,56 +2534,106 @@ public final class CarController {
+@@ -933,56 +2537,106 @@ public final class CarController {
     }
  
     public void updateControls() {
@@ -3178,7 +3181,7 @@ index e82625b..48f4d4d 100644
        }
  
        this.isGas = this.wasGas = false;
-@@ -1292,4 +2943,28 @@ public final class CarController {
+@@ -1292,4 +2946,28 @@ public final class CarController {
           this.minRpm = rpm;
        }
     }

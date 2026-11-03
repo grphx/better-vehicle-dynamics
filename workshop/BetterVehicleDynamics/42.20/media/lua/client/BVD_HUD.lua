@@ -168,6 +168,15 @@ local function buildRows(vehicle)
     do local s, t = gv("gripSnow")    rows[#rows + 1] = { "Snow grip",     s, t } end
     do local s, t = gv("gripOffroad") rows[#rows + 1] = { "Off-road grip", s, t } end
 
+    -- What the drivetrain is really using: the engine force after the reference-power boost, and the launch limit
+    -- per kg of the car (traction or the acceleration ceiling, whichever is lower). Handy in a "too fast" report.
+    if comp and type(comp.powerUsed) == "number" and comp.powerUsed > 0 then
+        rows[#rows + 1] = { "Engine force", string.format("%d", math.floor(comp.powerUsed + 0.5)), R_NORM }
+    end
+    if comp and type(comp.driveLimit) == "number" and comp.driveLimit > 0 then
+        rows[#rows + 1] = { "Launch limit", string.format("%.1f per kg", comp.driveLimit), R_NORM }
+    end
+
     -- Cargo load: total weight stowed across the vehicle's containers
     -- (additive — vanilla shows total mass, not the cargo portion).
     local cl = cargoLoad(vehicle)
@@ -371,6 +380,21 @@ local function repositionCompanion(mw, p)
     if h < 60 then h = 60 end
     if h > screenH then h = screenH end
     local sideH = math.min(h, mwH)
+    if BVD.dockLegacy then
+        -- test switch: the placement before 0.2.2 (right of the window, else left, else hide the panel)
+        local lx = mwX + mwW + GAP
+        if lx + PANEL_W > screenW then lx = mwX - PANEL_W - GAP end
+        if lx < 0 then lx = 0 end
+        if lx + PANEL_W > screenW then lx = screenW - PANEL_W end
+        if lx < mwX + mwW and lx + PANEL_W > mwX then
+            if p:isVisible() then p:setVisible(false) end
+            return
+        end
+        p:setX(lx); p:setY(math.max(0, math.min(mwY, screenH - sideH))); p:setWidth(PANEL_W); p:setHeight(sideH)
+        if not p:isVisible() then p:setVisible(true) end
+        p:bringToTop()
+        return
+    end
     local x, y, mode = BVD.dockCompanion(mwX, mwY, mwW, mwH, PANEL_W, sideH, screenW, screenH, GAP)
     if mode == "stacked" then
         x, y, mode = BVD.dockCompanion(mwX, mwY, mwW, mwH, PANEL_W, h, screenW, screenH, GAP)

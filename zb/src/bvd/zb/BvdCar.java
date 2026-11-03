@@ -1794,6 +1794,9 @@ public final class BvdCar {
          // its stored power is well above the script's own value now, so it is not boosted a second time.
          float scriptForce = this.cc.vehicleObject.getScript().getEngineForce();
          boolean alreadyBoosted = scriptForce > 0.0F && scriptPower > scriptForce * 1.05F;
+         if (bridge != null && bridge.rawgetBool("testNoBoostGuard")) {
+            alreadyBoosted = false;   // test switch: the 0.2.1 behaviour, to show the bug the guard fixes
+         }
          if (!alreadyBoosted) {
             scriptPower = Math.max(scriptPower, Math.min(scriptPower * REALISM_POWER_GAIN, REALISM_FORCE_CAP));
          }

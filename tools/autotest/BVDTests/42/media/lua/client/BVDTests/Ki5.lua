@@ -1059,6 +1059,12 @@ T.register("power", function(T)
     T.check("option on: a worn engine (70% power) is boosted from its own value", damaged == math.min(math.floor(S * 0.7) * 4, 28000), tostring(damaged))
     local old = used(true, math.min(S * 4, 28000))
     T.check("option on: a car that spawned with the old boost already in its power is NOT boosted again", old == math.min(S * 4, 28000), tostring(old))
+    -- the bug itself, on the same build: switch the guard off (0.2.1 behaviour) and the same car is boosted twice
+    BetterVehicleDynamicsMod.testNoBoostGuard = true
+    local twice = used(true, math.min(S * 4, 28000))
+    BetterVehicleDynamicsMod.testNoBoostGuard = nil
+    T.log("the same car with the guard switched off (0.2.1 behaviour): power used " .. tostring(twice))
+    T.check("without the guard the same car is boosted a second time (the reported bug)", twice == 28000, tostring(twice))
     setOpt2("RealismHPWeight", false)
 end, where)
 
@@ -1244,6 +1250,127 @@ T.register("skidstreak", function(T)
     T.check("as shipped: the new skid starts a fresh streak", new ~= nil and new.fresh >= 1, new and tostring(new.fresh) or "no run")
     T.check("as shipped: no long fill from the earlier skid (longest fill under 2 tiles)", new ~= nil and new.maxFill < 2.0, new and string.format("%.1f tiles", new.maxFill) or "no run")
     T.check("as shipped: the first mark of the skid is at the car (within 4 tiles of where the second launch began)", newFirst ~= nil and newFirst >= 0 and newFirst <= 4.0, newFirst and string.format("%.1f tiles", newFirst) or "no run")
+end, where)
+
+-- The info panel when there is no room beside the mechanics window (a small game window, with CleanUI loaded): the
+-- placement used before 0.2.2 hid the panel; the current one keeps it on screen. Both are measured in the same run.
+T.register("mechanics_narrow", function(T)
+    T.wait(4)
+    local p = getPlayer()
+    p:setGodMod(true); p:setGhostMode(true)
+    local cleanUI = false
+    pcall(function()
+        local mods = getActivatedMods()
+        for i = 0, mods:size() - 1 do if tostring(mods:get(i)):find("CleanUI", 1, true) then cleanUI = true end end
+    end)
+    T.log(string.format("CleanUI loaded: %s, game window %dx%d", tostring(cleanUI), getCore():getScreenWidth(), getCore():getScreenHeight()))
+    T.clearCars(p, 300)
+    local rx, ry = findLine("blends_street", ROAD.x, ROAD.y, nil, true, 60)
+    if not T.check("found a road", rx ~= nil) then return end
+    p:setX(rx + 0.5); p:setY(ry + 3.5); p:setZ(0)
+    p:setLastX(rx + 0.5); p:setLastY(ry + 3.5); p:setLastZ(0)
+    T.wait(3)
+    local v
+    for k = 1, 6 do
+        v = addVehicleDebug("Base.CarNormal", IsoDirections.N, nil, getCell():getGridSquare(rx, ry, 0))
+        if v then break end
+        T.wait(1.5)
+    end
+    if not T.check("spawned a car", v ~= nil) then return end
+    T.wait(1.5)
+    BVDTestsFix(v)
+    if not T.check("entered the car", enter(p, v)) then return end
+    v:tryStartEngine(true)
+    T.waitFor(function() return v:isEngineRunning() end, 8)
+    T.wait(1)
+    ISVehicleMechanics.cheat = true
+    ISVehicleMenu.onMechanic(p, v)
+    local ui
+    T.check("the mechanics window opens", T.waitFor(function()
+        ui = getPlayerMechanicsUI(0)
+        return ui and ui:isReallyVisible() or nil
+    end, 10) ~= nil)
+    local function state(tag)
+        T.wait(2.0)
+        local panel = ui and ui._bvdPanel
+        local vis = panel ~= nil and panel:isVisible()
+        T.log(string.format("  %s: window x %d..%d of %d, panel %s%s", tag, ui:getX(), ui:getX() + ui:getWidth(), getCore():getScreenWidth(),
+            panel and "exists" or "missing", panel and string.format(", visible=%s at x %d..%d", tostring(vis), panel:getX(), panel:getX() + panel:getWidth()) or ""))
+        return vis, panel
+    end
+    BVD.dockLegacy = true
+    local legacyVisible = state("placement before 0.2.2")
+    takeScreenshot("mechanics_narrow_before.png")
+    T.wait(1)
+    BVD.dockLegacy = nil
+    local nowVisible, panel = state("placement now")
+    takeScreenshot("mechanics_narrow_after.png")
+    T.check("the old placement hides the panel when there is no room (the failure)", legacyVisible == false)
+    T.check("the current placement keeps the panel visible", nowVisible == true)
+    local rows = panel and panel._rows
+    T.check("and it still has its rows", rows ~= nil and #rows >= 5)
+    if panel then
+        local sw, sh = getCore():getScreenWidth(), getCore():getScreenHeight()
+        T.check("and it is fully on screen", panel:getX() >= 0 and panel:getY() >= 0 and panel:getX() + panel:getWidth() <= sw and panel:getY() + panel:getHeight() <= sh)
+    end
+    T.wait(1)
+    if ui then pcall(function() ui:close() end) end
+    ISVehicleMechanics.cheat = false
+end, where)
+
+-- The most extreme launch the settings and mods allow: a modded race-tire profile (road grip 3), GripLevel 2, EnginePower 5,
+-- reference power on. With the ceiling off, then as shipped. Median of 3 runs of the time to 50 and to 100 km/h.
+T.register("accel_extreme", function(T)
+    T.wait(4)
+    local p = getPlayer()
+    p:setGodMod(true); p:setGhostMode(true)
+    T.clearCars(p, 300)
+    local rx, ry = findLine("blends_street", ROAD.x, ROAD.y, nil, true, 90)
+    if not rx then rx, ry = findLine("blends_street", ROAD.x, ROAD.y, nil, true, 60) end
+    if not T.check("found a road", rx ~= nil) then return end
+    local function median(t) table.sort(t) return t[math.ceil(#t / 2)] end
+    local race = { road = 3.0, wet = 3.0, snow = 3.0, offroad = 3.0 }
+    local cases = {
+        { "default sliders (reference power on)",                       1.0, 1.0, 4.0, false },
+        { "EXTREME: race tires 3.0, grip 2.0, power 5, NO ceiling",     5.0, 2.0, 0.0, true },
+        { "EXTREME: race tires 3.0, grip 2.0, power 5, ceiling 4",      5.0, 2.0, 4.0, true },
+    }
+    for _, c in ipairs(cases) do
+        setOpt2("RealismHPWeight", true); setOpt2("EnginePower", c[2]); setOpt2("GripLevel", c[3]); setOpt2("AccelCeiling", c[4])
+        T.wait(2)
+        if c[5] then
+            BetterVehicleDynamicsMod.tireProfiles = { NormalTire = race, ModernTire = race, OldTire = race }
+        else
+            if BVD.publishTireProfiles then BVD.publishTireProfiles() end
+        end
+        local t50s, t100s, v3s, lim = {}, {}, {}, nil
+        local attempts = 0
+        while #v3s < 3 and attempts < 7 do
+            attempts = attempts + 1
+            local t50, t100, v3
+            withCar(p, rx, ry, function(v)
+                BetterVehicleDynamicsMod.computed = nil
+                local t0 = getTimestampMs()
+                T.drive(true, true, 0)
+                while getTimestampMs() - t0 < 9000 do
+                    local el = (getTimestampMs() - t0) / 1000
+                    local sp = math.abs(v:getCurrentSpeedKmHour())
+                    if not t50 and sp >= 50 then t50 = el end
+                    if not t100 and sp >= 100 then t100 = el end
+                    if not v3 and el >= 3 then v3 = sp end
+                    local cc = BetterVehicleDynamicsMod.computed
+                    if cc then lim = cc.driveLimit or lim end
+                    coroutine.yield()
+                end
+                T.drive(true, false, 0)
+            end)
+            if v3 and v3 > 5 then v3s[#v3s + 1] = v3; t50s[#t50s + 1] = t50 or 9.5; t100s[#t100s + 1] = t100 or 9.5 end
+        end
+        T.log(string.format("%-58s drive limit %5.2f/kg   0-50 in %.1f s, 0-100 in %.1f s (9.5 = not reached in 9 s), speed at 3 s %.0f km/h (3 runs)",
+            c[1], lim or -1, #t50s > 0 and median(t50s) or -1, #t100s > 0 and median(t100s) or -1, #v3s > 0 and median(v3s) or -1))
+    end
+    setOpt2("RealismHPWeight", false); setOpt2("EnginePower", 1.0); setOpt2("GripLevel", 1.0); setOpt2("AccelCeiling", 4.0)
+    if BVD.publishTireProfiles then BVD.publishTireProfiles() end
 end, where)
 
 T.register("others_vanilla", makeBody(false, false, OTHER_CARS), where)   -- run with BVD out of the mod list: the harness baseline

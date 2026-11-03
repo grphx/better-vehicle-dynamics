@@ -416,62 +416,119 @@ end
 
 -- Idempotent install: a sentinel on the class prevents a second wrap
 -- (e.g. on /reloadlua) from stacking handlers and double-creating panels.
-if not ISVehicleMechanics.__bvdCompanionWrapped then
+--
+-- The hooks are installed on a class and on every window class derived from ISVehicleMechanics that defines its own
+-- copy of the methods. A UI mod such as Clean UI 2.0 (Rax's Reborn) opens its own window class
+-- (NR_VehicleMechanicsPanel) that overrides update / prerender / close / setVisible; wrapping only the vanilla class
+-- left that window without the info panel.
+-- NOTE: Kahlua's rawget() follows the class's inheritance chain, so "does this class define its own copy" is answered
+-- by comparing against the base class's current function, and "already wrapped" by a marker that holds the class itself.
+local function wrapMechanicsClass(cls)
+    if cls.__bvdWrappedClass == cls then return end
+    cls.__bvdWrappedClass = cls
+    local isBase = (cls == ISVehicleMechanics)
+    local function ownMethod(name)
+        local f = cls[name]
+        if type(f) ~= "function" then return nil end
+        if not isBase and f == ISVehicleMechanics[name] then return nil end   -- inherited: the base class's hook already covers it
+        return f
+    end
 
     -- update: invalidate cached rows so config/vehicle changes are picked
     -- up without per-frame rebuilds. update runs far less often than
     -- prerender/render and is the natural refresh point.
-    local _origUpdate = ISVehicleMechanics.update
-    function ISVehicleMechanics:update()
-        if _origUpdate then _origUpdate(self) end
-        self._bvdRows = nil
+    local _origUpdate = ownMethod("update")
+    if _origUpdate then
+        cls.update = function(self)
+            _origUpdate(self)
+            self._bvdRows = nil
+        end
     end
 
     -- prerender: original first (never suppressed), then create/reposition
     -- the companion in our own pcall. A fault here can never reach the
-    -- vanilla window.
-    local _origPrerender = ISVehicleMechanics.prerender
-    function ISVehicleMechanics:prerender()
-        if _origPrerender then _origPrerender(self) end
-        pcall(function()
-            -- Only show the companion while the window itself is visible
-            -- and not collapsed; otherwise tear it down so nothing is
-            -- orphaned behind a hidden/collapsed window.
-            if (not self:isVisible()) or self.isCollapsed or (not self.vehicle) then
-                if self._bvdPanel then teardownCompanion(self) end
-                return
+    -- window.
+    local _origPrerender = ownMethod("prerender")
+    if _origPrerender then
+        cls.prerender = function(self)
+            _origPrerender(self)
+            if (not isBase) and BVD.testNoSubclassWrap then return end   -- test switch: how a derived window behaved before 0.2.2
+            local ok, err = pcall(function()
+                -- Only show the companion while the window itself is visible
+                -- and not collapsed; otherwise tear it down so nothing is
+                -- orphaned behind a hidden/collapsed window.
+                if (not self:isVisible()) or self.isCollapsed or (not self.vehicle) then
+                    if self._bvdPanel then teardownCompanion(self) end
+                    return
+                end
+                local p = ensureCompanion(self)
+                if p then repositionCompanion(self, p) end
+            end)
+            if not ok and not BVD._dockErrorLogged then
+                BVD._dockErrorLogged = true
+                print("[BVD] info panel: could not place the panel next to the mechanics window (" .. tostring(err) .. ")")
             end
-            local p = ensureCompanion(self)
-            if p then repositionCompanion(self, p) end
-        end)
+        end
     end
 
-    -- close: vanilla removes itself from the UI manager here. Tear the
-    -- companion down too so no orphan is left on screen.
-    local _origClose = ISVehicleMechanics.close
-    function ISVehicleMechanics:close()
-        if _origClose then _origClose(self) end
-        pcall(teardownCompanion, self)
+    -- close: the window removes or hides itself here. Tear the companion
+    -- down too so no orphan is left on screen.
+    local _origClose = ownMethod("close")
+    if _origClose then
+        cls.close = function(self)
+            _origClose(self)
+            pcall(teardownCompanion, self)
+        end
     end
 
     -- setVisible(false): the window can be hidden without close() (e.g.
     -- joypad / escape paths). Mirror its visibility onto the companion,
     -- tearing it fully down when hidden so nothing lingers.
-    local _origSetVisible = ISVehicleMechanics.setVisible
-    function ISVehicleMechanics:setVisible(bVisible, joypadData)
-        if _origSetVisible then _origSetVisible(self, bVisible, joypadData) end
-        pcall(function()
-            if not bVisible then
-                if self._bvdPanel then teardownCompanion(self) end
-            end
-        end)
+    local _origSetVisible = ownMethod("setVisible")
+    if _origSetVisible then
+        cls.setVisible = function(self, bVisible, joypadData)
+            _origSetVisible(self, bVisible, joypadData)
+            pcall(function()
+                if not bVisible then
+                    if self._bvdPanel then teardownCompanion(self) end
+                end
+            end)
+        end
     end
+end
+
+-- Window classes other mods derive from ISVehicleMechanics (found by walking the global classes once every mod's Lua is
+-- loaded). Returns how many were newly wrapped.
+function BVD.wrapMechanicsSubclasses()
+    local found = 0
+    for name, v in pairs(_G) do
+        if type(v) == "table" and v ~= ISVehicleMechanics and v.__bvdWrappedClass ~= v then
+            local m, depth = getmetatable(v), 0
+            while type(m) == "table" and depth < 6 do
+                if m == ISVehicleMechanics then
+                    wrapMechanicsClass(v)
+                    found = found + 1
+                    print("[BVD] info panel: also attached to the mechanics window class " .. tostring(name))
+                    break
+                end
+                m = getmetatable(m)
+                depth = depth + 1
+            end
+        end
+    end
+    return found
+end
+
+if not ISVehicleMechanics.__bvdCompanionWrapped then
+    wrapMechanicsClass(ISVehicleMechanics)
 
     -- Last-resort sweep so a companion can never outlive its session even
     -- if the window vanished by an unhooked path. Registered once (inside
     -- the idempotent guard) so /reloadlua cannot stack handlers.
     if Events and Events.OnGameStop then Events.OnGameStop.Add(sweepCompanions) end
     if Events and Events.OnPlayerDeath then Events.OnPlayerDeath.Add(sweepCompanions) end
-
-    ISVehicleMechanics.__bvdCompanionWrapped = true
+    -- Mods that define their own window class load their Lua alongside this file in no fixed order, so look for them
+    -- again once the game has started.
+    if Events and Events.OnGameStart then Events.OnGameStart.Add(function() pcall(BVD.wrapMechanicsSubclasses) end) end
+    if Events and Events.OnCreatePlayer then Events.OnCreatePlayer.Add(function() pcall(BVD.wrapMechanicsSubclasses) end) end
 end

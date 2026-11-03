@@ -1129,12 +1129,16 @@ local function mechBody(T)
     T.wait(4)
     local p = getPlayer()
     p:setGodMod(true); p:setGhostMode(true)
-    local cleanUI = false
+    local cleanUI, rax = false, false
     pcall(function()
         local mods = getActivatedMods()
-        for i = 0, mods:size() - 1 do if tostring(mods:get(i)):find("CleanUI", 1, true) then cleanUI = true end end
+        for i = 0, mods:size() - 1 do
+            local m = tostring(mods:get(i))
+            if m:find("CleanUI", 1, true) then cleanUI = true end
+            if m:find("RaxUnifiedUI", 1, true) then rax = true end
+        end
     end)
-    T.log("CleanUI loaded: " .. tostring(cleanUI))
+    T.log("CleanUI loaded: " .. tostring(cleanUI) .. ", Rax Clean UI 2.0 loaded: " .. tostring(rax))
     T.clearCars(p, 300)
     local rx, ry = findLine("blends_street", ROAD.x, ROAD.y, nil, true, 60)
     if not T.check("found a road", rx ~= nil) then return end
@@ -1162,6 +1166,7 @@ local function mechBody(T)
         return ui and ui:isReallyVisible() or nil
     end, 10) ~= nil)
     T.wait(2.5)
+    T.log("mechanics window class: " .. tostring(ui and ui.Type) .. ", prerender is the one BVD wrapped: " .. tostring(ui ~= nil and ui.prerender == ISVehicleMechanics.prerender))
     local panel = ui and ui._bvdPanel
     T.check("BVD created its info panel for the window", panel ~= nil)
     T.check("the info panel is visible", panel ~= nil and panel:isVisible())
@@ -1174,7 +1179,7 @@ local function mechBody(T)
         local beside = panel:getX() >= ui:getX() + ui:getWidth() - 1 or panel:getX() + panel:getWidth() <= ui:getX() + 1
         T.check("the panel sits beside the window, not over it", beside, string.format("window x %d..%d, panel x %d..%d", ui:getX(), ui:getX() + ui:getWidth(), panel:getX(), panel:getX() + panel:getWidth()))
     end
-    takeScreenshot(cleanUI and "mechanics_with_cleanui.png" or "mechanics_plain.png")
+    takeScreenshot(rax and "mechanics_with_rax_cleanui2.png" or (cleanUI and "mechanics_with_cleanui.png" or "mechanics_plain.png"))
     T.wait(1.5)
     if ui then pcall(function() ui:close() end) end
     ISVehicleMechanics.cheat = false
@@ -1433,6 +1438,90 @@ T.register("accel_hugeforce", function(T)
     sc:Load("CarNormal", string.format("{ engineForce = %d, }", force0))
     setOpt2("RealismHPWeight", false); setOpt2("AccelCeiling", 4.0); setOpt2("EnginePower", 1.0); setOpt2("GripLevel", 1.0)
     if BVD.publishTireProfiles then BVD.publishTireProfiles() end
+end, where)
+
+-- Clean UI 2.0 (Rax's Reborn) opens its own mechanics window class (NR_VehicleMechanicsPanel, stored in its own table,
+-- overriding update/prerender/close/setVisible). Before 0.2.2 BVD only hooked the vanilla class, so this window never got the
+-- info panel. The test switch BVD.testNoSubclassWrap restores that behaviour for the "before" half of the run.
+T.register("mechanics_rax", function(T)
+    T.wait(4)
+    local p = getPlayer()
+    p:setGodMod(true); p:setGhostMode(true)
+    local rax = false
+    pcall(function()
+        local mods = getActivatedMods()
+        for i = 0, mods:size() - 1 do if tostring(mods:get(i)):find("RaxUnifiedUI", 1, true) then rax = true end end
+    end)
+    T.log("Clean UI 2.0 (Rax) loaded: " .. tostring(rax) .. ", window class NR_VehicleMechanicsPanel present: " .. tostring(NR_VehicleMechanicsPanel ~= nil))
+    T.clearCars(p, 300)
+    local rx, ry = findLine("blends_street", ROAD.x, ROAD.y, nil, true, 60)
+    if not T.check("found a road", rx ~= nil) then return end
+    p:setX(rx + 0.5); p:setY(ry + 3.5); p:setZ(0)
+    p:setLastX(rx + 0.5); p:setLastY(ry + 3.5); p:setLastZ(0)
+    T.wait(3)
+    local v
+    for k = 1, 6 do
+        v = addVehicleDebug("Base.CarNormal", IsoDirections.N, nil, getCell():getGridSquare(rx, ry, 0))
+        if v then break end
+        T.wait(1.5)
+    end
+    if not T.check("spawned a car", v ~= nil) then return end
+    T.wait(1.5)
+    BVDTestsFix(v)
+    if not T.check("entered the car", enter(p, v)) then return end
+    v:tryStartEngine(true)
+    T.waitFor(function() return v:isEngineRunning() end, 8)
+    T.wait(1)
+    local function window()
+        local w = NR_VehicleMechanicsPanel and NR_VehicleMechanicsPanel.panels and NR_VehicleMechanicsPanel.panels[0]
+        if w and w:isReallyVisible() then return w end
+        local u = getPlayerMechanicsUI(0)
+        if u and u:isReallyVisible() then return u end
+    end
+    BVD.testNoSubclassWrap = true      -- the "before": the derived window is not hooked
+    ISVehicleMechanics.cheat = true
+    ISVehicleMenu.onMechanic(p, v)
+    local ui = T.waitFor(window, 12)
+    T.check("the mechanics window opens", ui ~= nil)
+    if not ui then return end
+    T.log("window class: " .. tostring(ui.Type) .. " (a Rax window: " .. tostring(NR_VehicleMechanicsPanel ~= nil and ui == NR_VehicleMechanicsPanel.panels[0]) .. ")")
+    T.wait(2.5)
+    do
+        local mt = getmetatable(NR_VehicleMechanicsPanel)
+        T.log(string.format("diagnostic: metatable of the Rax class is ISVehicleMechanics: %s, class already wrapped: %s, _G is a table: %s",
+            tostring(mt == ISVehicleMechanics), tostring(NR_VehicleMechanicsPanel.__bvdWrappedClass == NR_VehicleMechanicsPanel), tostring(type(_G))))
+        local seen = 0
+        local ok, err = pcall(function() for k, v in pairs(_G) do seen = seen + 1 end end)
+        T.log("diagnostic: pairs(_G) ok=" .. tostring(ok) .. " entries=" .. tostring(seen) .. (ok and "" or (" error=" .. tostring(err))))
+    end
+    local before = ui._bvdPanel
+    T.log("before (derived window not hooked): info panel " .. (before and ("exists, visible=" .. tostring(before:isVisible())) or "missing"))
+    takeScreenshot("mechanics_rax_before.png")
+    BVD.testNoSubclassWrap = nil       -- the "after": as shipped
+    T.wait(2.5)
+    T.log(string.format("diagnostic: isVisible=%s isCollapsed=%s vehicle=%s prerender is the class's own wrapped function: %s, _bvdPanel=%s, sectionEnabled cfg DriverHUD=%s",
+        tostring(ui:isVisible()), tostring(ui.isCollapsed), tostring(ui.vehicle), tostring(ui.prerender ~= ISVehicleMechanics.prerender), tostring(ui._bvdPanel),
+        tostring(BVD.cfg and BVD.cfg().DriverHUD)))
+    local okp, errp = pcall(function() ui:prerender() end)
+    T.log("diagnostic: direct prerender call ok=" .. tostring(okp) .. " err=" .. tostring(errp))
+    T.log("diagnostic: after a direct prerender call _bvdPanel=" .. tostring(ui._bvdPanel) .. "; sectionEnabled via cfg: " .. tostring(BVD.cfg and BVD.cfg().DriverHUD))
+    local panel = ui._bvdPanel
+    local rows = panel and panel._rows
+    T.log("after (as shipped): info panel " .. (panel and string.format("exists, visible=%s at x %d..%d, window x %d..%d of %d", tostring(panel:isVisible()), panel:getX(), panel:getX() + panel:getWidth(), ui:getX(), ui:getX() + ui:getWidth(), getCore():getScreenWidth()) or "missing"))
+    takeScreenshot("mechanics_rax_after.png")
+    T.check("before: the Rax window had no info panel (the reported failure)", before == nil or before:isVisible() == false)
+    T.check("after: BVD created its info panel for the Rax window", panel ~= nil)
+    T.check("after: the info panel is visible", panel ~= nil and panel:isVisible())
+    T.check("after: the info panel has rows", rows ~= nil and #rows >= 5, rows and tostring(#rows) or "no rows")
+    if panel then
+        local sw, sh = getCore():getScreenWidth(), getCore():getScreenHeight()
+        T.check("after: it is fully on screen", panel:getX() >= 0 and panel:getY() >= 0 and panel:getX() + panel:getWidth() <= sw and panel:getY() + panel:getHeight() <= sh)
+    end
+    T.wait(1)
+    pcall(function() ui:close() end)
+    T.wait(1.5)
+    T.check("closing the Rax window removes the info panel", ui._bvdPanel == nil)
+    ISVehicleMechanics.cheat = false
 end, where)
 
 T.register("others_vanilla", makeBody(false, false, OTHER_CARS), where)   -- run with BVD out of the mod list: the harness baseline

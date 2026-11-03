@@ -1,0 +1,29 @@
+===== sp mechanics_rax =====
+[PZTEST] mode mechanics_rax: launching test world
+[PZTEST] world started at 10586,11180
+[PZTEST] protect: invisible=true
+[PZTEST] Clean UI 2.0 (Rax) loaded: true, window class NR_VehicleMechanicsPanel present: true
+[PZTEST] cleared 62 parked vehicle(s)
+[PZTEST] PASS found a road
+[PZTEST] PASS spawned a car
+[PZTEST] PASS entered the car
+[PZTEST] PASS the mechanics window opens
+[PZTEST] window class: NR_VehicleMechanicsPanel (a Rax window: true)
+[PZTEST] diagnostic: metatable of the Rax class is ISVehicleMechanics: true, class already wrapped: true, _G is a table: table
+[PZTEST] diagnostic: pairs(_G) ok=true entries=3472
+[PZTEST] before (derived window not hooked): info panel missing
+[PZTEST] diagnostic: isVisible=true isCollapsed=nil vehicle=BaseVehicle{  Name:null,  ID:91 } prerender is the class's own wrapped function: true, _bvdPanel=BVDCompanionPanel, sectionEnabled cfg DriverHUD=true
+[PZTEST] diagnostic: direct prerender call ok=true err=nil
+[PZTEST] diagnostic: after a direct prerender call _bvdPanel=BVDCompanionPanel; sectionEnabled via cfg: true
+[PZTEST] after (as shipped): info panel exists, visible=true at x 1208..1488, window x 400..1200 of 1600
+[PZTEST] PASS before: the Rax window had no info panel (the reported failure)
+[PZTEST] PASS after: BVD created its info panel for the Rax window
+[PZTEST] PASS after: the info panel is visible
+[PZTEST] PASS after: the info panel has rows  -- 11
+[PZTEST] PASS after: it is fully on screen
+[PZTEST] PASS closing the Rax window removes the info panel
+[PZTEST] DONE pass=10 fail=0
+status: done
+console errors mentioning Better Vehicle Dynamics: 0
+Lua error lines: 0
+RESULT: PASS

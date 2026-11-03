@@ -611,7 +611,9 @@ local function clutchBody(T)
         r.launchRunning = v:isEngineRunning()
         BVD.testClutch = true    -- a real driver presses the clutch to stop; braking with it out would stall the engine
         -- stop with a trace, once a second: when, and with what state, an engine dies on the way to a standstill
-        T.drive(true, false, 0)
+        -- the back key itself (PZTestReverse): T.drive(true, false) holds NO pedal, the car would only coast
+        local speed0 = v:getCurrentSpeedKmHour()
+        PZTestReverse(true, 0)
         local ts = getTimestampMs()
         local lastLog, wasRunning = 0, true
         while getTimestampMs() - ts < 15000 and math.abs(v:getCurrentSpeedKmHour()) >= 1 do
@@ -625,6 +627,8 @@ local function clutchBody(T)
             end
             coroutine.yield()
         end
+        r.brakeSeconds = (getTimestampMs() - ts) / 1000
+        r.brakeFrom = speed0
         T.drive(false, false, 0)
         BVD.testClutch = false
         -- 4. reverse gear
@@ -657,6 +661,8 @@ local function clutchBody(T)
     T.check("clutch held in first: the revs rise", (r.heldRpm or 0) > 2500, string.format("%.0f rpm", r.heldRpm or -1))
     T.check("letting the clutch out with the throttle down launches the car", (r.launchSpeed or 0) > 10, string.format("%.1f km/h", r.launchSpeed or -1))
     T.check("the launch does not stall the engine", r.launchRunning == true)
+    T.log(string.format("back key in clutch mode: %.1f km/h to a standstill in %.1f s", r.brakeFrom or -1, r.brakeSeconds or -1))
+    T.check("the back key brakes in clutch mode (standstill from speed in under 8 s, coasting needs 30+)", (r.brakeFrom or 0) > 15 and (r.brakeSeconds or 99) < 8)
     T.check("reverse gear drives the car backwards", (r.reverseSpeed or 0) > 3 and (r.reverseDot or 0) < 0, string.format("%.1f km/h, dot %.2f", r.reverseSpeed or -1, r.reverseDot or 0))
 
     -- stalling: third gear, clutch out, no throttle, from a standstill

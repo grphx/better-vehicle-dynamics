@@ -1,0 +1,47 @@
+WATCHDOG error [game] +5s: ERROR: General      f:0 at AngelCodeFont.parseFnt              > AngelCodeFont failed to load page 0 texture G:/SteamLibrary/steamapps/common/ProjectZomboid/media/mainfont_0.png
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793760736_error_game.png
+WATCHDOG error [game] +5s: ERROR: General      f:0 at AngelCodeFont.parseFnt              > AngelCodeFont failed to load page 0 texture G:/SteamLibrary/steamapps/common/ProjectZomboid/media/mainfont2_0.png
+WATCHDOG error [game] +5s: ERROR: General      f:0 at AngelCodeFont.parseFnt              > AngelCodeFont failed to load page 0 texture G:/SteamLibrary/steamapps/common/ProjectZomboid/media/fonts/zomboidDial
+WATCHDOG error [game] +12s: ERROR: General      f:0 at FluidContainerScript.load           > Sanitizing container name 'Large Bucket', name may not contain whitespaces.
+WATCHDOG error [game] +12s: ERROR: General      f:0 at FluidContainerScript.load           > Sanitizing container name 'Fuel Pump', name may not contain whitespaces.
+WATCHDOG error [game] +18s: ERROR: General      f:0 at CraftRecipeComponentScript.getIconTexture> CraftRecipeComponentScript: Recipe Piano missing UiConfigScript - falling back to SpriteConfigScript first wor
+WATCHDOG error [vanilla] +33s: ERROR: Lua          f:0 at Lua(Vanilla).handleMannequinZone    > ERROR: Mannequin zone missing properties in media/maps/Muldraugh, KY/objects.lua coords: 13583, 1299, 0
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793760764_error_vanilla.png
+WATCHDOG error [game] +33s: ERROR: General      f:0 at Basements.mergeRoomsOntoMetaCell    > duplicate RoomDef.metaID for room at 10707,9484,0
+WATCHDOG error [game] +39s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_21
+WATCHDOG error [game] +39s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_22
+WATCHDOG error [game] +39s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_23
+WATCHDOG error [game] +39s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_19
+WATCHDOG error [game] +39s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_18
+===== sp coast =====
+[PZTEST] mode coast: launching test world
+[PZTEST] world started at 10586,11180
+[PZTEST] protect: invisible=true
+[PZTEST] PASS BVD ZombieBuddy layer active
+[PZTEST] cleared 55 parked vehicle(s)
+[PZTEST] road start 10523,11204
+[PZTEST] PASS found a long road
+[PZTEST] PASS spawned the car for engine braking 0
+[PZTEST] engine braking 0.0: released at 30 km/h, accel to 3 s 26.9 km/h; after lift-off speed 33/32/28/22 km/h, rpm 2698/1557/717/651, rpm max 4501; decel 1.20 m/s2; run 38 m
+[PZTEST] engine braking 0.0: controller braking torque max 0.0, rpm 1829 vs follow target 0 at 0.8 s
+[PZTEST] PASS spawned the car for engine braking 1
+[PZTEST] engine braking 1.0: released at 30 km/h, accel to 3 s 27.3 km/h; after lift-off speed 30/25/0/0 km/h, rpm 4080/2071/1486/657, rpm max 4491; decel 3.04 m/s2; run 25 m
+[PZTEST] engine braking 1.0: controller braking torque max 326.9, rpm 2192 vs follow target 2300 at 0.8 s
+[PZTEST] PASS spawned the car for engine braking 2
+[PZTEST] engine braking 2.0: released at 30 km/h, accel to 3 s 26.8 km/h; after lift-off speed 32/26/0/0 km/h, rpm 2710/2111/1499/671, rpm max 4499; decel 3.29 m/s2; run 25 m
+[PZTEST] engine braking 2.0: controller braking torque max 553.3, rpm 2249 vs follow target 2367 at 0.8 s
+[PZTEST] PASS all three runs reached 30 km/h
+[PZTEST] PASS engine braking off applies no braking torque  -- 0.00
+[PZTEST] PASS engine braking 1 brakes the engine side on lift-off  -- 326.85
+[PZTEST] PASS engine braking 2 brakes harder than 1  -- 553.33 vs 326.85
+[PZTEST] PASS the revs follow the road after lift-off (within 30% of the target)  -- 2192 vs 2300 rpm
+[PZTEST] PASS the revs never pass 1.15 x redline  -- 4491 / 4499
+[PZTEST] DONE pass=11 fail=0
+status: done
+console errors mentioning Better Vehicle Dynamics: 0
+Lua error lines: 0
+RESULT: PASS
+WATCHDOG: 0 distinct error(s) while the test ran (0 in total); 13 at startup (asset/tile warnings, usually harmless)
+  startup by origin: game 12, vanilla 1
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793760736_error_game.png
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793760764_error_vanilla.png

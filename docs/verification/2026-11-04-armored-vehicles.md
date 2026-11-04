@@ -37,3 +37,14 @@ under 60 km/h; every car is bit-identical.
 - Harness: a Lua error froze the game on the Lua debugger (Break On Error under `-debug`); fixed with a ZombieBuddy
   patch in pzautotest. A watchdog (`pz-autotest/watchdog.py`) now classifies errors and reports stalls.
 - Regression: `sp` 12/12, 0 watchdog errors (`evidence-2026-11-04-armor/regression_sp.log`).
+
+## Regression for 0.2.4 (final build, `evidence-2026-11-04-armor/regression-0.2.4/`)
+`sp` 12/12, `clutch` 15/15, `coast` 11/11, `install` 3/3, `rules` 6/6, `power` 7/7, `skidstreak` 6/6, `mechanics` 8/8,
+`mechanics_cleanui` 8/8, `mechanics_rax` 10/10; dedicated server with two clients: admin 15/15, second client 5/5
+(`mp.log`).
+
+`profiles` is intermittent: 5/5 in 3 of 5 runs today (`profiles_r1,r2,r4`), 2 passed 1 failed in two (`profiles.log`,
+`profiles_r3`; with profiles off in one and on in the other the car drove but logged no upshift in the 9 s window). The
+same failure occurred once on 2026-11-03 before any of this work (`scratchpad full/profiles.log`, 2 passed 1 failed), and
+6 other runs that day passed. The change cannot touch it: the test car is `Base.CarNormal` with `maxSpeed 90`, a gear scale
+of 47.5, below the 71.25 threshold, so the new factor is exactly 1.0 (logged in `profiles_r4.log`).

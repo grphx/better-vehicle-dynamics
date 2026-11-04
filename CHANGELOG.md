@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.2.4] - 2026-11-04 - Slow vehicles: tracked armoured vehicles no longer crawl off-road
+
+Reported: the M1A1 Abrams and Papa Chad's armoured vehicles (M113, M163, M41, Humvee) "more or less unable to accelerate".
+Tested the real vehicles, as shipped, in game with BVD and with its Java part off.
+
+- **Fixed: vehicles with a low top speed launched far too slowly on soft ground.** The three Papa Chad tracked vehicles
+  script `maxSpeed = 25`. BVD turns top speed into the gear scale, which is about five times a car's for them, so
+  their wheel torque is far above what the ground can take and the driven wheels spun away at once on grass, the
+  engine unloaded and the force collapsed (the engine sat at its rev limit while the vehicle did 7 km/h). On clear
+  grass they did 7-10 km/h after 3 s (vanilla 30); they now do 18-22 and reach their top speed after 5 s, as they do
+  on the road. Only vehicles with a top speed under 60 km/h are affected; every car is unchanged.
+- The Abrams and the Humvee (top speed 85-90) were never stuck: they accelerate on the road and on grass, a third
+  slower than vanilla, which is BVD's general car tuning. Unchanged.
+- The tracked vehicles stay near their scripted 25 km/h (about 28 on the road); vanilla ignores that value and lets them
+  run past 40. Left as is for now.
+- Java change: ZombieBuddy users get it from Steam; manual installs copy the new classes again.
+
 ## [0.2.3] - 2026-11-04 - The info panel on "Clean UI 2.0 (Rax's Reborn)"
 
 Reported: with a Clean UI mod installed, BVD's panel beside the mechanics window (grips, load penalty...) does not show.

@@ -1,0 +1,53 @@
+\\wsl.localhost\Ubuntu\home\grphx\zomboid\better-vehicle-dynamics\zb\src\bvd\zb\Splat.java:47: warning: Unsafe is internal proprietary API and may be removed in a future release
+         sun.misc.Unsafe unsafe = (sun.misc.Unsafe)uf.get(null);
+                 ^
+\\wsl.localhost\Ubuntu\home\grphx\zomboid\better-vehicle-dynamics\zb\src\bvd\zb\Splat.java:47: warning: Unsafe is internal proprietary API and may be removed in a future release
+         sun.misc.Unsafe unsafe = (sun.misc.Unsafe)uf.get(null);
+                                           ^
+Note: \\wsl.localhost\Ubuntu\home\grphx\zomboid\better-vehicle-dynamics\zb\src\bvd\zb\Splat.java uses or overrides a deprecated API that is marked for removal.
+Note: Recompile with -Xlint:removal for details.
+2 warnings
+WATCHDOG error [game] +5s: ERROR: General      f:0 at AngelCodeFont.parseFnt              > AngelCodeFont failed to load page 0 texture G:/SteamLibrary/steamapps/common/ProjectZomboid/media/mainfont_0.png
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793760457_error_game.png
+WATCHDOG error [game] +5s: ERROR: General      f:0 at AngelCodeFont.parseFnt              > AngelCodeFont failed to load page 0 texture G:/SteamLibrary/steamapps/common/ProjectZomboid/media/mainfont2_0.png
+WATCHDOG error [game] +5s: ERROR: General      f:0 at AngelCodeFont.parseFnt              > AngelCodeFont failed to load page 0 texture G:/SteamLibrary/steamapps/common/ProjectZomboid/media/fonts/zomboidDial
+WATCHDOG error [game] +11s: ERROR: General      f:0 at FluidContainerScript.load           > Sanitizing container name 'Large Bucket', name may not contain whitespaces.
+WATCHDOG error [game] +11s: ERROR: General      f:0 at FluidContainerScript.load           > Sanitizing container name 'Fuel Pump', name may not contain whitespaces.
+WATCHDOG error [game] +18s: ERROR: General      f:0 at CraftRecipeComponentScript.getIconTexture> CraftRecipeComponentScript: Recipe Piano missing UiConfigScript - falling back to SpriteConfigScript first wor
+WATCHDOG error [vanilla] +33s: ERROR: Lua          f:0 at Lua(Vanilla).handleMannequinZone    > ERROR: Mannequin zone missing properties in media/maps/Muldraugh, KY/objects.lua coords: 13583, 1299, 0
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793760485_error_vanilla.png
+WATCHDOG error [game] +33s: ERROR: General      f:0 at Basements.mergeRoomsOntoMetaCell    > duplicate RoomDef.metaID for room at 10707,9484,0
+WATCHDOG error [game] +33s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_21
+WATCHDOG error [game] +33s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_22
+WATCHDOG error [game] +33s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_23
+WATCHDOG error [game] +33s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_19
+WATCHDOG error [game] +33s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_18
+===== sp sp =====
+[PZTEST] mode sp: launching test world
+[PZTEST] world started at 10586,11180
+[PZTEST] protect: invisible=true
+[PZTEST] BVD loaded from C:\Users\Grphx\PZTest\mods\BetterVehicleDynamics
+[PZTEST] PASS ZombieBuddy layer active  -- BVD_zombieBuddyActive = function 0x1410871372
+[PZTEST] PASS tyre-mark texture helper exposed
+[PZTEST] cleared 60 parked vehicle(s)
+[PZTEST] PASS car spawned
+[PZTEST] PASS BVD Java reports itself  -- 3.7
+[PZTEST] PASS entered driver seat
+[PZTEST] PASS engine starts
+[PZTEST] PASS car accelerates  -- top 26.8 km/h, moved 17.1 tiles
+[PZTEST] PASS BVD drivetrain drives the car  -- gripRoad 1.2000000476837158 tire NormalTire laden 1.4199999570846558
+[PZTEST] PASS vanilla getters see BVD pedal state
+[PZTEST] PASS steering turns the car  -- travel direction changed 123.1 deg (moved 3.37 / 3.37 tiles per window)
+[PZTEST] PASS car brakes to a stop  -- speed 0.0
+[PZTEST] PASS car did not sink  -- z 0.00 -> 0.00
+[PZTEST] drive done at 10602,11192
+[PZTEST] DONE pass=12 fail=0
+status: done
+console errors mentioning Better Vehicle Dynamics: 0
+Lua error lines: 0
+forbidden-pattern hits: 0
+RESULT: PASS
+WATCHDOG: 0 distinct error(s) while the test ran (0 in total); 13 at startup (asset/tile warnings, usually harmless)
+  startup by origin: game 12, vanilla 1
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793760457_error_game.png
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793760485_error_vanilla.png

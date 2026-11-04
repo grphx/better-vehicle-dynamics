@@ -1,0 +1,50 @@
+WATCHDOG error [game] +5s: ERROR: General      f:0 at AngelCodeFont.parseFnt              > AngelCodeFont failed to load page 0 texture G:/SteamLibrary/steamapps/common/ProjectZomboid/media/mainfont_0.png
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793761892_error_game.png
+WATCHDOG error [game] +5s: ERROR: General      f:0 at AngelCodeFont.parseFnt              > AngelCodeFont failed to load page 0 texture G:/SteamLibrary/steamapps/common/ProjectZomboid/media/mainfont2_0.png
+WATCHDOG error [game] +5s: ERROR: General      f:0 at AngelCodeFont.parseFnt              > AngelCodeFont failed to load page 0 texture G:/SteamLibrary/steamapps/common/ProjectZomboid/media/fonts/zomboidDial
+WATCHDOG error [game] +11s: ERROR: General      f:0 at FluidContainerScript.load           > Sanitizing container name 'Large Bucket', name may not contain whitespaces.
+WATCHDOG error [game] +11s: ERROR: General      f:0 at FluidContainerScript.load           > Sanitizing container name 'Fuel Pump', name may not contain whitespaces.
+WATCHDOG error [game] +18s: ERROR: General      f:0 at CraftRecipeComponentScript.getIconTexture> CraftRecipeComponentScript: Recipe Piano missing UiConfigScript - falling back to SpriteConfigScript first wor
+WATCHDOG error [vanilla] +34s: ERROR: Lua          f:0 at Lua(Vanilla).handleMannequinZone    > ERROR: Mannequin zone missing properties in media/maps/Muldraugh, KY/objects.lua coords: 13583, 1299, 0
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793761920_error_vanilla.png
+WATCHDOG error [game] +34s: ERROR: General      f:0 at Basements.mergeRoomsOntoMetaCell    > duplicate RoomDef.metaID for room at 10707,9484,0
+WATCHDOG error [game] +39s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_21
+WATCHDOG error [game] +39s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_22
+WATCHDOG error [game] +39s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_23
+WATCHDOG error [game] +39s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_19
+WATCHDOG error [game] +39s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_18
+===== sp mechanics =====
+[PZTEST] mode mechanics: launching test world
+[PZTEST] world started at 10586,11180
+[PZTEST] protect: invisible=true
+[PZTEST] CleanUI loaded: false, Rax Clean UI 2.0 loaded: false
+[PZTEST] cleared 63 parked vehicle(s)
+[PZTEST] PASS found a road
+[PZTEST] PASS spawned a car
+[PZTEST] PASS entered the car
+[PZTEST] PASS the mechanics window opens
+[PZTEST] mechanics window class: ISVehicleMechanics, prerender is the one BVD wrapped: true
+[PZTEST] PASS BVD created its info panel for the window
+[PZTEST] PASS the info panel is visible
+[PZTEST] PASS the info panel has rows (grips, load, Java part)  -- 11
+[PZTEST]   row: Tuning profile = Custom
+[PZTEST]   row: Java part = ZombieBuddy
+[PZTEST]   row: Tire type = OldTire
+[PZTEST]   row: Road grip = 0.99
+[PZTEST]   row: Wet grip = 0.99
+[PZTEST]   row: Snow grip = 0.99
+[PZTEST]   row: Off-road grip = 0.99
+[PZTEST]   row: Engine force = 4000
+[PZTEST]   row: Launch limit = 2.0 per kg
+[PZTEST]   row: Cargo load = 3.7
+[PZTEST]   row: Load penalty = -42% launch
+[PZTEST] PASS the panel sits beside the window, not over it  -- window x 400..1200, panel x 1208..1488
+[PZTEST] DONE pass=8 fail=0
+status: done
+console errors mentioning Better Vehicle Dynamics: 0
+Lua error lines: 0
+RESULT: PASS
+WATCHDOG: 0 distinct error(s) while the test ran (0 in total); 13 at startup (asset/tile warnings, usually harmless)
+  startup by origin: game 12, vanilla 1
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793761892_error_game.png
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793761920_error_vanilla.png

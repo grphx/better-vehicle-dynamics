@@ -1086,7 +1086,7 @@ local function profilesBody(T)
         local rec = {}
         local ok = withCar(p, rx, ry, function(v)
             BetterVehicleDynamicsMod.manualShift = false
-            T.log("engine rpm type " .. tostring(v:getScript():getEngineRPMType()))
+            T.log("engine rpm type " .. tostring(v:getScript():getEngineRPMType()) .. ", maxSpeed " .. tostring(v:getMaxSpeed()))
             T.drive(true, true, 0)
             local last, top = v:getTransmissionNumber(), 0
             local t0 = getTimestampMs()

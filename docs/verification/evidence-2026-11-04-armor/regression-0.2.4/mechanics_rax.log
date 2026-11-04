@@ -1,0 +1,48 @@
+WATCHDOG error [game] +10s: ERROR: General      f:0 at AngelCodeFont.parseFnt              > AngelCodeFont failed to load page 0 texture G:/SteamLibrary/steamapps/common/ProjectZomboid/media/mainfont_0.png
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793762204_error_game.png
+WATCHDOG error [game] +10s: ERROR: General      f:0 at AngelCodeFont.parseFnt              > AngelCodeFont failed to load page 0 texture G:/SteamLibrary/steamapps/common/ProjectZomboid/media/mainfont2_0.png
+WATCHDOG error [game] +10s: ERROR: General      f:0 at AngelCodeFont.parseFnt              > AngelCodeFont failed to load page 0 texture G:/SteamLibrary/steamapps/common/ProjectZomboid/media/fonts/zomboidDial
+WATCHDOG error [game] +18s: ERROR: General      f:0 at FluidContainerScript.load           > Sanitizing container name 'Large Bucket', name may not contain whitespaces.
+WATCHDOG error [game] +18s: ERROR: General      f:0 at FluidContainerScript.load           > Sanitizing container name 'Fuel Pump', name may not contain whitespaces.
+WATCHDOG error [game] +23s: ERROR: General      f:0 at CraftRecipeComponentScript.getIconTexture> CraftRecipeComponentScript: Recipe Piano missing UiConfigScript - falling back to SpriteConfigScript first wor
+WATCHDOG error [vanilla] +44s: ERROR: Lua          f:0 at Lua(Vanilla).handleMannequinZone    > ERROR: Mannequin zone missing properties in media/maps/Muldraugh, KY/objects.lua coords: 13583, 1299, 0
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793762238_error_vanilla.png
+WATCHDOG error [game] +44s: ERROR: General      f:0 at Basements.mergeRoomsOntoMetaCell    > duplicate RoomDef.metaID for room at 10707,9484,0
+WATCHDOG error [game] +53s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_21
+WATCHDOG error [game] +53s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_22
+WATCHDOG error [game] +53s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_23
+WATCHDOG error [game] +53s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_19
+WATCHDOG error [game] +53s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_18
+===== sp mechanics_rax =====
+[PZTEST] mode mechanics_rax: launching test world
+[PZTEST] world started at 10586,11180
+[PZTEST] protect: invisible=true
+[PZTEST] Clean UI 2.0 (Rax) loaded: true, window class NR_VehicleMechanicsPanel present: true
+[PZTEST] cleared 60 parked vehicle(s)
+[PZTEST] PASS found a road
+[PZTEST] PASS spawned a car
+[PZTEST] PASS entered the car
+[PZTEST] PASS the mechanics window opens
+[PZTEST] window class: NR_VehicleMechanicsPanel (a Rax window: true)
+[PZTEST] diagnostic: metatable of the Rax class is ISVehicleMechanics: true, class already wrapped: true, _G is a table: table
+[PZTEST] diagnostic: pairs(_G) ok=true entries=3474
+[PZTEST] before (derived window not hooked): info panel missing
+[PZTEST] diagnostic: isVisible=true isCollapsed=nil vehicle=BaseVehicle{  Name:null,  ID:87 } prerender is the class's own wrapped function: true, _bvdPanel=BVDCompanionPanel, sectionEnabled cfg DriverHUD=true
+[PZTEST] diagnostic: direct prerender call ok=true err=nil
+[PZTEST] diagnostic: after a direct prerender call _bvdPanel=BVDCompanionPanel; sectionEnabled via cfg: true
+[PZTEST] after (as shipped): info panel exists, visible=true at x 1208..1488, window x 400..1200 of 1600
+[PZTEST] PASS before: the Rax window had no info panel (the reported failure)
+[PZTEST] PASS after: BVD created its info panel for the Rax window
+[PZTEST] PASS after: the info panel is visible
+[PZTEST] PASS after: the info panel has rows  -- 11
+[PZTEST] PASS after: it is fully on screen
+[PZTEST] PASS closing the Rax window removes the info panel
+[PZTEST] DONE pass=10 fail=0
+status: done
+console errors mentioning Better Vehicle Dynamics: 0
+Lua error lines: 0
+RESULT: PASS
+WATCHDOG: 0 distinct error(s) while the test ran (0 in total); 13 at startup (asset/tile warnings, usually harmless)
+  startup by origin: game 12, vanilla 1
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793762204_error_game.png
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793762238_error_vanilla.png

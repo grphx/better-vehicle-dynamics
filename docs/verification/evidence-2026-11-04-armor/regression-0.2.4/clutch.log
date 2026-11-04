@@ -1,0 +1,49 @@
+WATCHDOG error [game] +7s: ERROR: General      f:0 at AngelCodeFont.parseFnt              > AngelCodeFont failed to load page 0 texture G:/SteamLibrary/steamapps/common/ProjectZomboid/media/mainfont_0.png
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793760535_error_game.png
+WATCHDOG error [game] +7s: ERROR: General      f:0 at AngelCodeFont.parseFnt              > AngelCodeFont failed to load page 0 texture G:/SteamLibrary/steamapps/common/ProjectZomboid/media/mainfont2_0.png
+WATCHDOG error [game] +7s: ERROR: General      f:0 at AngelCodeFont.parseFnt              > AngelCodeFont failed to load page 0 texture G:/SteamLibrary/steamapps/common/ProjectZomboid/media/fonts/zomboidDial
+WATCHDOG error [game] +12s: ERROR: General      f:0 at FluidContainerScript.load           > Sanitizing container name 'Large Bucket', name may not contain whitespaces.
+WATCHDOG error [game] +12s: ERROR: General      f:0 at FluidContainerScript.load           > Sanitizing container name 'Fuel Pump', name may not contain whitespaces.
+WATCHDOG error [game] +18s: ERROR: General      f:0 at CraftRecipeComponentScript.getIconTexture> CraftRecipeComponentScript: Recipe Piano missing UiConfigScript - falling back to SpriteConfigScript first wor
+WATCHDOG error [vanilla] +33s: ERROR: Lua          f:0 at Lua(Vanilla).handleMannequinZone    > ERROR: Mannequin zone missing properties in media/maps/Muldraugh, KY/objects.lua coords: 13583, 1299, 0
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793760561_error_vanilla.png
+WATCHDOG error [game] +33s: ERROR: General      f:0 at Basements.mergeRoomsOntoMetaCell    > duplicate RoomDef.metaID for room at 10707,9484,0
+WATCHDOG error [game] +33s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_21
+WATCHDOG error [game] +33s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_22
+WATCHDOG error [game] +33s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_23
+WATCHDOG error [game] +33s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_19
+WATCHDOG error [game] +33s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_18
+===== sp clutch =====
+[PZTEST] mode clutch: launching test world
+[PZTEST] world started at 10586,11180
+[PZTEST] protect: invisible=true
+[PZTEST] PASS BVD ZombieBuddy layer active
+[PZTEST] cleared 58 parked vehicle(s)
+[PZTEST] PASS found a road
+[PZTEST] running: engine true
+[PZTEST] before reverse: engine true, speed -1.0, forceGear -1, clutch false, rpm 1190
+[PZTEST] after reverse: engine true, speed -14.5, gear -1, rpm 2709, throttle -1.00
+[PZTEST] PASS the test car moved on its own first
+[PZTEST] PASS in neutral the car does not move (under 3 km/h)  -- 0.5 km/h
+[PZTEST] PASS in neutral the revs rise freely  -- 5103 rpm
+[PZTEST] PASS the on-screen shifter is up in manual mode with the clutch
+[PZTEST] PASS clutch held in first: the car does not move (under 3 km/h)  -- 0.3 km/h
+[PZTEST] PASS clutch held in first: the revs rise  -- 5103 rpm
+[PZTEST] PASS letting the clutch out with the throttle down launches the car  -- 18.8 km/h
+[PZTEST] PASS the launch does not stall the engine
+[PZTEST] back key in clutch mode: 18.9 km/h to a standstill in 0.4 s
+[PZTEST] PASS the back key brakes in clutch mode (standstill from speed in under 8 s, coasting needs 30+)
+[PZTEST] PASS reverse gear drives the car backwards  -- 14.5 km/h, dot -5.60
+[PZTEST] PASS a start in third gear with no throttle stalls the engine
+[PZTEST] the car did not get going (spawn quirk), attempt 1
+[PZTEST] PASS clutch out in first gear at a standstill with no throttle stalls the engine
+[PZTEST] PASS with stalling off the same start keeps the engine running
+[PZTEST] DONE pass=15 fail=0
+status: done
+console errors mentioning Better Vehicle Dynamics: 0
+Lua error lines: 0
+RESULT: PASS
+WATCHDOG: 0 distinct error(s) while the test ran (0 in total); 13 at startup (asset/tile warnings, usually harmless)
+  startup by origin: game 12, vanilla 1
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793760535_error_game.png
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793760561_error_vanilla.png

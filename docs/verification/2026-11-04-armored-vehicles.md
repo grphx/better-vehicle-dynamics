@@ -48,3 +48,13 @@ under 60 km/h; every car is bit-identical.
 same failure occurred once on 2026-11-03 before any of this work (`scratchpad full/profiles.log`, 2 passed 1 failed), and
 6 other runs that day passed. The change cannot touch it: the test car is `Base.CarNormal` with `maxSpeed 90`, a gear scale
 of 47.5, below the 71.25 threshold, so the new factor is exactly 1.0 (logged in `profiles_r4.log`).
+
+## "YOU CANNOT REVERSE" (Workshop comment, 2026-11-04) - checked on the 0.2.4 build, singleplayer
+New test mode `reverse` (Ki5.lua): the back key (PZTestReverse) on a fresh car, four cases. All pass, 6/6
+(`evidence-2026-11-04-armor/reverse/reverse_fresh_cars.log`):
+automatic from a standstill -28.1 km/h; automatic after driving forward -28.2; manual shifting without the clutch option
+from a standstill -28.0; the same after driving forward -28.2 (gear -1, ~4000 rpm). The first run of the test failed its
+manual case (-0.1 km/h): the one car had already reversed ~37 tiles in the two earlier cases and was against the end of
+the road (kept as `first_run_car_hit_road_end.log`); each case now gets its own car.
+The reverse logic for the default settings is unchanged since 0.1.20. By design there is no automatic reverse with the
+Manual clutch option on (Drivetrain page, off by default): reverse is the R slot of the on-screen shifter.

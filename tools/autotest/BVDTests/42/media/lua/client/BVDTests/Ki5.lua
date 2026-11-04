@@ -876,6 +876,60 @@ T.register("armor_pc", armorRealBody, where)
 T.register("armor_pc_van", armorRealBody, where)
 T.register("armor_m1", armorRealBody, where)
 T.register("armor_m1_van", armorRealBody, where)
+-- Reversing in the DEFAULT drive modes (a Workshop report: "you cannot reverse"): the back key from a standstill, and after
+-- driving forward, in automatic and in manual shifting without the clutch option. The back key is PZTestReverse.
+local function reverseBody(T)
+    T.wait(4)
+    local p = getPlayer()
+    p:setGodMod(true); p:setGhostMode(true)
+    T.check("BVD ZombieBuddy layer active", type(BVD_zombieBuddyActive) == "function" and BVD_zombieBuddyActive() == true)
+    T.clearCars(p, 300)
+    local rx, ry = findLine("blends_street", ROAD.x, ROAD.y, nil, true, 90)
+    if not rx then rx, ry = findLine("blends_street", ROAD.x, ROAD.y, nil, true, 60) end
+    if not T.check("found a road", rx ~= nil) then return end
+    local mod = BetterVehicleDynamicsMod
+    local r = {}
+    -- every case gets its own car at the start line: reversing a long way would otherwise run the car into the end of the road
+    local function case(key, label, manual, forwardFirst, seconds)
+        local ok = withCar(p, rx, ry, function(v)
+            mod.manualShift = manual
+            if forwardFirst then
+                T.drive(true, true, 0)
+                runFor(v, 3)
+            end
+            local x0, y0 = v:getX(), v:getY()
+            local minSigned, peakGas = 0, 0
+            PZTestReverse(true, 0)
+            local t0 = getTimestampMs()
+            while getTimestampMs() - t0 < seconds * 1000 do
+                minSigned = math.min(minSigned, v:getCurrentSpeedKmHour())
+                peakGas = math.max(peakGas, v.throttle or 0)
+                coroutine.yield()
+            end
+            local fv = v:getForwardVector(Vector3f.new())
+            local dot = (v:getX() - x0) * fv:x() + (v:getY() - y0) * fv:z()
+            T.log(string.format("%s: min signed speed %.1f km/h, moved %.1f tiles along the car (negative = backwards), gear %s, rpm %.0f, manualShift=%s autoReverse=%s",
+                label, minSigned, dot, tostring(v:getTransmissionNumber()), v:getEngineSpeed(), tostring(mod.manualShift), tostring(mod.autoReverse)))
+            r[key] = { speed = minSigned, dot = dot }
+            T.drive(true, false, 0)
+            T.waitFor(function() return math.abs(v:getCurrentSpeedKmHour()) < 1 end, 20)
+            T.drive(false, false, 0)
+            mod.manualShift = false
+        end)
+        if not ok then T.log("could not set up the car for: " .. label) end
+        return ok
+    end
+    case("auto", "automatic, standstill", false, false, 4)
+    case("autoFwd", "automatic, after driving forward", false, true, 10)
+    case("manual", "manual shift without the clutch option, standstill", true, false, 4)
+    case("manualFwd", "manual shift without the clutch option, after driving forward", true, true, 10)
+    local function backwards(k) return r[k] and r[k].speed or 0 end
+    T.check("automatic: the back key reverses the car from a standstill", backwards("auto") < -3 and r.auto.dot < 0, string.format("%.1f km/h", backwards("auto")))
+    T.check("automatic: after driving forward the back key brakes and then reverses", backwards("autoFwd") < -3, string.format("%.1f km/h", backwards("autoFwd")))
+    T.check("manual shifting without the clutch option: the back key reverses from a standstill", backwards("manual") < -3 and r.manual.dot < 0, string.format("%.1f km/h", backwards("manual")))
+    T.check("manual shifting without the clutch option: after driving forward the back key brakes and then reverses", backwards("manualFwd") < -3, string.format("%.1f km/h", backwards("manualFwd")))
+end
+T.register("reverse", reverseBody, where)
 -- Heavy car on every kind of ground found near the start: which floor sprites exist, and how the car does on each.
 T.register("heavy_surf", function(T)
     T.wait(4)

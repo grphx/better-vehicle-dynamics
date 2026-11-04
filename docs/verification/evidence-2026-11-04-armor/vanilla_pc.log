@@ -1,0 +1,72 @@
+WATCHDOG error [game] +5s: ERROR: General      f:0 at AngelCodeFont.parseFnt              > AngelCodeFont failed to load page 0 texture G:/SteamLibrary/steamapps/common/ProjectZomboid/media/mainfont_0.png
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793757175_error_game.png
+WATCHDOG error [game] +5s: ERROR: General      f:0 at AngelCodeFont.parseFnt              > AngelCodeFont failed to load page 0 texture G:/SteamLibrary/steamapps/common/ProjectZomboid/media/mainfont2_0.png
+WATCHDOG error [game] +5s: ERROR: General      f:0 at AngelCodeFont.parseFnt              > AngelCodeFont failed to load page 0 texture G:/SteamLibrary/steamapps/common/ProjectZomboid/media/fonts/zomboidDial
+WATCHDOG error [game] +13s: ERROR: General      f:0 at FluidContainerScript.load           > Sanitizing container name 'Large Bucket', name may not contain whitespaces.
+WATCHDOG error [game] +13s: ERROR: General      f:0 at FluidContainerScript.load           > Sanitizing container name 'Fuel Pump', name may not contain whitespaces.
+WATCHDOG error [game] +18s: ERROR: General      f:0 at CraftRecipeComponentScript.getIconTexture> CraftRecipeComponentScript: Recipe Piano missing UiConfigScript - falling back to SpriteConfigScript first wor
+WATCHDOG error [vanilla] +28s: ERROR: Lua          f:0 at Lua(Vanilla).handleMannequinZone    > ERROR: Mannequin zone missing properties in media/maps/Muldraugh, KY/objects.lua coords: 13583, 1299, 0
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793757198_error_vanilla.png
+WATCHDOG error [game] +28s: ERROR: General      f:0 at Basements.mergeRoomsOntoMetaCell    > duplicate RoomDef.metaID for room at 10707,9484,0
+WATCHDOG error [game] +28s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_21
+WATCHDOG error [game] +28s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_22
+WATCHDOG error [game] +28s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_23
+WATCHDOG error [game] +28s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_19
+WATCHDOG error [game] +28s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_18
+WATCHDOG error [game] +39s: ERROR: General      f:0 at ImportedSkeleton.collectBoneFrames  > Could not find bone index for node name: "Body"
+WATCHDOG error [game] +89s: ERROR: General      f:5606 at ProcessedAiScene.processAiScene     > No such mesh "null"
+===== sp armor_pc_van =====
+[PZTEST] mode armor_pc_van: launching test world
+[PZTEST] world started at 10586,11180
+[PZTEST] protect: invisible=true
+[PZTEST] ZombieBuddy layer active: false
+[PZTEST] cleared 59 parked vehicle(s)
+[PZTEST] script Base.M998_Humvee: mass 850 engineForce 4500 gearRatioCount 4 wheels 4
+[PZTEST] Base.M998_Humvee             parts: Engine=noitem/c100 Battery=Base.CarBattery2/c100 GasTank=Base.SmallGasTank2/c100  keysInIgnition=false
+[PZTEST] Base.M998_Humvee             road  tires FrontLeft=NormalTire2/100 FrontRight=NormalTire2/100 RearLeft=NormalTire2/100 RearRight=NormalTire2/100 | at spawn 4 of 4 | id 235
+[PZTEST] Base.M998_Humvee             road  physics static=nil active=nil -> static=nil active=nil
+[PZTEST] Base.M998_Humvee             road  mass  1254  power   4500  v@3s  37.1  v@5s  59.0  t->30 2.4s  dist 42.5  rpm max  3501/4500 pinned   0%  [nil -1.00 off -1.00 eff 1.30]
+[PZTEST] Base.M998_Humvee             parts: Engine=noitem/c100 Battery=Base.CarBattery2/c100 GasTank=Base.BigGasTank2/c100  keysInIgnition=false
+[PZTEST] Base.M998_Humvee             grass tires FrontLeft=NormalTire2/100 FrontRight=NormalTire2/100 RearLeft=NormalTire2/100 RearRight=NormalTire2/100 | at spawn 4 of 4 | id 235
+[PZTEST] Base.M998_Humvee             grass physics static=nil active=nil -> static=nil active=nil
+[PZTEST] Base.M998_Humvee             grass mass  1261  power   4500  v@3s  29.4  v@5s  51.4  t->30 3.1s  dist 34.8  rpm max  3505/4500 pinned   0%  [nil -1.00 off -1.00 eff 1.30]
+[PZTEST] script Base.M113_APC: mass 1104 engineForce 5600 gearRatioCount 1 wheels 4
+[PZTEST] Base.M113_APC                parts: Engine=noitem/c100 Battery=Base.CarBattery2/c100 GasTank=Base.SmallGasTank2/c100  keysInIgnition=true
+[PZTEST] Base.M113_APC                road  tires FrontLeft=NormalTire2/100 FrontRight=NormalTire2/100 RearLeft=NormalTire2/100 RearRight=NormalTire2/100 | at spawn 4 of 4 | id 235
+[PZTEST] Base.M113_APC                road  physics static=nil active=nil -> static=nil active=nil
+[PZTEST] Base.M113_APC                road  mass  1499  power   5600  v@3s  34.9  v@5s  42.3  t->30 2.4s  dist 37.5  rpm max  3508/4500 pinned   0%  [nil -1.00 off -1.00 eff 1.30]
+[PZTEST] Base.M113_APC                parts: Engine=noitem/c100 Battery=Base.CarBattery2/c100 GasTank=Base.BigGasTank2/c100  keysInIgnition=false
+[PZTEST] Base.M113_APC                grass tires FrontLeft=NormalTire2/100 FrontRight=NormalTire2/100 RearLeft=NormalTire2/100 RearRight=NormalTire2/100 | at spawn 4 of 4 | id 235
+[PZTEST] Base.M113_APC                grass physics static=nil active=nil -> static=nil active=nil
+[PZTEST] Base.M113_APC                grass mass  1508  power   5600  v@3s  29.8  v@5s  39.6  t->30 3.0s  dist 32.4  rpm max  3502/4500 pinned   0%  [nil -1.00 off -1.00 eff 1.30]
+[PZTEST] script Base.M163: mass 1104 engineForce 5600 gearRatioCount 1 wheels 4
+[PZTEST] Base.M163                    parts: Engine=noitem/c100 Battery=Base.CarBattery2/c100 GasTank=Base.NormalGasTank2/c100  keysInIgnition=false
+[PZTEST] Base.M163                    road  tires FrontLeft=NormalTire2/100 FrontRight=NormalTire2/100 RearLeft=NormalTire2/100 RearRight=NormalTire2/100 | at spawn 4 of 4 | id 235
+[PZTEST] Base.M163                    road  physics static=nil active=nil -> static=nil active=nil
+[PZTEST] Base.M163                    road  mass  1432  power   5600  v@3s  35.7  v@5s  42.7  t->30 2.3s  dist 38.5  rpm max  3504/4500 pinned   0%  [nil -1.00 off -1.00 eff 1.30]
+[PZTEST] Base.M163                    parts: Engine=noitem/c100 Battery=Base.CarBattery2/c100 GasTank=Base.BigGasTank2/c100  keysInIgnition=false
+[PZTEST] Base.M163                    grass tires FrontLeft=NormalTire2/100 FrontRight=NormalTire2/100 RearLeft=NormalTire2/100 RearRight=NormalTire2/100 | at spawn 4 of 4 | id 235
+[PZTEST] Base.M163                    grass physics static=nil active=nil -> static=nil active=nil
+[PZTEST] Base.M163                    grass mass  1425  power   5600  v@3s  30.9  v@5s  40.3  t->30 2.9s  dist 33.5  rpm max  3504/4500 pinned   0%  [nil -1.00 off -1.00 eff 1.30]
+[PZTEST] script Base.M41_Walker_Bulldog: mass 1104 engineForce 5600 gearRatioCount 1 wheels 4
+[PZTEST] Base.M41_Walker_Bulldog      parts: Engine=noitem/c100 Battery=Base.CarBattery2/c100 GasTank=Base.BigGasTank2/c100  keysInIgnition=false
+[PZTEST] Base.M41_Walker_Bulldog      road  tires FrontLeft=NormalTire2/100 FrontRight=NormalTire2/100 RearLeft=NormalTire2/100 RearRight=NormalTire2/100 | at spawn 4 of 4 | id 235
+[PZTEST] Base.M41_Walker_Bulldog      road  physics static=nil active=nil -> static=nil active=nil
+[PZTEST] Base.M41_Walker_Bulldog      road  mass  1443  power   5600  v@3s  35.6  v@5s  42.6  t->30 2.3s  dist 38.5  rpm max  3502/4500 pinned   0%  [nil -1.00 off -1.00 eff 1.30]
+[PZTEST] Base.M41_Walker_Bulldog      parts: Engine=noitem/c100 Battery=Base.CarBattery2/c100 GasTank=Base.SmallGasTank2/c100  keysInIgnition=false
+[PZTEST] Base.M41_Walker_Bulldog      grass tires FrontLeft=NormalTire2/100 FrontRight=NormalTire2/100 RearLeft=NormalTire2/100 RearRight=NormalTire2/100 | at spawn 4 of 4 | id 235
+[PZTEST] Base.M41_Walker_Bulldog      grass physics static=nil active=nil -> static=nil active=nil
+[PZTEST] Base.M41_Walker_Bulldog      grass mass  1428  power   5600  v@3s  30.9  v@5s  40.3  t->30 2.9s  dist 33.4  rpm max  3503/4500 pinned   0%  [nil -1.00 off -1.00 eff 1.30]
+[PZTEST] script missing: Base.M1A1
+[PZTEST] DONE pass=0 fail=0
+status: done
+console errors mentioning Better Vehicle Dynamics: 0
+Lua error lines: 0
+RESULT: PASS
+WATCHDOG: 2 distinct error(s) while the test ran (4 in total); 13 at startup (asset/tile warnings, usually harmless)
+  [game] 2 distinct, 4 total
+     x3    +39s  ERROR: General      f:0 at ImportedSkeleton.collectBoneFrames  > Could not find bone index for node name: "Body"
+     x1    +89s  ERROR: General      f:5606 at ProcessedAiScene.processAiScene     > No such mesh "null"
+  startup by origin: game 12, vanilla 1
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793757175_error_game.png
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793757198_error_vanilla.png

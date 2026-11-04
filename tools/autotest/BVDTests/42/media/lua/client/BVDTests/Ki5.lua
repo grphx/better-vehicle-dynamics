@@ -77,12 +77,45 @@ local function measureOnce(p, script, surface, x, y)
     end
     if not v then T.log(string.format("%-28s %-5s could not spawn", script, surface)) return end
     T.wait(1.5)
-    BVDTestsFix(v)
+    pcall(BVDTestsFix, v)   -- a mod vehicle can carry a battery item the fix cannot top up (the Abrams): carry on without
     local hadTires = sameTires(v)
     T.wait(0.5)
     if not enter(p, v) then T.log(string.format("%-28s %-5s could not enter", script, surface)) v:permanentlyRemove() return end
+    if ARMOR_PREP then
+        -- a mod vehicle whose spawn left it dead: say what it has, then hotwire it and fit a working battery
+        local function partNote(id)
+            local part = v:getPartById(id)
+            if not part then return id .. "=nopart" end
+            local item = part:getInventoryItem()
+            return string.format("%s=%s/c%s", id, item and item:getFullType() or "noitem", tostring(part:getCondition()))
+        end
+        T.log(string.format("%-28s parts: %s %s %s  keysInIgnition=%s", script, partNote("Engine"), partNote("Battery"), partNote("GasTank"), tostring(v:isKeysInIgnition())))
+        pcall(function() v:setHotwired(true) end)
+        pcall(function() v:setKeysInIgnition(true) end)
+        local bat = v:getPartById("Battery")
+        if bat and not bat:getInventoryItem() then
+            local item = instanceItem("Base.CarBattery1")
+            if item then item:setUsedDelta(1.0); bat:setInventoryItem(item); bat:setCondition(100); v:transmitPartItem(bat) end
+        end
+        local tank = v:getPartById("GasTank")
+        if tank then pcall(function() tank:setContainerContentAmount(tank:getContainerCapacity()) end) end
+    end
     v:tryStartEngine(true)
     local started = T.waitFor(function() return v:isEngineRunning() end, 8)
+    if not started and ARMOR_PREP then
+        local function try(name, f) local ok, r = pcall(f) return name .. "=" .. tostring(ok and r or "err") end
+        T.log(string.format("%-28s start failed: %s %s %s %s %s %s", script,
+            try("enginePower", function() return v:getEnginePower() end),
+            try("battery", function() return v:getBatteryCharge() end),
+            try("hotwired", function() return v:isHotwired() end),
+            try("keys", function() return v:isKeysInIgnition() end),
+            try("state", function() return tostring(v:getEngineState()) end),
+            try("engineQuality", function() return v:getEngineQuality() end)))
+        pcall(function() v:engineDoStartingSuccess() end)
+        pcall(function() v:engineDoRunning() end)
+        started = T.waitFor(function() return v:isEngineRunning() end, 4)
+        T.log(string.format("%-28s forced start: running=%s", script, tostring(started)))
+    end
     if not started then T.log(string.format("%-28s %-5s engine would not start", script, surface)) pcall(ISVehicleMenu.onExit, p) v:permanentlyRemove() return end
     T.wait(1)
     local tireNote = {}
@@ -704,6 +737,7 @@ local function clutchBody(T)
     setOpt2("ManualClutch", false)
 end
 
+ARMOR_SWEEP = { { 2000, 4000 }, { 2000, 2000 }, { 2000, 1000 }, { 3000, 3000 }, { 3000, 1500 }, { 5000, 3000 }, { 5000, 10000 }, { 10000, 8000 }, { 10000, 20000 } }
 local where = { startLoc = { x = ROAD.x, y = ROAD.y, z = 0 } }
 T.register("rules", rulesBody, where)
 T.register("coast", coastBody, where)
@@ -790,6 +824,58 @@ local function heavyEffBody(T)
 end
 T.register("heavy_eff", heavyEffBody, where)
 T.register("heavy_eff_van", heavyEffBody, where)
+-- Armoured / tank-like vehicles: very heavy scripts with engine force that is small for their weight (a user report: an
+-- Abrams tank and armoured trucks "more or less unable to accelerate"). Mass and force pairs on the road, run with
+-- BVD ("armor") and without it ("armor_van") so vanilla is the baseline.
+local function armorBody(T)
+    T.wait(4)
+    local p = getPlayer()
+    p:setGodMod(true); p:setGhostMode(true)
+    T.log("ZombieBuddy layer active: " .. tostring(type(BVD_zombieBuddyActive) == "function" and BVD_zombieBuddyActive() == true))
+    T.clearCars(p, 300)
+    local rx, ry = findLine("blends_street", ROAD.x, ROAD.y)
+    rx, ry = rx or ROAD.x, ry or ROAD.y
+    local sc = getScriptManager():getVehicle("Base.CarNormal")
+    local force0, mass0 = sc:getEngineForce(), sc:getMass()
+    for _, cfg in ipairs(ARMOR_SWEEP) do
+        sc:Load("CarNormal", string.format("{ mass = %d, engineForce = %d, }", cfg[1], cfg[2]))
+        T.log(string.format("script now mass %.0f force %.0f  (force per kg %.2f)", sc:getMass(), sc:getEngineForce(), sc:getEngineForce() / sc:getMass()))
+        measure(p, "Base.CarNormal", "road", rx, ry)
+    end
+    sc:Load("CarNormal", string.format("{ mass = %d, engineForce = %d, }", mass0, force0))
+end
+T.register("armor", armorBody, where)
+T.register("armor_van", armorBody, where)
+-- The real thing: the Abrams and the Papa Chad military vehicles, as shipped, on the road. With BVD ("armor_real") and
+-- without it ("armor_real_van").
+local ARMOR_REAL = { "Base.M998_Humvee", "Base.M113_APC", "Base.M163", "Base.M41_Walker_Bulldog", "Base.M1A1" }
+local function armorRealBody(T)
+    T.wait(4)
+    local p = getPlayer()
+    p:setGodMod(true); p:setGhostMode(true)
+    T.log("ZombieBuddy layer active: " .. tostring(type(BVD_zombieBuddyActive) == "function" and BVD_zombieBuddyActive() == true))
+    T.clearCars(p, 300)
+    local rx, ry = findLine("blends_street", ROAD.x, ROAD.y)
+    rx, ry = rx or ROAD.x, ry or ROAD.y
+    local cx, cy = findLine("blends_natural_01", ROAD.x, ROAD.y, { { x = rx, y = ry } }, true)
+    ARMOR_PREP = true
+    for _, name in ipairs(ARMOR_REAL) do
+        local sc = getScriptManager():getVehicle(name)
+        if sc then
+            T.log(string.format("script %s: mass %.0f engineForce %.0f gearRatioCount %d wheels %d", name, sc:getMass(), sc:getEngineForce(), sc:getGearRatioCount(), sc:getWheelCount()))
+            measure(p, name, "road", rx, ry)
+            if cx then measure(p, name, "grass", cx, cy) end
+        else
+            T.log("script missing: " .. name)
+        end
+    end
+end
+T.register("armor_real", armorRealBody, where)
+T.register("armor_real_van", armorRealBody, where)
+T.register("armor_pc", armorRealBody, where)
+T.register("armor_pc_van", armorRealBody, where)
+T.register("armor_m1", armorRealBody, where)
+T.register("armor_m1_van", armorRealBody, where)
 -- Heavy car on every kind of ground found near the start: which floor sprites exist, and how the car does on each.
 T.register("heavy_surf", function(T)
     T.wait(4)

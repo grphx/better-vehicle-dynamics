@@ -1,8 +1,8 @@
 diff --git a/zombie/core/physics/CarController.java b/zombie/core/physics/CarController.java
-index e82625b..e3ee2ac 100644
+index e82625b..c87da30 100644
 --- a/zombie/core/physics/CarController.java
 +++ b/zombie/core/physics/CarController.java
-@@ -1,840 +1,2395 @@
+@@ -1,840 +1,2401 @@
  package zombie.core.physics;
  
 +import java.util.ArrayList;
@@ -348,6 +348,11 @@ index e82625b..e3ee2ac 100644
 +   }
 +   // Wheel slip (the burnout figure) above which a screaming engine takes the next gear up.
 +   private static final float SLIP_UPSHIFT_BURNOUT = 5.0F;
++   // The gear scale (speedToRpm) is 0.95 * redline / top speed, so a slow vehicle (a tank with maxSpeed 25) has a scale five
++   // times a car's, and its wheel torque exceeds the grip limit by the same factor. The wheel-slip integrator below would then
++   // run the driven wheels away within a fraction of a second on soft ground, the converter unloads and the force collapses.
++   // Vehicles with a top speed of 60 km/h or more are untouched; below it the slip build-up is scaled back by the ratio.
++   private static final float SLIP_REF_SPEED_TO_RPM = 71.25F;
 +   private boolean slipUpshift = false;
 +
 +   private float offroadAptitude(VehicleScript script) {
@@ -1002,8 +1007,7 @@ index e82625b..e3ee2ac 100644
 +         converterSpecs.put(name, cs);
 +      }
 +   }
- 
--            this.isGas = false;
++
 +   // --- Bridge-driven option mirror ---------------------------------------
 +
 +   private void updateModOptions() {
@@ -1037,7 +1041,8 @@ index e82625b..e3ee2ac 100644
 +      this.steerSnap = bridge.rawgetFloat("SteeringSnapback");
 +      this.steerHighSpeedRef = bridge.rawgetFloat("SteeringHighSpeed");
 +   }
-+
+ 
+-            this.isGas = false;
 +   // --- Input + pedal resolution ------------------------------------------
 +
 +   // Resolve forward/reverse/brake intent from the (digital or analog) pedals,
@@ -1300,7 +1305,10 @@ index e82625b..e3ee2ac 100644
 +      if (GameClient.client) {
 +         throttle = Math.min(throttle, (float)(ServerOptions.instance.speedLimit.getValue() - this.vehicleObject.getCurrentSpeedKmHour() - 2.0) / 2.0F);
 +      }
-+
+ 
+-         this.updateBackSignal();
+-         if (controlState == CarController.ControlState.Braking) {
+-            this.control_Braking();
 +      this.vehicleObject.throttle = throttle;
 +      if (this.isGas || this.isGasR || this.isBreak) {
 +         UIManager.speedControls.SetCurrentGameSpeed(1);
@@ -1314,10 +1322,7 @@ index e82625b..e3ee2ac 100644
 +      if (this.analogPedals) {
 +         this.isBreak = this.isBreak | this.pedalBrake > 0.1;
 +      }
- 
--         this.updateBackSignal();
--         if (controlState == CarController.ControlState.Braking) {
--            this.control_Braking();
++
 +      if (this.isBreak) {
 +         this.brakingForce = this.vehicleObject.getBrakingForce();
 +         if (this.analogPedals && !this.clientControls.brake) {
@@ -2057,10 +2062,10 @@ index e82625b..e3ee2ac 100644
 +         loop.setVolume(this.loopExhaustId, (this.vehicleObject.throttle * 0.8F + 0.2F) * vol * this.startupBlend * overhaulVol);
 +      }
 +   }
-+
-+   // --- Main physics tick --------------------------------------------------
  
 -            isChangeTransmission = false;
++   // --- Main physics tick --------------------------------------------------
++
 +   public void update() {
 +      // 42.20: vehicles can lack an engine entirely (burnt wrecks, trailers
 +      // on the vehicle path). Mirror vanilla: neutral box, no engine force,
@@ -2555,12 +2560,13 @@ index e82625b..e3ee2ac 100644
 +      wheelTorque -= this.brakingForce * brakeToTorque;
 +      this.burnout = 0.0F;
 +      float vehSpeed = this.vehicleObject.getCurrentSpeedKmHour() * BaseVehicle.getFakeSpeedModifier();
++      float slipScale = Math.min(1.0F, SLIP_REF_SPEED_TO_RPM / Math.max(1.0F, speedToRpm));
 +      if (gear == 0) {
-+         this.drivenWheelSpeed -= (wheelTorque - driveLimit) * dt * 0.02F;
++         this.drivenWheelSpeed -= (wheelTorque - driveLimit) * dt * 0.02F * slipScale;
 +         this.drivenWheelSpeed = Math.min(this.drivenWheelSpeed, vehSpeed);
 +         this.burnout = Math.max(vehSpeed - this.drivenWheelSpeed - 3.0F, 0.0F);
 +      } else {
-+         this.drivenWheelSpeed += (wheelTorque - driveLimit) * dt * 0.02F;
++         this.drivenWheelSpeed += (wheelTorque - driveLimit) * dt * 0.02F * slipScale;
 +         this.drivenWheelSpeed = Math.max(this.drivenWheelSpeed, vehSpeed);
 +         this.burnout = Math.max(this.drivenWheelSpeed - vehSpeed - 3.0F, 0.0F);
        }
@@ -2980,7 +2986,7 @@ index e82625b..e3ee2ac 100644
              this.vehicleObject.stopSound(this.vehicleObject.ramSound);
              this.vehicleObject.ramSound = 0L;
           }
-@@ -844,6 +2399,55 @@ public final class CarController {
+@@ -844,6 +2405,55 @@ public final class CarController {
        }
     }
  
@@ -3036,7 +3042,7 @@ index e82625b..e3ee2ac 100644
     private void updateBackSignal() {
        if (this.isGasR && this.vehicleObject.isEngineRunning() && this.vehicleObject.hasBackSignal() && !this.vehicleObject.isBackSignalEmitting()) {
           if (GameClient.client) {
-@@ -933,56 +2537,106 @@ public final class CarController {
+@@ -933,56 +2543,106 @@ public final class CarController {
     }
  
     public void updateControls() {
@@ -3181,7 +3187,7 @@ index e82625b..e3ee2ac 100644
        }
  
        this.isGas = this.wasGas = false;
-@@ -1292,4 +2946,28 @@ public final class CarController {
+@@ -1292,4 +2952,28 @@ public final class CarController {
           this.minRpm = rpm;
        }
     }

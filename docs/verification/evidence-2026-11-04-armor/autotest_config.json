@@ -1,0 +1,365 @@
+{
+  "name": "Better Vehicle Dynamics",
+  "error_names": [
+    "BetterVehicleDynamics",
+    "bvd.zb",
+    "BvdCar"
+  ],
+  "sp_nosteam": true,
+  "workshop": {
+    "damnlib": "3171167894"
+  },
+  "mods": {
+    "BetterVehicleDynamics": "/home/grphx/zomboid/better-vehicle-dynamics/workshop/BetterVehicleDynamics",
+    "BVDTests": "/home/grphx/zomboid/better-vehicle-dynamics/tools/autotest/BVDTests",
+    "63beetle": "/mnt/c/Users/Grphx/ki5dl/steamapps/workshop/content/108600/3005903549/mods/63beetle",
+    "91nissan240sx": "/mnt/c/Users/Grphx/ki5dl/steamapps/workshop/content/108600/3504401781/mods/91nissan240sx",
+    "78lamboCountach": "/mnt/c/Users/Grphx/ki5dl/steamapps/workshop/content/108600/3726526329/mods/78lamboCountach",
+    "70dodge": "/mnt/c/Users/Grphx/ki5dl/steamapps/workshop/content/108600/2873290424/mods/70dodge",
+    "82porsche911": "/mnt/c/Users/Grphx/ki5dl/steamapps/workshop/content/108600/3379334330/mods/82porsche911",
+    "88chevyS10": "/mnt/c/Users/Grphx/ki5dl/steamapps/workshop/content/108600/2886832936/mods/88chevyS10",
+    "89fordBronco": "/mnt/c/Users/Grphx/ki5dl/steamapps/workshop/content/108600/2886833398/mods/89fordBronco",
+    "91range": "/mnt/c/Users/Grphx/ki5dl/steamapps/workshop/content/108600/2409333430/mods/91range",
+    "89defender": "/mnt/c/Users/Grphx/ki5dl/steamapps/workshop/content/108600/3570973322/mods/89defender",
+    "78amgeneralM35A2": "/mnt/c/Users/Grphx/ki5dl/steamapps/workshop/content/108600/2799152995/mods/78amgeneralM35A2",
+    "85clubMan": "/mnt/c/Users/Grphx/ki5dl/steamapps/workshop/content/108600/3330401526/mods/85clubMan",
+    "74amgeneralM151A2": "/mnt/c/Users/Grphx/ki5dl/steamapps/workshop/content/108600/2785549133/mods/74amgeneralM151A2",
+    "GrassTests": "/home/grphx/zomboid/better-vehicle-dynamics/tools/autotest/GrassTests",
+    "RVs_HeavyDuty_Trailers": "/mnt/g/SteamLibrary/steamapps/workshop/content/108600/3773998539/mods/RVs_HeavyDuty_Trailers",
+    "NeatUI_Framework": "/mnt/c/Users/Grphx/cleanuidl/steamapps/workshop/content/108600/3508537032/mods/NeatUI_Framework",
+    "CleanUI": "/mnt/c/Users/Grphx/cleanuidl/steamapps/workshop/content/108600/3437629766/mods/CleanUI",
+    "RaxUnifiedUI": "/mnt/c/Users/Grphx/cleanuidl/steamapps/workshop/content/108600/3832010219/mods/RaxUnifiedUI",
+    "Military_Tool_Kit": "/mnt/c/Users/Grphx/armormods/MTK",
+    "WarThunderVehicleLibrary": "/mnt/c/Users/Grphx/armormods/WTVL",
+    "M1 Abrams": "/mnt/c/Users/Grphx/armormods/M1A1",
+    "U.S. M163 VADS by Papa_Chad by Papa_Chad": "/mnt/c/Users/Grphx/armormods/M163",
+    "U.S. M41 Walker Bulldog by Papa_Chad": "/mnt/c/Users/Grphx/armormods/M41",
+    "U.S. M998 Humvee by Papa_Chad": "/mnt/c/Users/Grphx/armormods/M998",
+    "U.S.M113_APC_by_Papa_Chad": "/mnt/c/Users/Grphx/armormods/M113"
+  },
+  "modes": {
+    "ki5": [
+      "damnlib",
+      "BetterVehicleDynamics",
+      "63beetle",
+      "91nissan240sx",
+      "78lamboCountach",
+      "70dodge",
+      "82porsche911",
+      "88chevyS10",
+      "89fordBronco",
+      "91range",
+      "89defender",
+      "78amgeneralM35A2",
+      "85clubMan",
+      "74amgeneralM151A2",
+      "BVDTests"
+    ],
+    "ki5_real": [
+      "damnlib",
+      "BetterVehicleDynamics",
+      "63beetle",
+      "91nissan240sx",
+      "78lamboCountach",
+      "70dodge",
+      "82porsche911",
+      "88chevyS10",
+      "89fordBronco",
+      "91range",
+      "89defender",
+      "78amgeneralM35A2",
+      "85clubMan",
+      "74amgeneralM151A2",
+      "BVDTests"
+    ],
+    "grass": [
+      "damnlib",
+      "63beetle",
+      "91nissan240sx",
+      "78lamboCountach",
+      "89fordBronco",
+      "GrassTests"
+    ],
+    "ki5_sweep": [
+      "damnlib",
+      "BetterVehicleDynamics",
+      "63beetle",
+      "91nissan240sx",
+      "78lamboCountach",
+      "70dodge",
+      "82porsche911",
+      "88chevyS10",
+      "89fordBronco",
+      "91range",
+      "89defender",
+      "78amgeneralM35A2",
+      "85clubMan",
+      "74amgeneralM151A2",
+      "BVDTests"
+    ],
+    "ki5_unreg": [
+      "damnlib",
+      "BetterVehicleDynamics",
+      "63beetle",
+      "91nissan240sx",
+      "78lamboCountach",
+      "70dodge",
+      "82porsche911",
+      "88chevyS10",
+      "89fordBronco",
+      "91range",
+      "89defender",
+      "78amgeneralM35A2",
+      "85clubMan",
+      "74amgeneralM151A2",
+      "BVDTests"
+    ],
+    "ki5_probe": [
+      "damnlib",
+      "BetterVehicleDynamics",
+      "63beetle",
+      "91nissan240sx",
+      "78lamboCountach",
+      "70dodge",
+      "82porsche911",
+      "88chevyS10",
+      "89fordBronco",
+      "91range",
+      "89defender",
+      "78amgeneralM35A2",
+      "85clubMan",
+      "74amgeneralM151A2",
+      "BVDTests"
+    ],
+    "others": [
+      "damnlib",
+      "BetterVehicleDynamics",
+      "RVs_HeavyDuty_Trailers",
+      "BVDTests"
+    ],
+    "others_real": [
+      "damnlib",
+      "BetterVehicleDynamics",
+      "RVs_HeavyDuty_Trailers",
+      "BVDTests"
+    ],
+    "others_vanilla": [
+      "damnlib",
+      "RVs_HeavyDuty_Trailers",
+      "BVDTests"
+    ],
+    "others_nowake": [
+      "damnlib",
+      "BetterVehicleDynamics",
+      "RVs_HeavyDuty_Trailers",
+      "BVDTests"
+    ],
+    "rules": [
+      "BetterVehicleDynamics",
+      "BVDTests"
+    ],
+    "coast": [
+      "BetterVehicleDynamics",
+      "BVDTests"
+    ],
+    "coast_ctl": [
+      "BetterVehicleDynamics",
+      "BVDTests"
+    ],
+    "clutch": [
+      "BetterVehicleDynamics",
+      "BVDTests"
+    ],
+    "ki5_nobrake": [
+      "damnlib",
+      "BetterVehicleDynamics",
+      "63beetle",
+      "91nissan240sx",
+      "78lamboCountach",
+      "70dodge",
+      "82porsche911",
+      "88chevyS10",
+      "89fordBronco",
+      "91range",
+      "89defender",
+      "78amgeneralM35A2",
+      "85clubMan",
+      "74amgeneralM151A2",
+      "BVDTests"
+    ],
+    "heavy": [
+      "damnlib",
+      "BetterVehicleDynamics",
+      "BVDTests"
+    ],
+    "heavy_drag": [
+      "damnlib",
+      "BetterVehicleDynamics",
+      "BVDTests"
+    ],
+    "heavy_eff": [
+      "damnlib",
+      "BetterVehicleDynamics",
+      "BVDTests"
+    ],
+    "heavy_eff_van": [
+      "damnlib",
+      "BVDTests"
+    ],
+    "heavy_surf": [
+      "damnlib",
+      "BetterVehicleDynamics",
+      "BVDTests"
+    ],
+    "heavy_over": [
+      "damnlib",
+      "BetterVehicleDynamics",
+      "BVDTests"
+    ],
+    "bush": [
+      "damnlib",
+      "BetterVehicleDynamics",
+      "BVDTests"
+    ],
+    "bush_van": [
+      "damnlib",
+      "BVDTests"
+    ],
+    "bush_s03": [
+      "damnlib",
+      "BetterVehicleDynamics",
+      "BVDTests"
+    ],
+    "bush_s0": [
+      "damnlib",
+      "BetterVehicleDynamics",
+      "BVDTests"
+    ],
+    "bush_sweep": [
+      "damnlib",
+      "BetterVehicleDynamics",
+      "BVDTests"
+    ],
+    "profiles": [
+      "damnlib",
+      "BetterVehicleDynamics",
+      "BVDTests"
+    ],
+    "install": [
+      "damnlib",
+      "BetterVehicleDynamics",
+      "BVDTests"
+    ],
+    "power": [
+      "damnlib",
+      "BetterVehicleDynamics",
+      "BVDTests"
+    ],
+    "accel_sweep": [
+      "damnlib",
+      "BetterVehicleDynamics",
+      "BVDTests"
+    ],
+    "mechanics": [
+      "BetterVehicleDynamics",
+      "BVDTests"
+    ],
+    "mechanics_cleanui": [
+      "NeatUI_Framework",
+      "CleanUI",
+      "BetterVehicleDynamics",
+      "BVDTests"
+    ],
+    "skidstreak": [
+      "damnlib",
+      "BetterVehicleDynamics",
+      "BVDTests"
+    ],
+    "mechanics_narrow": [
+      "NeatUI_Framework",
+      "CleanUI",
+      "BetterVehicleDynamics",
+      "BVDTests"
+    ],
+    "accel_extreme": [
+      "damnlib",
+      "BetterVehicleDynamics",
+      "BVDTests"
+    ],
+    "accel_hugeforce": [
+      "damnlib",
+      "BetterVehicleDynamics",
+      "BVDTests"
+    ],
+    "mechanics_rax": [
+      "RaxUnifiedUI",
+      "BetterVehicleDynamics",
+      "BVDTests"
+    ],
+    "armor": [
+      "damnlib",
+      "BetterVehicleDynamics",
+      "BVDTests"
+    ],
+    "armor_van": [
+      "damnlib",
+      "BVDTests"
+    ],
+    "armor_real": [
+      "damnlib",
+      "BetterVehicleDynamics",
+      "Military_Tool_Kit",
+      "WarThunderVehicleLibrary",
+      "M1 Abrams",
+      "U.S.M113_APC_by_Papa_Chad",
+      "U.S. M163 VADS by Papa_Chad by Papa_Chad",
+      "U.S. M41 Walker Bulldog by Papa_Chad",
+      "U.S. M998 Humvee by Papa_Chad",
+      "BVDTests"
+    ],
+    "armor_real_van": [
+      "damnlib",
+      "Military_Tool_Kit",
+      "WarThunderVehicleLibrary",
+      "M1 Abrams",
+      "U.S.M113_APC_by_Papa_Chad",
+      "U.S. M163 VADS by Papa_Chad by Papa_Chad",
+      "U.S. M41 Walker Bulldog by Papa_Chad",
+      "U.S. M998 Humvee by Papa_Chad",
+      "BVDTests"
+    ],
+    "armor_pc": [
+      "damnlib",
+      "BetterVehicleDynamics",
+      "Military_Tool_Kit",
+      "U.S.M113_APC_by_Papa_Chad",
+      "U.S. M163 VADS by Papa_Chad by Papa_Chad",
+      "U.S. M41 Walker Bulldog by Papa_Chad",
+      "U.S. M998 Humvee by Papa_Chad",
+      "BVDTests"
+    ],
+    "armor_pc_van": [
+      "damnlib",
+      "Military_Tool_Kit",
+      "U.S.M113_APC_by_Papa_Chad",
+      "U.S. M163 VADS by Papa_Chad by Papa_Chad",
+      "U.S. M41 Walker Bulldog by Papa_Chad",
+      "U.S. M998 Humvee by Papa_Chad",
+      "BVDTests"
+    ],
+    "armor_m1": [
+      "damnlib",
+      "BetterVehicleDynamics",
+      "WarThunderVehicleLibrary",
+      "M1 Abrams",
+      "BVDTests"
+    ],
+    "armor_m1_van": [
+      "damnlib",
+      "WarThunderVehicleLibrary",
+      "M1 Abrams",
+      "BVDTests"
+    ]
+  },
+  "minutes": 40
+}

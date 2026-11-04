@@ -337,6 +337,11 @@ public final class BvdCar {
    }
    // Wheel slip (the burnout figure) above which a screaming engine takes the next gear up.
    private static final float SLIP_UPSHIFT_BURNOUT = 5.0F;
+   // The gear scale (speedToRpm) is 0.95 * redline / top speed, so a slow vehicle (a tank with maxSpeed 25) has a scale five
+   // times a car's, and its wheel torque exceeds the grip limit by the same factor. The wheel-slip integrator below would then
+   // run the driven wheels away within a fraction of a second on soft ground, the converter unloads and the force collapses.
+   // Vehicles with a top speed of 60 km/h or more are untouched; below it the slip build-up is scaled back by the ratio.
+   private static final float SLIP_REF_SPEED_TO_RPM = 71.25F;
    private boolean slipUpshift = false;
 
    private float offroadAptitude(VehicleScript script) {
@@ -2009,12 +2014,13 @@ public final class BvdCar {
       wheelTorque -= this.cc.brakingForce * brakeToTorque;
       this.burnout = 0.0F;
       float vehSpeed = this.cc.vehicleObject.getCurrentSpeedKmHour() * BaseVehicle.getFakeSpeedModifier();
+      float slipScale = Math.min(1.0F, SLIP_REF_SPEED_TO_RPM / Math.max(1.0F, speedToRpm));
       if (gear == 0) {
-         this.drivenWheelSpeed -= (wheelTorque - driveLimit) * dt * 0.02F;
+         this.drivenWheelSpeed -= (wheelTorque - driveLimit) * dt * 0.02F * slipScale;
          this.drivenWheelSpeed = Math.min(this.drivenWheelSpeed, vehSpeed);
          this.burnout = Math.max(vehSpeed - this.drivenWheelSpeed - 3.0F, 0.0F);
       } else {
-         this.drivenWheelSpeed += (wheelTorque - driveLimit) * dt * 0.02F;
+         this.drivenWheelSpeed += (wheelTorque - driveLimit) * dt * 0.02F * slipScale;
          this.drivenWheelSpeed = Math.max(this.drivenWheelSpeed, vehSpeed);
          this.burnout = Math.max(this.drivenWheelSpeed - vehSpeed - 3.0F, 0.0F);
       }

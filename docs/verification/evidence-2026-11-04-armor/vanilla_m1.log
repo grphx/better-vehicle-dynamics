@@ -1,0 +1,61 @@
+WATCHDOG error [game] +5s: ERROR: General      f:0 at AngelCodeFont.parseFnt              > AngelCodeFont failed to load page 0 texture G:/SteamLibrary/steamapps/common/ProjectZomboid/media/mainfont_0.png
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793757679_error_game.png
+WATCHDOG error [game] +5s: ERROR: General      f:0 at AngelCodeFont.parseFnt              > AngelCodeFont failed to load page 0 texture G:/SteamLibrary/steamapps/common/ProjectZomboid/media/mainfont2_0.png
+WATCHDOG error [game] +5s: ERROR: General      f:0 at AngelCodeFont.parseFnt              > AngelCodeFont failed to load page 0 texture G:/SteamLibrary/steamapps/common/ProjectZomboid/media/fonts/zomboidDial
+WATCHDOG error [game] +11s: ERROR: General      f:0 at FluidContainerScript.load           > Sanitizing container name 'Large Bucket', name may not contain whitespaces.
+WATCHDOG error [game] +11s: ERROR: General      f:0 at FluidContainerScript.load           > Sanitizing container name 'Fuel Pump', name may not contain whitespaces.
+WATCHDOG error [game] +16s: ERROR: General      f:0 at CraftRecipeComponentScript.getIconTexture> CraftRecipeComponentScript: Recipe Piano missing UiConfigScript - falling back to SpriteConfigScript first wor
+WATCHDOG error [vanilla] +33s: ERROR: Lua          f:0 at Lua(Vanilla).handleMannequinZone    > ERROR: Mannequin zone missing properties in media/maps/Muldraugh, KY/objects.lua coords: 13583, 1299, 0
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793757707_error_vanilla.png
+WATCHDOG error [game] +33s: ERROR: General      f:0 at Basements.mergeRoomsOntoMetaCell    > duplicate RoomDef.metaID for room at 10707,9484,0
+WATCHDOG error [game] +39s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_21
+WATCHDOG error [game] +39s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_22
+WATCHDOG error [game] +39s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_23
+WATCHDOG error [game] +39s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_19
+WATCHDOG error [game] +39s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_18
+WATCHDOG error [game] +39s: ERROR: General      f:0 at ImportedSkeleton.collectBoneFrames  > Could not find bone index for node name: "Body"
+WATCHDOG error [mod:WarThunderVehicleLibrary] +44s: Lua fail. Message: Object tried to call nil in BetterFPS
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793757718_error_mod_WarThunderVehicleLibrary.png
+WATCHDOG error [mod:WarThunderVehicleLibrary] +44s: ERROR: General      f:1> Lua((MOD:WarThunderVehicleLibrary)).BetterFPS> Exception thrown
+WATCHDOG error [mod:WarThunderVehicleLibrary] +44s: Lua fail. Message: Object tried to call nil in helicopterVisualSoundUpdate
+WATCHDOG error [mod:WarThunderVehicleLibrary] +44s: ERROR: General      f:2> Lua((MOD:WarThunderVehicleLibrary)).helicopterVisualSoundUpdate> Exception thrown
+===== sp armor_m1_van =====
+[PZTEST] mode armor_m1_van: launching test world
+[PZTEST] world started at 10586,11180
+[PZTEST] protect: invisible=true
+[PZTEST] ZombieBuddy layer active: false
+[PZTEST] cleared 60 parked vehicle(s)
+[PZTEST] script missing: Base.M998_Humvee
+[PZTEST] script missing: Base.M113_APC
+[PZTEST] script missing: Base.M163
+[PZTEST] script missing: Base.M41_Walker_Bulldog
+[PZTEST] script Base.M1A1: mass 1880 engineForce 14000 gearRatioCount 4 wheels 4
+[PZTEST] Base.M1A1                    parts: Engine=noitem/c100 Battery=Base.CarBattery10/c100 GasTank=Base.BigGasTankForPanzer10/c100  keysInIgnition=false
+[PZTEST] Base.M1A1                    start failed: enginePower=14000 battery=0 hotwired=true keys=err state=Idle engineQuality=100
+[PZTEST] Base.M1A1                    forced start: running=true
+[PZTEST] Base.M1A1                    road  tires FrontLeft=NormalTire2/100 FrontRight=NormalTire2/100 RearLeft=NormalTire2/100 RearRight=NormalTire2/100 | at spawn 4 of 4 | id 204
+[PZTEST] Base.M1A1                    road  physics static=nil active=nil -> static=nil active=nil
+[PZTEST] Base.M1A1                    road  mass  2147  power  14000  v@3s  53.9  v@5s   0.4  t->30 1.4s  dist 53.4  rpm max  3001/4500 pinned   0%  [nil -1.00 off -1.00 eff 1.00]
+[PZTEST] Base.M1A1                    parts: Engine=noitem/c100 Battery=Base.CarBattery10/c100 GasTank=Base.BigGasTankForPanzer10/c100  keysInIgnition=false
+[PZTEST] Base.M1A1                    start failed: enginePower=14000 battery=0 hotwired=true keys=err state=Idle engineQuality=100
+[PZTEST] Base.M1A1                    forced start: running=true
+[PZTEST] Base.M1A1                    grass tires FrontLeft=NormalTire2/100 FrontRight=NormalTire2/100 RearLeft=NormalTire2/100 RearRight=NormalTire2/100 | at spawn 4 of 4 | id 204
+[PZTEST] Base.M1A1                    grass physics static=nil active=nil -> static=nil active=nil
+[PZTEST] Base.M1A1                    grass mass  2147  power  14000  v@3s  38.8  v@5s  55.2  t->30 2.3s  dist 43.3  rpm max  3019/4500 pinned   0%  [nil -1.00 off -1.00 eff 1.00]
+[PZTEST] DONE pass=0 fail=0
+status: done
+console errors mentioning Better Vehicle Dynamics: 0
+Lua error lines: 0
+RESULT: PASS
+WATCHDOG: 5 distinct error(s) while the test ran (10831 in total); 13 at startup (asset/tile warnings, usually harmless)
+  [game] 1 distinct, 3 total
+     x3    +39s  ERROR: General      f:0 at ImportedSkeleton.collectBoneFrames  > Could not find bone index for node name: "Body"
+  [mod:WarThunderVehicleLibrary] 4 distinct, 10828 total
+     x20   +44s  Lua fail. Message: Object tried to call nil in BetterFPS
+     x20   +44s  ERROR: General      f:1> Lua((MOD:WarThunderVehicleLibrary)).BetterFPS> Exception thrown
+     x5391 +44s  Lua fail. Message: Object tried to call nil in helicopterVisualSoundUpdate
+     x5397 +44s  ERROR: General      f:2> Lua((MOD:WarThunderVehicleLibrary)).helicopterVisualSoundUpdate> Exception thrown
+  startup by origin: game 12, vanilla 1
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793757679_error_game.png
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793757707_error_vanilla.png
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793757718_error_mod_WarThunderVehicleLibrary.png

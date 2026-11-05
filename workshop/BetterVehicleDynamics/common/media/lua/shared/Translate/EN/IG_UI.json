@@ -23,7 +23,7 @@
     "IGUI_BVD_ShiftDown": "Shift down",
     "IGUI_BVD_ShiftDown_Tooltip": "Key to shift down one gear.",
     "IGUI_BVD_DriftKey": "Drift key",
-    "IGUI_BVD_DriftKey_Tooltip": "Hold this key while cornering at speed to enter drift mode.",
+    "IGUI_BVD_DriftKey_Tooltip": "Hold this key while cornering at speed to enter drift mode. When it is the same key as the game's cruise control (Left Shift by default) it works as the drift key only: rebind one of the two to use cruise control.",
     "IGUI_BVD_CustomizableSteering": "Customizable steering",
     "IGUI_BVD_CustomizableSteering_Tooltip": "Use the steering response sliders below instead of the default steering feel.",
     "IGUI_BVD_NotProperlyInstalled": "Better Vehicle Dynamics is missing its Java component, so driving is vanilla. Either install ZombieBuddy from the Workshop, or copy the 'zombie' folder from the mod's B42.21_Manual_Install folder into your Project Zomboid install folder (see the Workshop page). Then restart the game.",

@@ -1,0 +1,81 @@
+WATCHDOG error [game] +5s: ERROR: General      f:0 at AngelCodeFont.parseFnt              > AngelCodeFont failed to load page 0 texture G:/SteamLibrary/steamapps/common/ProjectZomboid/media/mainfont_0.png
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793836634_error_game.png
+WATCHDOG error [game] +5s: ERROR: General      f:0 at AngelCodeFont.parseFnt              > AngelCodeFont failed to load page 0 texture G:/SteamLibrary/steamapps/common/ProjectZomboid/media/mainfont2_0.png
+WATCHDOG error [game] +5s: ERROR: General      f:0 at AngelCodeFont.parseFnt              > AngelCodeFont failed to load page 0 texture G:/SteamLibrary/steamapps/common/ProjectZomboid/media/fonts/zomboidDial
+WATCHDOG error [game] +11s: ERROR: General      f:0 at FluidContainerScript.load           > Sanitizing container name 'Large Bucket', name may not contain whitespaces.
+WATCHDOG error [game] +11s: ERROR: General      f:0 at FluidContainerScript.load           > Sanitizing container name 'Fuel Pump', name may not contain whitespaces.
+WATCHDOG error [game] +16s: ERROR: General      f:0 at CraftRecipeComponentScript.getIconTexture> CraftRecipeComponentScript: Recipe Piano missing UiConfigScript - falling back to SpriteConfigScript first wor
+WATCHDOG error [vanilla] +31s: ERROR: Lua          f:0 at Lua(Vanilla).handleMannequinZone    > ERROR: Mannequin zone missing properties in media/maps/Muldraugh, KY/objects.lua coords: 13583, 1299, 0
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793836660_error_vanilla.png
+WATCHDOG error [game] +31s: ERROR: General      f:0 at Basements.mergeRoomsOntoMetaCell    > duplicate RoomDef.metaID for room at 10707,9484,0
+WATCHDOG error [game] +37s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_21
+WATCHDOG error [game] +37s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_22
+WATCHDOG error [game] +37s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_23
+WATCHDOG error [game] +37s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_19
+WATCHDOG error [game] +37s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_18
+WATCHDOG error [game] +37s: ERROR: General      f:0 at ImportedSkeleton.collectBoneFrames  > Could not find bone index for node name: "Body"
+===== sp cruise =====
+[PZTEST] mode cruise: launching test world
+[PZTEST] world started at 10586,11180
+[PZTEST] protect: invisible=true
+[PZTEST] cleared 60 parked vehicle(s)
+[PZTEST] PASS found a road
+[PZTEST] == drift key is the cruise key (default)
+[PZTEST]   Shift+W held  0.0s: speed   25.0 km/h  rpm 3741  cruise false/0  gasPedal=true  pos 10523,11158
+[PZTEST]   Shift+W held  1.0s: speed   35.3 km/h  rpm 3252  cruise false/0  gasPedal=true  pos 10523,11149
+[PZTEST]   Shift+W held  2.0s: speed   41.7 km/h  rpm 3761  cruise false/0  gasPedal=true  pos 10523,11138
+[PZTEST]   Shift+W held  3.0s: speed   47.3 km/h  rpm 4262  cruise false/0  gasPedal=true  pos 10523,11126
+[PZTEST]   Shift+W held  4.0s: speed   53.3 km/h  rpm 3505  cruise false/0  gasPedal=true  pos 10523,11112
+[PZTEST]   all keys released  0.0s: speed   57.1 km/h  rpm 3733  cruise false/0  gasPedal=true  pos 10523,11097
+[PZTEST]   all keys released  1.0s: speed   55.3 km/h  rpm 2450  cruise false/0  gasPedal=false  pos 10523,11081
+[PZTEST]   all keys released  2.0s: speed   52.8 km/h  rpm 2339  cruise false/0  gasPedal=false  pos 10523,11069
+[PZTEST]   all keys released  3.0s: speed   50.0 km/h  rpm 2215  cruise false/0  gasPedal=false  pos 10523,11055
+[PZTEST]   all keys released  4.0s: speed   47.4 km/h  rpm 2099  cruise false/0  gasPedal=false  pos 10522,11041
+[PZTEST]   all keys released  5.0s: speed   44.7 km/h  rpm 2566  cruise false/0  gasPedal=false  pos 10522,11028
+[PZTEST]   all keys released  6.0s: speed   41.7 km/h  rpm 2405  cruise false/0  gasPedal=false  pos 10522,11016
+[PZTEST]   all keys released  7.0s: speed   38.9 km/h  rpm 2245  cruise false/0  gasPedal=false  pos 10522,11005
+[PZTEST]   all keys released  8.0s: speed   36.3 km/h  rpm 2095  cruise false/0  gasPedal=false  pos 10522,10994
+[PZTEST]   all keys released  9.0s: speed   33.3 km/h  rpm 2666  cruise false/0  gasPedal=false  pos 10522,10985
+[PZTEST]   after braking  0.0s: speed   -2.1 km/h  rpm 1857  cruise false/0  gasPedal=true  pos 10522,10974
+[PZTEST]   after braking  1.0s: speed   -4.1 km/h  rpm  863  cruise false/0  gasPedal=false  pos 10522,10975
+[PZTEST]   after braking  2.0s: speed   -3.6 km/h  rpm  658  cruise false/0  gasPedal=false  pos 10522,10976
+[PZTEST]   after braking  3.0s: speed   -3.2 km/h  rpm  659  cruise false/0  gasPedal=false  pos 10522,10977
+[PZTEST] PASS the test car moved on its own first (shared)
+[PZTEST] == drift key rebound to another key
+[PZTEST]   Shift+W held  0.0s: speed   25.0 km/h  rpm 3758  cruise false/0  gasPedal=true  pos 10532,11156
+[PZTEST]   Shift+W held  1.0s: speed   29.4 km/h  rpm 2822  cruise true/34  gasPedal=false  pos 10533,11149
+[PZTEST]   Shift+W held  2.0s: speed   32.3 km/h  rpm 3025  cruise true/44  gasPedal=false  pos 10535,11141
+[PZTEST]   Shift+W held  3.0s: speed   25.4 km/h  rpm 2812  cruise true/54  gasPedal=false  pos 10536,11132
+[PZTEST]   Shift+W held  4.0s: speed    0.0 km/h  rpm 3123  cruise true/64  gasPedal=false  pos 10537,11128
+[PZTEST]   all keys released  0.0s: speed    0.0 km/h  rpm 2853  cruise true/74  gasPedal=false  pos 10537,11128
+[PZTEST]   all keys released  1.0s: speed    0.0 km/h  rpm 2736  cruise true/74  gasPedal=false  pos 10537,11128
+[PZTEST]   all keys released  2.0s: speed    0.0 km/h  rpm 2692  cruise true/74  gasPedal=false  pos 10537,11128
+[PZTEST]   all keys released  3.0s: speed    0.0 km/h  rpm 2676  cruise true/74  gasPedal=false  pos 10537,11128
+[PZTEST]   all keys released  4.0s: speed    0.0 km/h  rpm 2670  cruise true/74  gasPedal=false  pos 10537,11128
+[PZTEST]   all keys released  5.0s: speed    0.0 km/h  rpm 2668  cruise true/74  gasPedal=false  pos 10537,11128
+[PZTEST]   all keys released  6.0s: speed    0.0 km/h  rpm 2667  cruise true/74  gasPedal=false  pos 10537,11128
+[PZTEST]   all keys released  7.0s: speed    0.0 km/h  rpm 2667  cruise true/74  gasPedal=false  pos 10537,11128
+[PZTEST]   all keys released  8.0s: speed    0.0 km/h  rpm 2667  cruise true/74  gasPedal=false  pos 10537,11128
+[PZTEST]   all keys released  9.0s: speed    0.0 km/h  rpm 2667  cruise true/74  gasPedal=false  pos 10537,11128
+[PZTEST]   after braking  0.0s: speed   -7.4 km/h  rpm 2824  cruise false/74  gasPedal=true  pos 10537,11129
+[PZTEST]   after braking  1.0s: speed   -2.3 km/h  rpm 1079  cruise false/74  gasPedal=false  pos 10537,11131
+[PZTEST]   after braking  2.0s: speed   -0.4 km/h  rpm  641  cruise false/74  gasPedal=false  pos 10537,11131
+[PZTEST]   after braking  3.0s: speed   -0.1 km/h  rpm  666  cruise false/74  gasPedal=false  pos 10537,11131
+[PZTEST] PASS the test car moved on its own first (rebound)
+[PZTEST] RESULT shared key: cruise while held=false; released at 57.1 km/h, 10 s later 30.1 km/h, cruise=false
+[PZTEST] RESULT rebound key: cruise while held=true; released at 0.0 km/h, 10 s later 0.0 km/h, cruise=true, after a brake tap cruise=false
+[PZTEST] PASS drift key = cruise key: holding it with forward does NOT switch the cruise control on
+[PZTEST] PASS drift key = cruise key: after the keys are released the car does not carry on by itself  -- 57.1 -> 30.1 km/h
+[PZTEST] PASS drift key rebound: the vanilla cruise control still works (switches on while Shift+forward is held)
+[PZTEST] PASS drift key rebound: a tap on the brake switches the cruise control off
+[PZTEST] DONE pass=7 fail=0
+status: done
+console errors mentioning Better Vehicle Dynamics: 0
+Lua error lines: 0
+RESULT: PASS
+WATCHDOG: 1 distinct error(s) while the test ran (3 in total); 13 at startup (asset/tile warnings, usually harmless)
+  [game] 1 distinct, 3 total
+     x3    +37s  ERROR: General      f:0 at ImportedSkeleton.collectBoneFrames  > Could not find bone index for node name: "Body"
+  startup by origin: game 12, vanilla 1
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793836634_error_game.png
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793836660_error_vanilla.png

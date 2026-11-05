@@ -15,6 +15,8 @@ require "PZAPI/ModOptions"
 -- previous code — same `or {}`, just now explicitly the secondary.
 BetterVehicleDynamicsMod = BetterVehicleDynamicsMod or {}
 BetterVehicleDynamicsMod.driftActive = false
+BetterVehicleDynamicsMod.driftOnCruiseKey = false
+BVD = BVD or {}
 
 local function getDriftKey()
     -- Look up the PZAPI ModOptions instance our sister file registered.
@@ -27,6 +29,22 @@ local function getDriftKey()
         if k and k ~= 0 then return k end
     end
     return Keyboard.KEY_LSHIFT
+end
+
+-- Left Shift is the game's cruise-control key (Shift + forward holds a speed) and also this mod's default drift key. While
+-- the two are the same key the Java treats it as the drift key only; otherwise a driver holding it to drift would
+-- also switch the cruise control on and the car would run to its top speed by itself. Resolved once per frame while
+-- driving. BVD.testSharedKey forces the answer for the in-game tests.
+local cruiseKey = nil
+local function getCruiseKey()
+    if cruiseKey == nil then
+        cruiseKey = false
+        local ok, k = pcall(function()
+            if KeybindId and KeybindId.CRUISE_CONTROL then return getCore():getKey(KeybindId.CRUISE_CONTROL) end
+        end)
+        if ok and type(k) == "number" then cruiseKey = k end
+    end
+    return cruiseKey
 end
 
 local wasDrifting   = false
@@ -54,8 +72,12 @@ local function onPlayerUpdate(player)
         return
     end
 
-    local nowDrifting = isKeyDown(getDriftKey()) == true
+    local driftKey = getDriftKey()
+    local nowDrifting = isKeyDown(driftKey) == true
     BetterVehicleDynamicsMod.driftActive = nowDrifting
+    local shared = (getCruiseKey() ~= false and driftKey == getCruiseKey())
+    if BVD and BVD.testSharedKey ~= nil then shared = BVD.testSharedKey end
+    BetterVehicleDynamicsMod.driftOnCruiseKey = shared
 
     if nowDrifting and not wasDrifting then
         pcall(function()

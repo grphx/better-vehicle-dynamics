@@ -1,5 +1,22 @@
 # Changelog
 
+## [Unreleased] - drift key no longer switches the cruise control on
+
+Reported: "when I start driving, the car accelerates all the way to its maximum speed on its own, even though I'm not
+touching the keyboard".
+
+- **Fixed: the drift key could switch the cruise control on.** BVD's default drift key is Left Shift, which is also the
+  game's cruise-control key (Shift + forward). A driver who held it to drift while pressing forward also set the
+  cruise control, whose target climbs about 10 km/h per second while the keys are held (up to the car's top speed + 20),
+  and the car carried on to that speed by itself after every key was released until the brake was tapped. Reproduced
+  in game: from 25 km/h, Shift + forward for 5 s, then no keys: cruise 34 -> 74, the car ran on to 72 km/h on its own.
+  While the drift key and the cruise key are the same key (the default) that key is now the drift key only: no cruise
+  control, and the gas works as normal (25 -> 53 km/h in 4 s with Shift + forward held, coasting down after release).
+  If you rebind the drift key (or the cruise key) to different keys, the vanilla cruise control works exactly as before.
+- With no keys pressed nothing moves a car: checked a stock car and two strong modded-style cars (0-1 km/h over 12 s).
+- Java change (manual installs copy the new classes again). The drift-key tooltip says it (English).
+
+
 ## [0.2.4] - 2026-11-04 - Slow vehicles: tracked armoured vehicles no longer crawl off-road
 
 Reported: the M1A1 Abrams and Papa Chad's armoured vehicles (M113, M163, M41, Humvee) "more or less unable to accelerate".

@@ -1,0 +1,61 @@
+WATCHDOG error [game] +5s: ERROR: General      f:0 at AngelCodeFont.parseFnt              > AngelCodeFont failed to load page 0 texture G:/SteamLibrary/steamapps/common/ProjectZomboid/media/mainfont_0.png
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793836385_error_game.png
+WATCHDOG error [game] +5s: ERROR: General      f:0 at AngelCodeFont.parseFnt              > AngelCodeFont failed to load page 0 texture G:/SteamLibrary/steamapps/common/ProjectZomboid/media/mainfont2_0.png
+WATCHDOG error [game] +5s: ERROR: General      f:0 at AngelCodeFont.parseFnt              > AngelCodeFont failed to load page 0 texture G:/SteamLibrary/steamapps/common/ProjectZomboid/media/fonts/zomboidDial
+WATCHDOG error [game] +11s: ERROR: General      f:0 at FluidContainerScript.load           > Sanitizing container name 'Large Bucket', name may not contain whitespaces.
+WATCHDOG error [game] +11s: ERROR: General      f:0 at FluidContainerScript.load           > Sanitizing container name 'Fuel Pump', name may not contain whitespaces.
+WATCHDOG error [game] +16s: ERROR: General      f:0 at CraftRecipeComponentScript.getIconTexture> CraftRecipeComponentScript: Recipe Piano missing UiConfigScript - falling back to SpriteConfigScript first wor
+WATCHDOG error [vanilla] +32s: ERROR: Lua          f:0 at Lua(Vanilla).handleMannequinZone    > ERROR: Mannequin zone missing properties in media/maps/Muldraugh, KY/objects.lua coords: 13583, 1299, 0
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793836411_error_vanilla.png
+WATCHDOG error [game] +32s: ERROR: General      f:0 at Basements.mergeRoomsOntoMetaCell    > duplicate RoomDef.metaID for room at 10707,9484,0
+WATCHDOG error [game] +37s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_21
+WATCHDOG error [game] +37s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_22
+WATCHDOG error [game] +37s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_23
+WATCHDOG error [game] +37s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_19
+WATCHDOG error [game] +37s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_18
+WATCHDOG error [game] +37s: ERROR: General      f:0 at ImportedSkeleton.collectBoneFrames  > Could not find bone index for node name: "Body"
+===== sp cruise =====
+[PZTEST] mode cruise: launching test world
+[PZTEST] world started at 10586,11180
+[PZTEST] protect: invisible=true
+[PZTEST] cleared 55 parked vehicle(s)
+[PZTEST] PASS found a road
+[PZTEST] == drift key is the cruise key (default)
+[PZTEST]   Shift+W held  1.0s: speed   30.3 km/h  rpm 4526  cruise false/0
+[PZTEST]   Shift+W held  3.0s: speed   24.8 km/h  rpm 3357  cruise false/0
+[PZTEST]   all keys released  1.0s: speed   -0.0 km/h  rpm  981  cruise false/0
+[PZTEST]   all keys released  3.0s: speed    0.0 km/h  rpm  644  cruise false/0
+[PZTEST]   all keys released  5.0s: speed    0.0 km/h  rpm  672  cruise false/0
+[PZTEST]   all keys released  7.0s: speed    0.0 km/h  rpm  646  cruise false/0
+[PZTEST]   all keys released  9.0s: speed    0.0 km/h  rpm  671  cruise false/0
+[PZTEST]   after braking  1.0s: speed   -0.8 km/h  rpm  991  cruise false/0
+[PZTEST]   after braking  3.0s: speed   -0.1 km/h  rpm  647  cruise false/0
+[PZTEST] PASS the test car moved on its own first (shared)
+[PZTEST] == drift key rebound to another key
+[PZTEST]   Shift+W held  1.0s: speed   31.8 km/h  rpm 2976  cruise true/34
+[PZTEST]   Shift+W held  3.0s: speed   43.2 km/h  rpm 2944  cruise true/54
+[PZTEST]   all keys released  1.0s: speed   54.9 km/h  rpm 2898  cruise true/74
+[PZTEST]   all keys released  3.0s: speed   60.1 km/h  rpm 3110  cruise true/74
+[PZTEST]   all keys released  5.0s: speed   64.8 km/h  rpm 3303  cruise true/74
+[PZTEST]   all keys released  7.0s: speed   68.8 km/h  rpm 3477  cruise true/74
+[PZTEST]   all keys released  9.0s: speed   72.2 km/h  rpm 3603  cruise true/74
+[PZTEST]   after braking  1.0s: speed   13.5 km/h  rpm 1822  cruise false/74
+[PZTEST]   after braking  3.0s: speed    8.1 km/h  rpm 1093  cruise false/74
+[PZTEST] PASS the test car moved on its own first (rebound)
+[PZTEST] RESULT shared key: cruise while held=false; released at -0.0 km/h, 10 s later 0.0 km/h, cruise=false
+[PZTEST] RESULT rebound key: cruise while held=true; released at 51.9 km/h, 10 s later 72.5 km/h, cruise=true, after a brake tap cruise=false
+[PZTEST] PASS drift key = cruise key: holding it with forward does NOT switch the cruise control on
+[PZTEST] PASS drift key = cruise key: after the keys are released the car does not carry on by itself  -- -0.0 -> 0.0 km/h
+[PZTEST] PASS drift key rebound: the vanilla cruise control still works (switches on while Shift+forward is held)
+[PZTEST] PASS drift key rebound: a tap on the brake switches the cruise control off
+[PZTEST] DONE pass=7 fail=0
+status: done
+console errors mentioning Better Vehicle Dynamics: 0
+Lua error lines: 0
+RESULT: PASS
+WATCHDOG: 1 distinct error(s) while the test ran (3 in total); 13 at startup (asset/tile warnings, usually harmless)
+  [game] 1 distinct, 3 total
+     x3    +37s  ERROR: General      f:0 at ImportedSkeleton.collectBoneFrames  > Could not find bone index for node name: "Body"
+  startup by origin: game 12, vanilla 1
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793836385_error_game.png
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793836411_error_vanilla.png

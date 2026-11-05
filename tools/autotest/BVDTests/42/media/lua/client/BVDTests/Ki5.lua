@@ -930,6 +930,130 @@ local function reverseBody(T)
     T.check("manual shifting without the clutch option: after driving forward the back key brakes and then reverses", backwards("manualFwd") < -3, string.format("%.1f km/h", backwards("manualFwd")))
 end
 T.register("reverse", reverseBody, where)
+-- A user report: "the car accelerates to its maximum speed on its own, without touching the keyboard". No keys, then one
+-- short tap of the gas, on a car that stands still: does anything push it? Logged once a second. (T.drive(false...) = no
+-- test keys; the harness holds nothing.)
+local function noinputBody(T)
+    T.wait(4)
+    local p = getPlayer()
+    p:setGodMod(true); p:setGhostMode(true)
+    T.clearCars(p, 300)
+    local rx, ry = findLine("blends_street", ROAD.x, ROAD.y, nil, true, 90)
+    if not rx then rx, ry = findLine("blends_street", ROAD.x, ROAD.y, nil, true, 60) end
+    if not T.check("found a road", rx ~= nil) then return end
+    local mod = BetterVehicleDynamicsMod
+    local sc = getScriptManager():getVehicle("Base.CarNormal")
+    local force0, mass0 = sc:getEngineForce(), sc:getMass()
+    local function state(v, label, el)
+        local reg = "?"
+        pcall(function() reg = tostring(v:isRegulator()) .. "/" .. string.format("%.0f", v:getRegulatorSpeed()) end)
+        T.log(string.format("  %s %4.1fs: speed %6.1f km/h  throttle %.2f  gear %s  rpm %4.0f  cruise %s  gasPedal=%s brake=%s", label, el, v:getCurrentSpeedKmHour(), v.throttle or -1, tostring(v:getTransmissionNumber()), v:getEngineSpeed(), reg, tostring(v:isGasPedalPressed()), tostring(v:isBrakePedalPressed())))
+    end
+    local function watch(v, label, seconds)
+        local t0, lastLog, peak = getTimestampMs(), -1, 0
+        while getTimestampMs() - t0 < seconds * 1000 do
+            local el = (getTimestampMs() - t0) / 1000
+            peak = math.max(peak, math.abs(v:getCurrentSpeedKmHour()))
+            if el - lastLog >= 2 then lastLog = el state(v, label, el) end
+            coroutine.yield()
+        end
+        return peak
+    end
+    local cases = { { "stock car 1100 kg / default force", nil, nil }, { "strong modded car 1300 kg / 14000 force", 14000, 1300 }, { "heavy strong 2000 kg / 16000 force", 16000, 2000 } }
+    local peaks = {}
+    for ci, c in ipairs(cases) do
+        if c[2] then sc:Load("CarNormal", string.format("{ engineForce = %d, mass = %d, }", c[2], c[3])) else sc:Load("CarNormal", string.format("{ engineForce = %d, mass = %d, }", force0, mass0)) end
+        T.log("== " .. c[1])
+        local ok = withCar(p, rx, ry, function(v)
+            T.drive(false, false, 0)
+            T.wait(2)
+            T.log(string.format("  standing: cruise state %s", tostring(v:isRegulator())))
+            peaks[ci .. "a"] = watch(v, "no input", 12)
+            -- one short tap of the gas, then nothing
+            T.drive(true, true, 0)
+            T.wait(1.0)
+            T.drive(false, false, 0)
+            peaks[ci .. "b"] = watch(v, "after a 1 s tap", 14)
+        end)
+        if not ok then T.log("could not set up: " .. c[1]) end
+    end
+    sc:Load("CarNormal", string.format("{ engineForce = %d, mass = %d, }", force0, mass0))
+    T.check("a stock car with no input stays still", (peaks["1a"] or 99) < 3, string.format("%.1f km/h", peaks["1a"] or -1))
+    T.check("a strong modded car with no input stays still", (peaks["2a"] or 99) < 3, string.format("%.1f km/h", peaks["2a"] or -1))
+    T.check("a heavy strong car with no input stays still", (peaks["3a"] or 99) < 3, string.format("%.1f km/h", peaks["3a"] or -1))
+end
+T.register("noinput", noinputBody, where)
+-- Vanilla cruise control (Left Shift + forward) as BVD runs it: hold both for a few seconds, let go of everything, and
+-- see whether the car carries on by itself; then brake and see it stop. Left Shift is also BVD's default drift key.
+local function cruiseBody(T)
+    T.wait(4)
+    local p = getPlayer()
+    p:setGodMod(true); p:setGhostMode(true)
+    T.clearCars(p, 300)
+    local rx, ry = findLine("blends_street", ROAD.x, ROAD.y, nil, true, 90)
+    if not rx then rx, ry = findLine("blends_street", ROAD.x, ROAD.y, nil, true, 60) end
+    if not T.check("found a road", rx ~= nil) then return end
+    local res = {}
+    -- shared = the drift key IS the cruise key (the default, both Left Shift); not shared = the drift key was rebound
+    for _, shared in ipairs({ true, false }) do
+        local key = shared and "shared" or "rebound"
+        BVD.testSharedKey = shared
+        T.log("== drift key " .. (shared and "is the cruise key (default)" or "rebound to another key"))
+        local r = {}
+        local ok = withCar(p, rx, ry, function(v)
+            local function state(label, el)
+                local reg = "?"
+                pcall(function() reg = tostring(v:isRegulator()) .. "/" .. string.format("%.0f", v:getRegulatorSpeed()) end)
+                T.log(string.format("  %s %4.1fs: speed %6.1f km/h  rpm %4.0f  cruise %s  gasPedal=%s  pos %.0f,%.0f", label, el, v:getCurrentSpeedKmHour(), v:getEngineSpeed(), reg, tostring(v:isGasPedalPressed()), v:getX(), v:getY()))
+            end
+            local function watch(label, seconds)
+                local t0, lastLog, peak = getTimestampMs(), -1, 0
+                while getTimestampMs() - t0 < seconds * 1000 do
+                    local el = (getTimestampMs() - t0) / 1000
+                    peak = math.max(peak, v:getCurrentSpeedKmHour())
+                    if el - lastLog >= 1 then lastLog = el state(label, el) end
+                    coroutine.yield()
+                end
+                return peak
+            end
+            T.drive(false, false, 0)
+            T.wait(1)
+            -- an ordinary start: forward only, up to about 25 km/h
+            T.drive(true, true, 0)
+            T.waitFor(function() return v:getCurrentSpeedKmHour() >= 25 end, 12)
+            -- now Left Shift is held as well, forward still down, for 5 s
+            PZTestShift(true)
+            r.held = watch("Shift+W held", 5)
+            r.regWhileHeld = v:isRegulator()
+            -- let go of every key
+            T.drive(false, false, 0)
+            PZTestShift(false)
+            r.speedAtRelease = v:getCurrentSpeedKmHour()
+            r.after = watch("all keys released", 10)
+            r.speedLater = v:getCurrentSpeedKmHour()
+            r.regLater = v:isRegulator()
+            -- a tap on the brake
+            PZTestReverse(true, 0)
+            T.wait(1.0)
+            PZTestReverse(false, 0)
+            T.drive(false, false, 0)
+            r.regAfterBrake = v:isRegulator()
+            watch("after braking", 4)
+        end)
+        T.check("the test car moved on its own first (" .. key .. ")", ok)
+        res[key] = r
+    end
+    BVD.testSharedKey = nil
+    local s1, s2 = res.shared, res.rebound
+    if not s1 or not s2 then return end
+    T.log(string.format("RESULT shared key: cruise while held=%s; released at %.1f km/h, 10 s later %.1f km/h, cruise=%s", tostring(s1.regWhileHeld), s1.speedAtRelease or -1, s1.speedLater or -1, tostring(s1.regLater)))
+    T.log(string.format("RESULT rebound key: cruise while held=%s; released at %.1f km/h, 10 s later %.1f km/h, cruise=%s, after a brake tap cruise=%s", tostring(s2.regWhileHeld), s2.speedAtRelease or -1, s2.speedLater or -1, tostring(s2.regLater), tostring(s2.regAfterBrake)))
+    T.check("drift key = cruise key: holding it with forward does NOT switch the cruise control on", s1.regWhileHeld == false and s1.regLater == false)
+    T.check("drift key = cruise key: after the keys are released the car does not carry on by itself", (s1.speedLater or 99) < (s1.speedAtRelease or 0) - 3 or (s1.speedLater or 99) < 40, string.format("%.1f -> %.1f km/h", s1.speedAtRelease or -1, s1.speedLater or -1))
+    T.check("drift key rebound: the vanilla cruise control still works (switches on while Shift+forward is held)", s2.regWhileHeld == true)
+    T.check("drift key rebound: a tap on the brake switches the cruise control off", s2.regAfterBrake == false)
+end
+T.register("cruise", cruiseBody, where)
 -- Heavy car on every kind of ground found near the start: which floor sprites exist, and how the car does on each.
 T.register("heavy_surf", function(T)
     T.wait(4)

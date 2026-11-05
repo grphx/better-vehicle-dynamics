@@ -1,0 +1,79 @@
+WATCHDOG error [game] +10s: ERROR: General      f:0 at AngelCodeFont.parseFnt              > AngelCodeFont failed to load page 0 texture G:/SteamLibrary/steamapps/common/ProjectZomboid/media/mainfont_0.png
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793835099_error_game.png
+WATCHDOG error [game] +10s: ERROR: General      f:0 at AngelCodeFont.parseFnt              > AngelCodeFont failed to load page 0 texture G:/SteamLibrary/steamapps/common/ProjectZomboid/media/mainfont2_0.png
+WATCHDOG error [game] +10s: ERROR: General      f:0 at AngelCodeFont.parseFnt              > AngelCodeFont failed to load page 0 texture G:/SteamLibrary/steamapps/common/ProjectZomboid/media/fonts/zomboidDial
+WATCHDOG error [game] +22s: ERROR: General      f:0 at FluidContainerScript.load           > Sanitizing container name 'Large Bucket', name may not contain whitespaces.
+WATCHDOG error [game] +22s: ERROR: General      f:0 at FluidContainerScript.load           > Sanitizing container name 'Fuel Pump', name may not contain whitespaces.
+WATCHDOG error [game] +32s: ERROR: General      f:0 at CraftRecipeComponentScript.getIconTexture> CraftRecipeComponentScript: Recipe Piano missing UiConfigScript - falling back to SpriteConfigScript first wor
+WATCHDOG error [vanilla] +58s: ERROR: Lua          f:0 at Lua(Vanilla).handleMannequinZone    > ERROR: Mannequin zone missing properties in media/maps/Muldraugh, KY/objects.lua coords: 13583, 1299, 0
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793835147_error_vanilla.png
+WATCHDOG error [game] +58s: ERROR: General      f:0 at Basements.mergeRoomsOntoMetaCell    > duplicate RoomDef.metaID for room at 10707,9484,0
+WATCHDOG error [game] +58s: ERROR: General      f:0 at ImportedSkeleton.collectBoneFrames  > Could not find bone index for node name: "Body"
+WATCHDOG error [game] +58s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_21
+WATCHDOG error [game] +58s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_22
+WATCHDOG error [game] +58s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_23
+WATCHDOG error [game] +58s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_19
+WATCHDOG error [game] +58s: ERROR: General      f:0 at CellLoader.DoTileObjectCreation     > CellLoader> missing tile vegetation_groundcover_01_18
+===== sp noinput =====
+[PZTEST] mode noinput: launching test world
+[PZTEST] world started at 10586,11180
+[PZTEST] protect: invisible=true
+[PZTEST] cleared 58 parked vehicle(s)
+[PZTEST] PASS found a road
+[PZTEST] == stock car 1100 kg / default force
+[PZTEST]   standing: cruise state false
+[PZTEST]   no input  1.0s: speed    0.9 km/h  throttle -1.00  gear 1  rpm  637  cruise false/0  gasPedal=false brake=false
+[PZTEST]   no input  3.0s: speed    0.7 km/h  throttle -1.00  gear 1  rpm  660  cruise false/0  gasPedal=false brake=false
+[PZTEST]   no input  5.0s: speed    0.5 km/h  throttle -1.00  gear 1  rpm  641  cruise false/0  gasPedal=false brake=false
+[PZTEST]   no input  7.0s: speed    0.4 km/h  throttle -1.00  gear 1  rpm  661  cruise false/0  gasPedal=false brake=false
+[PZTEST]   no input  9.0s: speed    0.3 km/h  throttle -1.00  gear 1  rpm  643  cruise false/0  gasPedal=false brake=false
+[PZTEST]   no input 11.0s: speed    0.2 km/h  throttle -1.00  gear 1  rpm  638  cruise false/0  gasPedal=false brake=false
+[PZTEST]   after a 1 s tap  1.0s: speed    8.7 km/h  throttle -1.00  gear 1  rpm 1174  cruise false/0  gasPedal=false brake=false
+[PZTEST]   after a 1 s tap  3.0s: speed    5.2 km/h  throttle -1.00  gear 1  rpm  692  cruise false/0  gasPedal=false brake=false
+[PZTEST]   after a 1 s tap  5.0s: speed    4.2 km/h  throttle -1.00  gear 1  rpm  664  cruise false/0  gasPedal=false brake=false
+[PZTEST]   after a 1 s tap  7.0s: speed    3.4 km/h  throttle -1.00  gear 1  rpm  669  cruise false/0  gasPedal=false brake=false
+[PZTEST]   after a 1 s tap  9.0s: speed    2.6 km/h  throttle -1.00  gear 1  rpm  635  cruise false/0  gasPedal=false brake=false
+[PZTEST]   after a 1 s tap 11.0s: speed    1.9 km/h  throttle -1.00  gear 1  rpm  641  cruise false/0  gasPedal=false brake=false
+[PZTEST]   after a 1 s tap 13.0s: speed    1.1 km/h  throttle -1.00  gear 1  rpm  677  cruise false/0  gasPedal=false brake=false
+[PZTEST] == strong modded car 1300 kg / 14000 force
+[PZTEST]   standing: cruise state false
+[PZTEST]   no input  1.0s: speed    0.2 km/h  throttle -1.00  gear 1  rpm  640  cruise false/0  gasPedal=false brake=false
+[PZTEST]   no input  3.0s: speed    0.0 km/h  throttle -1.00  gear 1  rpm  664  cruise false/0  gasPedal=false brake=false
+[PZTEST]   no input  5.0s: speed    0.0 km/h  throttle -1.00  gear 1  rpm  644  cruise false/0  gasPedal=false brake=false
+[PZTEST]   no input  7.0s: speed    0.0 km/h  throttle -1.00  gear 1  rpm  670  cruise false/0  gasPedal=false brake=false
+[PZTEST]   no input  9.0s: speed    0.0 km/h  throttle -1.00  gear 1  rpm  636  cruise false/0  gasPedal=false brake=false
+[PZTEST]   no input 11.0s: speed    0.0 km/h  throttle -1.00  gear 1  rpm  678  cruise false/0  gasPedal=false brake=false
+[PZTEST]   after a 1 s tap  1.0s: speed    4.9 km/h  throttle -1.00  gear 1  rpm 1719  cruise false/0  gasPedal=false brake=false
+[PZTEST]   after a 1 s tap  3.0s: speed    0.3 km/h  throttle -1.00  gear 1  rpm  670  cruise false/0  gasPedal=false brake=false
+[PZTEST]   after a 1 s tap  5.0s: speed    0.0 km/h  throttle -1.00  gear 1  rpm  647  cruise false/0  gasPedal=false brake=false
+[PZTEST]   after a 1 s tap  7.0s: speed    0.0 km/h  throttle -1.00  gear 1  rpm  678  cruise false/0  gasPedal=false brake=false
+[PZTEST]   after a 1 s tap  9.0s: speed    0.0 km/h  throttle -1.00  gear 1  rpm  669  cruise false/0  gasPedal=false brake=false
+[PZTEST]   after a 1 s tap 11.0s: speed    0.0 km/h  throttle -1.00  gear 1  rpm  670  cruise false/0  gasPedal=false brake=false
+[PZTEST]   after a 1 s tap 13.0s: speed    0.0 km/h  throttle -1.00  gear 1  rpm  657  cruise false/0  gasPedal=false brake=false
+[PZTEST] == heavy strong 2000 kg / 16000 force
+[PZTEST]   standing: cruise state false
+[PZTEST]   no input  1.0s: speed    0.0 km/h  throttle -1.00  gear 1  rpm  644  cruise false/0  gasPedal=false brake=false
+[PZTEST]   no input  3.0s: speed    0.0 km/h  throttle -1.00  gear 1  rpm  663  cruise false/0  gasPedal=false brake=false
+[PZTEST]   no input  5.0s: speed    0.0 km/h  throttle -1.00  gear 1  rpm  660  cruise false/0  gasPedal=false brake=false
+[PZTEST]   no input  7.0s: speed    0.0 km/h  throttle -1.00  gear 1  rpm  668  cruise false/0  gasPedal=false brake=false
+[PZTEST]   no input  9.0s: speed    0.0 km/h  throttle -1.00  gear 1  rpm  649  cruise false/0  gasPedal=false brake=false
+[PZTEST]   no input 11.0s: speed    0.0 km/h  throttle -1.00  gear 1  rpm  662  cruise false/0  gasPedal=false brake=false
+[PZTEST]   after a 1 s tap  1.0s: speed   -0.0 km/h  throttle -1.00  gear 1  rpm 1110  cruise false/0  gasPedal=false brake=false
+[PZTEST]   after a 1 s tap  3.0s: speed    0.0 km/h  throttle -1.00  gear 1  rpm  650  cruise false/0  gasPedal=false brake=false
+[PZTEST]   after a 1 s tap  5.0s: speed    0.0 km/h  throttle -1.00  gear 1  rpm  644  cruise false/0  gasPedal=false brake=false
+[PZTEST]   after a 1 s tap  7.0s: speed    0.0 km/h  throttle -1.00  gear 1  rpm  668  cruise false/0  gasPedal=false brake=false
+[PZTEST]   after a 1 s tap  9.0s: speed    0.0 km/h  throttle -1.00  gear 1  rpm  651  cruise false/0  gasPedal=false brake=false
+[PZTEST]   after a 1 s tap 11.0s: speed    0.0 km/h  throttle -1.00  gear 1  rpm  643  cruise false/0  gasPedal=false brake=false
+[PZTEST]   after a 1 s tap 13.0s: speed    0.0 km/h  throttle -1.00  gear 1  rpm  661  cruise false/0  gasPedal=false brake=false
+[PZTEST] PASS a stock car with no input stays still  -- 1.0 km/h
+[PZTEST] PASS a strong modded car with no input stays still  -- 0.6 km/h
+[PZTEST] PASS a heavy strong car with no input stays still  -- 0.0 km/h
+[PZTEST] DONE pass=4 fail=0
+status: done
+console errors mentioning Better Vehicle Dynamics: 0
+Lua error lines: 0
+RESULT: PASS
+WATCHDOG: 0 distinct error(s) while the test ran (0 in total); 14 at startup (asset/tile warnings, usually harmless)
+  startup by origin: game 13, vanilla 1
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793835099_error_game.png
+WATCHDOG screenshot: /mnt/c/Users/Grphx/PZTest/watchdog/1793835147_error_vanilla.png

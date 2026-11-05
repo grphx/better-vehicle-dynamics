@@ -912,6 +912,16 @@ public final class BvdCar {
    // input pipeline behaviour exactly while leaving force application to the
    // physics model in update().
    private void updateControlsCalculation(ItemContainer engineBox) {
+      // Left Shift is both the game's cruise-control key and BVD's default drift key. A driver who holds it to drift (with
+      // forward) would also switch the cruise control on and the car would carry on to its top speed on its own after the
+      // keys are released, so while the two are the same key it is the drift key only: no cruise control, the gas works.
+      if (this.cc.clientControls.shift) {
+         KahluaTableImpl keyBridge = this.bvdBridge();
+         if (keyBridge != null && keyBridge.rawgetBool("driftOnCruiseKey")) {
+            this.cc.clientControls.shift = false;
+         }
+      }
+
       this.cc.speed = this.cc.vehicleObject.getCurrentSpeedKmHour();
       boolean drunk = this.cc.vehicleObject.getDriver() != null
          && this.cc.vehicleObject.getDriver().getMoodles().getMoodleLevel(MoodleType.DRUNK) > 1;

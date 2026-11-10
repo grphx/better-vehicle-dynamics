@@ -1,0 +1,63 @@
+-- Replaces the non-driving checks of the old BVDTests/Tests.lua (sp) and Ki5.lua "install":
+-- the ZombieBuddy layer is loaded and is the thing running the car, the car stays put on its wheels.
+-- Not ported (they need the pedals held, which Lua cannot do): accelerates, steering turns the car,
+-- brakes to a stop, vanilla isGasPedalPressed() sees BVD's pedal state.
+local MOD_ID = "BetterVehicleDynamics"
+local SPOT = { x = 10586, y = 11180, z = 0 }
+
+--@COMMON@
+
+local car
+
+ZomboTest.scenario{
+    id = "bvd_layer_smoke",
+    description = "BVD's ZombieBuddy layer drives a seated, idling car: it publishes its readout, stays level, and survives.",
+    tags = {"bvd", "zombiebuddy", "drivetrain", "smoke"},
+    modes = {"sp"},
+    startAt = SPOT,
+
+    setup = function(S)
+        S.need("BetterVehicleDynamics is active", S.modActive(MOD_ID), MOD_ID)
+        S.wait(4)
+        S.need("ZombieBuddy layer is active", layerOn(), "BVD_zombieBuddyActive = " .. tostring(BVD_zombieBuddyActive))
+        local p = S.player()
+        p:setGodMod(true)
+        p:setGhostMode(true)
+        S.observe("cleared " .. clearCars(p, 120) .. " parked vehicle(s)")
+        local v, why = newCar(S, p)
+        S.need("test car spawned, seated and engine running", v ~= nil and why == nil, tostring(why))
+        car = v
+    end,
+
+    run = function(S)
+        local p = S.player()
+        local v = car
+        local info = getModInfoByID(MOD_ID)
+        S.observe("BVD loaded from " .. tostring(info and info:getDir()))
+
+        S.check("tyre-mark texture helper exposed", type(BVD_registerSharedTexture) == "function")
+        local jv = BetterVehicleDynamicsMod and BetterVehicleDynamicsMod.javaVersion
+        S.check("BVD Java reports itself (version 3.7)", jv == "3.7", tostring(jv))
+
+        -- only BVD's drivetrain publishes this readout; vanilla never does
+        local c = readout(S, 10)
+        S.check("BVD drivetrain drives the car (readout published)", c ~= nil,
+            c and string.format("gripRoad %s tire %s laden %s", tostring(c.gripRoad), tostring(c.tireFamily), tostring(c.ladenRatio)) or "no computed table")
+
+        -- the info panel names the Java part that is running
+        local row
+        local rows = BVD.buildInfoRows and BVD.buildInfoRows(v) or {}
+        for _, r in ipairs(rows) do if r[1] == "Java part" then row = r end end
+        S.check("the info panel has a Java part row saying ZombieBuddy", row ~= nil and row[2] == "ZombieBuddy", row and tostring(row[2]) or "no row")
+
+        local z0 = v:getZ()
+        S.wait(6)
+        S.check("idling car did not sink", math.abs(v:getZ() - z0) < 0.5, string.format("z %.2f -> %.2f", z0, v:getZ()))
+        S.check("engine still running after the idle", v:isEngineRunning() == true)
+        S.check("ZombieBuddy layer survived (it switches itself off the first time a hooked call throws)", layerOn())
+
+        ISVehicleMenu.onExit(p)
+        local out = S.waitFor(function() return p:getVehicle() == nil or nil end, 10)
+        S.check("the player gets out again", out ~= nil)
+    end,
+}

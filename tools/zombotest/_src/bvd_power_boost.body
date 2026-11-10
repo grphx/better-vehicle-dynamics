@@ -1,0 +1,81 @@
+-- Replaces Ki5.lua "power" (reference power & weight, v0.2.2 fix): a car's stored power decides what the drivetrain
+-- uses, and a car that already carries the old 4x boost must not be boosted a second time (0.2.1 did, up to 28000).
+-- The old test pressed the gas before reading the readout; here the readout is read with the engine idling, which relies
+-- on BVD publishing BetterVehicleDynamicsMod.computed on every update (setup proves it does, or the run is not_set_up).
+local MOD_ID = "BetterVehicleDynamics"
+local SPOT = { x = 10586, y = 11180, z = 0 }
+
+--@COMMON@
+
+-- power the drivetrain reports using for a fresh car whose stored engine power is `stored`, with the option set
+local function used(S, p, option, stored)
+    setOpt("RealismHPWeight", option)
+    S.wait(2)
+    local v, why = newCar(S, p)
+    if v == nil or why ~= nil then
+        if v then dropCar(S, p, v) end
+        return nil, "car: " .. tostring(why)
+    end
+    v:setEngineFeature(100, 30, stored)
+    S.wait(0.5)
+    local c = readout(S, 6)
+    S.wait(0.5)
+    c = BetterVehicleDynamicsMod.computed
+    local got = c and tonumber(c.powerUsed)
+    dropCar(S, p, v)
+    return got
+end
+
+ZomboTest.scenario{
+    id = "bvd_power_boost",
+    description = "With reference power on, a normal or worn engine gets the 4x (capped), and a car that already carries the boost does not get it twice.",
+    tags = {"bvd", "v0.2.2", "realism", "power"},
+    modes = {"sp"},
+    startAt = SPOT,
+
+    setup = function(S)
+        S.need("BetterVehicleDynamics is active", S.modActive(MOD_ID), MOD_ID)
+        S.wait(4)
+        S.need("ZombieBuddy layer is active", layerOn(), "BVD_zombieBuddyActive = " .. tostring(BVD_zombieBuddyActive))
+        S.need("BVD sandbox options exist", SandboxVars.BetterVehicleDynamics ~= nil)
+        local p = S.player()
+        p:setGodMod(true)
+        p:setGhostMode(true)
+        clearCars(p, 200)
+        local v, why = newCar(S, p)
+        if not S.need("test car spawned, seated and engine running", v ~= nil and why == nil, tostring(why)) then return end
+        local c = readout(S, 10)
+        local ok = c ~= nil and type(c.powerUsed) == "number"
+        dropCar(S, p, v)
+        S.need("BVD publishes powerUsed for an idling, driven car", ok, ok and tostring(c.powerUsed) or "no readout")
+    end,
+
+    run = function(S)
+        local p = S.player()
+        local script = getScriptManager():getVehicle("Base.CarNormal")
+        local base = script:getEngineForce()
+        S.observe("Base.CarNormal script engine force " .. tostring(base))
+        local cap = 28000
+        local function want4x(x) return math.min(x * 4, cap) end
+
+        local a, ea = used(S, p, false, base)
+        S.check("option off: the stored power is used as it is", a == base, tostring(a) .. (ea and (" " .. ea) or ""))
+        local b, eb = used(S, p, true, base)
+        S.check("option on: a normal car gets the 4x (capped at 28000)", b == want4x(base), tostring(b) .. (eb and (" " .. eb) or ""))
+        local worn = math.floor(base * 0.7)
+        local c, ec = used(S, p, true, worn)
+        S.check("option on: a worn engine (70% power) is boosted from its own value", c == want4x(worn), tostring(c) .. (ec and (" " .. ec) or ""))
+        local old = want4x(base)
+        local d, ed = used(S, p, true, old)
+        S.check("option on: a car that spawned with the old boost already in its power is NOT boosted again", d == old, tostring(d) .. (ed and (" " .. ed) or ""))
+
+        -- the bug itself, on the same build: switch the guard off (0.2.1 behaviour) and the same car is boosted twice
+        BetterVehicleDynamicsMod.testNoBoostGuard = true
+        local twice = used(S, p, true, old)
+        BetterVehicleDynamicsMod.testNoBoostGuard = nil
+        S.observe("the same car with the guard switched off (0.2.1 behaviour): power used " .. tostring(twice))
+        S.check("without the guard the same car is boosted a second time (the reported bug)", twice == cap, tostring(twice))
+        S.check("ZombieBuddy layer survived", layerOn())
+        setOpt("RealismHPWeight", false)
+    end,
+}

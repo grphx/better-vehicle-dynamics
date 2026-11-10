@@ -1,0 +1,66 @@
+-- Replaces the "no input" half of Ki5.lua "noinput" (user report: "the car accelerates to its maximum speed on its own,
+-- without touching the keyboard"): a seated, idling car with no pedal held stays still, for a stock script and for two
+-- strong modded ones (VehicleScript:Load with a new engineForce / mass).
+-- Not ported (needs the gas pedal held): the "after a 1 s tap of the gas" half.
+-- A car standing still is also what a car that cannot move does, so this only catches a runaway; each case therefore
+-- also checks the script numbers took effect and the engine kept running.
+local MOD_ID = "BetterVehicleDynamics"
+local SPOT = { x = 10586, y = 11180, z = 0 }
+
+--@COMMON@
+
+local CASES = {
+    { "stock car 1100 kg / default force", nil, nil },
+    { "strong modded car 1300 kg / 14000 force", 14000, 1300 },
+    { "heavy strong 2000 kg / 16000 force", 16000, 2000 },
+}
+
+ZomboTest.scenario{
+    id = "bvd_no_input_still",
+    description = "With no pedal held, an idling car stays under 3 km/h for 12 s, stock or with a strong modded script.",
+    tags = {"bvd", "runaway", "user-report"},
+    modes = {"sp"},
+    startAt = SPOT,
+
+    setup = function(S)
+        S.need("BetterVehicleDynamics is active", S.modActive(MOD_ID), MOD_ID)
+        S.wait(4)
+        S.need("ZombieBuddy layer is active", layerOn(), "BVD_zombieBuddyActive = " .. tostring(BVD_zombieBuddyActive))
+        local sc = getScriptManager():getVehicle("Base.CarNormal")
+        S.need("Base.CarNormal script exists", sc ~= nil)
+        local p = S.player()
+        p:setGodMod(true)
+        p:setGhostMode(true)
+        clearCars(p, 200)
+    end,
+
+    run = function(S)
+        local p = S.player()
+        local sc = getScriptManager():getVehicle("Base.CarNormal")
+        local force0, mass0 = sc:getEngineForce(), sc:getMass()
+        S.observe(string.format("stock script: engineForce %s, mass %s", tostring(force0), tostring(mass0)))
+        for i, c in ipairs(CASES) do
+            local force, mass = c[2] or force0, c[3] or mass0
+            sc:Load("CarNormal", string.format("{ engineForce = %d, mass = %d, }", force, mass))
+            local v, why = newCar(S, p)
+            S.check(c[1] .. ": car ready", v ~= nil and why == nil, tostring(why))
+            if v ~= nil and why == nil then
+                S.check(c[1] .. ": the script numbers took effect", math.abs(v:getScript():getEngineForce() - force) < 1 and math.abs(v:getScript():getMass() - mass) < 1,
+                    string.format("engineForce %s, mass %s", tostring(v:getScript():getEngineForce()), tostring(v:getScript():getMass())))
+                local peak = 0
+                S.waitFor(function()
+                    peak = math.max(peak, math.abs(v:getCurrentSpeedKmHour()))
+                    return nil
+                end, 12)
+                S.observe(string.format("%s: peak %.2f km/h, gear %s, rpm %.0f, throttle %.2f", c[1], peak, tostring(v:getTransmissionNumber()), v:getEngineSpeed(), v:getThrottle()))
+                S.check(c[1] .. ": with no input the car stays still", peak < 3, string.format("%.1f km/h", peak))
+                S.check(c[1] .. ": engine still running (the car was not simply dead)", v:isEngineRunning() == true)
+                dropCar(S, p, v)
+            elseif v ~= nil then
+                dropCar(S, p, v)
+            end
+        end
+        sc:Load("CarNormal", string.format("{ engineForce = %d, mass = %d, }", force0, mass0))
+        S.check("ZombieBuddy layer survived", layerOn())
+    end,
+}

@@ -1,0 +1,96 @@
+-- Replaces the stalling half of the old Ki5.lua "clutch" test (v0.2 manual clutch). The clutch key is replaced by
+-- BVD.testClutch and the gear by BetterVehicleDynamicsMod.forceGear, both BVD's own test hooks.
+-- Caveat: the old test drove the car for ~2.5 s before the gear step; here a fresh car gets the gear change right after
+-- the engine start, so stall timing may differ (same assertion, different warm-up; confirm in game).
+-- Not ported (needs the gas / back pedal held): neutral revs rise, clutch held in first keeps the car still,
+-- letting the clutch out with the throttle down launches the car, the back key brakes in clutch mode, reverse gear
+-- drives the car backwards.
+local MOD_ID = "BetterVehicleDynamics"
+local SPOT = { x = 10586, y = 11180, z = 0 }
+
+--@COMMON@
+
+local first
+
+-- manual shifting on, clutch out, in `gear`, no pedals: true when the engine stops within `sec`
+local function stallsIn(S, v, gear, sec)
+    local mod = BetterVehicleDynamicsMod
+    mod.manualShift = true
+    mod.forceGear = gear
+    BVD.testClutch = false
+    return S.waitFor(function() return (not v:isEngineRunning()) or nil end, sec) ~= nil
+end
+
+local function releaseHooks()
+    BetterVehicleDynamicsMod.manualShift = false
+    BVD.testClutch = nil
+end
+
+ZomboTest.scenario{
+    id = "bvd_clutch_stall",
+    description = "With the manual clutch option, a start with the clutch out in third or first gear and no throttle stalls the engine; with stalling off it does not.",
+    tags = {"bvd", "v0.2", "manual-clutch", "stall"},
+    modes = {"sp"},
+    startAt = SPOT,
+
+    setup = function(S)
+        S.need("BetterVehicleDynamics is active", S.modActive(MOD_ID), MOD_ID)
+        S.wait(4)
+        S.need("ZombieBuddy layer is active", layerOn(), "BVD_zombieBuddyActive = " .. tostring(BVD_zombieBuddyActive))
+        S.need("BVD sandbox options and test hooks exist", SandboxVars.BetterVehicleDynamics ~= nil and type(BVD.invalidateConfigCache) == "function" and type(BVD.shifterShown) == "function")
+        local p = S.player()
+        p:setGodMod(true)
+        p:setGhostMode(true)
+        clearCars(p, 200)
+        setOpt("ManualClutch", true)
+        setOpt("ManualStall", true)
+        S.wait(2)
+        local v, why = newCar(S, p)
+        if not S.need("test car spawned, seated and engine running", v ~= nil and why == nil, tostring(why)) then return end
+        first = v
+    end,
+
+    run = function(S)
+        local p = S.player()
+        local mod = BetterVehicleDynamicsMod
+
+        -- 1. third gear, clutch out, no throttle, from a standstill
+        S.check("the engine runs before the start", first:isEngineRunning() == true)
+        local s3 = stallsIn(S, first, 3, 5)
+        S.check("a start in third gear with no throttle stalls the engine", s3)
+        releaseHooks()
+        dropCar(S, p, first)
+
+        -- 2. first gear from a standstill with no throttle: the idle governor's own throttle must not hide the stall
+        local v2, why2 = newCar(S, p)
+        S.check("second test car ready", v2 ~= nil and why2 == nil, tostring(why2))
+        if v2 == nil or why2 ~= nil then if v2 then dropCar(S, p, v2) end return end
+        local s1 = stallsIn(S, v2, 1, 6)
+        S.check("clutch out in first gear at a standstill with no throttle stalls the engine", s1)
+        releaseHooks()
+        dropCar(S, p, v2)
+
+        -- 3. control: stalling off, the same start keeps the engine running; and the on-screen shifter follows manual mode
+        setOpt("ManualStall", false)
+        S.wait(2)
+        local v3, why3 = newCar(S, p)
+        S.check("third test car ready", v3 ~= nil and why3 == nil, tostring(why3))
+        if v3 == nil or why3 ~= nil then if v3 then dropCar(S, p, v3) end return end
+        local ran = v3:isEngineRunning()
+        mod.manualShift = true
+        mod.forceGear = 3
+        BVD.testClutch = false
+        S.wait(1.5)
+        S.check("the on-screen shifter is up in manual mode with the clutch option", BVD.shifterShown() == true)
+        S.wait(2.5)
+        S.check("with stalling off the same start keeps the engine running", ran == true and v3:isEngineRunning() == true,
+            "running before " .. tostring(ran) .. ", after " .. tostring(v3:isEngineRunning()))
+        mod.manualShift = false
+        S.wait(1.5)
+        S.check("the shifter goes away in automatic mode", BVD.shifterShown() == false)
+        S.check("ZombieBuddy layer survived", layerOn())
+        releaseHooks()
+        dropCar(S, p, v3)
+        setOpt("ManualClutch", false)
+    end,
+}

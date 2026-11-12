@@ -26,6 +26,6 @@
     "IGUI_BVD_DriftKey_Tooltip": "Mantenha esta tecla pressionada ao fazer uma curva em velocidade para entrar no modo drift.",
     "IGUI_BVD_CustomizableSteering": "Direção personalizável",
     "IGUI_BVD_CustomizableSteering_Tooltip": "Usa os controles de resposta da direção abaixo em vez da sensação de direção padrão.",
-    "IGUI_BVD_NotProperlyInstalled": "O Better Vehicle Dynamics está sem o componente Java, então a direção é a do jogo original. Instale o ZombieBuddy pela Workshop ou copie a pasta 'zombie' da pasta B42.21_Manual_Install do mod para a pasta de instalação do Project Zomboid (veja a página da Workshop). Depois reinicie o jogo.",
-    "IGUI_BVD_Outdated": "Better Vehicle Dynamics: seu componente Java está desatualizado. Copie a pasta 'zombie' da pasta _Manual_Install mais recente do mod por cima da sua cópia antiga e reinicie o jogo."
+    "IGUI_BVD_NotProperlyInstalled": "O Better Vehicle Dynamics precisa do ZombieBuddy para o componente Java, então a direção é a do jogo original. Inscreva-se no ZombieBuddy na Workshop da Steam (link na página do Better Vehicle Dynamics), ative-o, aprove o Java do BVD quando ele pedir e reinicie o jogo.",
+    "IGUI_BVD_Outdated": "Better Vehicle Dynamics: há uma cópia antiga do componente Java instalada. Na Steam, clique com o botão direito em Project Zomboid -> Propriedades -> Arquivos instalados -> Verificar integridade dos arquivos do jogo para removê-la, e use o ZombieBuddy no lugar. Depois reinicie o jogo."
 }

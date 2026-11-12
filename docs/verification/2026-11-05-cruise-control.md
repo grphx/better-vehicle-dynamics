@@ -1,5 +1,7 @@
 # "The car accelerates to max speed on its own" (Workshop report, 2026-11-05)
 
+> Decision 2026-11-12: Left Shift doing both (drift key and vanilla cruise control) is left as it is. The filter described below was removed again before any release; this file is kept as the record of what was found. The reporter's cruise icon never lit and braking did not help, so this was not their problem either.
+
 In game, singleplayer, `Base.CarNormal`, automatic.
 
 - **No input:** `noinput` mode. A stock car and two strong modded-style cars (1300 kg / 14000, 2000 kg / 16000) with no keys

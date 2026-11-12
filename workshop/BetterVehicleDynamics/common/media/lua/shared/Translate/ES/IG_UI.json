@@ -26,6 +26,6 @@
     "IGUI_BVD_DriftKey_Tooltip": "Mantén pulsada esta tecla al tomar una curva a velocidad para entrar en el modo derrape.",
     "IGUI_BVD_CustomizableSteering": "Dirección personalizable",
     "IGUI_BVD_CustomizableSteering_Tooltip": "Usa los controles deslizantes de respuesta de la dirección de abajo en lugar de la sensación de dirección por defecto.",
-    "IGUI_BVD_NotProperlyInstalled": "A Better Vehicle Dynamics le falta su componente Java, por lo que la conducción es la del juego base. Instala ZombieBuddy desde el Workshop, o copia la carpeta 'zombie' de la carpeta B42.21_Manual_Install del mod en la carpeta de instalación de Project Zomboid (consulta la página del Workshop). Después reinicia el juego.",
-    "IGUI_BVD_Outdated": "Better Vehicle Dynamics: tu componente Java está desactualizado. Copia la carpeta 'zombie' de la carpeta _Manual_Install más reciente del mod sobre tu copia anterior y reinicia el juego."
+    "IGUI_BVD_NotProperlyInstalled": "Better Vehicle Dynamics necesita ZombieBuddy para su componente Java, por lo que la conducción es la del juego base. Suscríbete a ZombieBuddy en el Workshop de Steam (enlace en la página de Better Vehicle Dynamics), actívalo, aprueba el Java de BVD cuando te lo pida y reinicia el juego.",
+    "IGUI_BVD_Outdated": "Better Vehicle Dynamics: hay una copia antigua de su componente Java instalada. En Steam, haz clic derecho en Project Zomboid -> Propiedades -> Archivos instalados -> Verificar la integridad de los archivos del juego para quitarla, y usa ZombieBuddy en su lugar. Después reinicia el juego."
 }

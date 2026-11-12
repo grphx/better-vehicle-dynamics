@@ -26,6 +26,6 @@
     "IGUI_BVD_DriftKey_Tooltip": "Halte diese Taste gedrückt, während du schnell durch eine Kurve fährst, um den Drift-Modus zu aktivieren.",
     "IGUI_BVD_CustomizableSteering": "Anpassbare Lenkung",
     "IGUI_BVD_CustomizableSteering_Tooltip": "Verwendet die Lenkreaktions-Regler unten statt des Standard-Lenkgefühls.",
-    "IGUI_BVD_NotProperlyInstalled": "Better Vehicle Dynamics fehlt die Java-Komponente, daher fährt sich alles wie im Standardspiel. Installiere entweder ZombieBuddy aus dem Workshop oder kopiere den Ordner 'zombie' aus dem Ordner B42.21_Manual_Install des Mods in deinen Project-Zomboid-Installationsordner (siehe Workshop-Seite). Starte danach das Spiel neu.",
-    "IGUI_BVD_Outdated": "Better Vehicle Dynamics: Deine Java-Komponente ist veraltet. Kopiere den Ordner 'zombie' aus dem neuesten _Manual_Install-Ordner des Mods über deine alte Kopie und starte dann das Spiel neu."
+    "IGUI_BVD_NotProperlyInstalled": "Better Vehicle Dynamics braucht ZombieBuddy für seine Java-Komponente, daher fährt sich alles wie im Standardspiel. Abonniere ZombieBuddy im Steam-Workshop (Link auf der Better-Vehicle-Dynamics-Seite), aktiviere es, bestätige BVDs Java, wenn danach gefragt wird, und starte das Spiel neu.",
+    "IGUI_BVD_Outdated": "Better Vehicle Dynamics: Eine alte Kopie der Java-Komponente ist installiert. Entferne sie über Steam (Rechtsklick auf Project Zomboid -> Eigenschaften -> Lokale Dateien -> Integrität der Spieldateien überprüfen) und nutze stattdessen ZombieBuddy. Starte danach das Spiel neu."
 }

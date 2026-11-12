@@ -106,27 +106,18 @@ function ShiftDetect(key)
 	end
 end
 
--- Todo: Consider using https://projectzomboid.com/chat_colours.txt to make error message fancier.
+-- A copy of BVD without a working Java part says so once per session, in a notice that never takes input or pauses
+-- the game (BVD_InstallNotice.lua): the player may be in the middle of a horde.
 local VersionCheckConfirmed = false;
-local function onConfirm()
-	UIManager.getSpeedControls():SetCurrentGameSpeed(1);
-end
 
 function BetterVehicleDynamicsVersionCheck()
-	if BetterVehicleDynamicsMod.javaVersion == "not installed" and not VersionCheckConfirmed then
+	if VersionCheckConfirmed or not (BVD and BVD.showInstallNotice) then return end
+	if BetterVehicleDynamicsMod.javaVersion == "not installed" then
 		VersionCheckConfirmed = true;
-		local width = 400;
-		local modal = ISModalDialog:new((getCore():getScreenWidth() - width) / 2,getCore():getScreenHeight() / 4, width, 150, getText("IGUI_BVD_NotProperlyInstalled"), false, nil, onConfirm, 0)
-		modal:initialise()
-		modal:addToUIManager()
-		UIManager.getSpeedControls():SetCurrentGameSpeed(0);
-	elseif BetterVehicleDynamicsMod.javaVersion ~= "3.7" and not VersionCheckConfirmed then
+		BVD.showInstallNotice("IGUI_BVD_NotProperlyInstalled")
+	elseif BetterVehicleDynamicsMod.javaVersion ~= "3.7" then
 		VersionCheckConfirmed = true;
-		local width = 400;
-		local modal = ISModalDialog:new((getCore():getScreenWidth() - width) / 2,getCore():getScreenHeight() / 4, width, 150, getText("IGUI_BVD_Outdated"),false, nil, onConfirm, 0)
-		modal:initialise()
-		modal:addToUIManager()
-		UIManager.getSpeedControls():SetCurrentGameSpeed(0);
+		BVD.showInstallNotice("IGUI_BVD_Outdated")
 	end
 end
 
@@ -135,4 +126,10 @@ end
 Events.OnInitGlobalModData.Add(applyOptions)
 Events.OnKeyStartPressed.Add(ShiftDetect);
 Events.OnSpawnVehicleEnd.Add(BetterVehicleDynamicsVersionCheck)
+-- also when a player gets into a vehicle: the spawn event only fires for vehicles that appear while the player is there
+Events.OnEnterVehicle.Add(function(player)
+	if player and player.isLocalPlayer and player:isLocalPlayer() then
+		BetterVehicleDynamicsVersionCheck()
+	end
+end)
 

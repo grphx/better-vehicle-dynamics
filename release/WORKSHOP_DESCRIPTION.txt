@@ -1,8 +1,8 @@
 [h1]Better Vehicle Dynamics[/h1]
 A drivetrain and traction overhaul for Project Zomboid Build 42. Every vehicle gains a torque-curve driven engine, surface- and weather-aware grip, and a stack of optional realism systems - all sandbox-tunable, all multiplayer-safe.
 
-[h2]New: ZombieBuddy support (recommended)[/h2]
-BVD now runs through [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3619862853]ZombieBuddy[/url]. [b]This is now the recommended way to play BVD:[/b] no zombie folder to copy, nothing to redo when Project Zomboid updates, and no clashes with other mods over replaced game files. The manual install still works if you prefer it. Dedicated servers need no Java install either way.
+[h2]Needs ZombieBuddy[/h2]
+BVD's deep physics run through [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3619862853]ZombieBuddy[/url] (a free Workshop mod): subscribe to it and enable it together with BVD. Since Project Zomboid 42.22 this is the only way: the game's jar is now signed and refuses the old manual install (copying a zombie folder), so that option is gone. Dedicated servers need no Java and no ZombieBuddy.
 
 [h1]What it changes[/h1]
 [list]
@@ -32,40 +32,32 @@ Everything is exposed in Sandbox Options, grouped into [b]Handling[/b], [b]Tyres
 Built for dedicated servers and co-op. Load-sensitive fuel is server-authoritative so it behaves consistently for everyone.
 
 [h2]Installation (players)[/h2]
-Better Vehicle Dynamics has two parts: this Workshop subscription (Lua, sandbox options, UI) and a Java part (the deep physics - engine code a Lua mod cannot reach). [b]The subscription alone is not enough[/b]. Pick [b]one[/b] way to get the Java part. [b]Option A is recommended.[/b]
-
-[b]Option A - ZombieBuddy (recommended, no file copying).[/b] If you use [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3619862853]ZombieBuddy[/url], just enable it together with this mod. BVD's Java loads through it automatically: nothing to copy, and no recopying after Project Zomboid updates (BVD itself updates through the Workshop as usual). ZombieBuddy asks you to approve BVD's Java the first time.
-
-[b]Option B - manual install (only if you don't use ZombieBuddy).[/b]
+Better Vehicle Dynamics has two parts: this Workshop subscription (Lua, sandbox options, UI) and a Java part (the deep physics - engine code a Lua mod cannot reach). [b]The subscription alone is not enough[/b]: the Java part loads through ZombieBuddy.
 [olist]
-[*]Subscribe to this mod and let Steam finish downloading it.
-[*]Open the mod folder: [code]Steam\steamapps\workshop\content\108600\3728775267\mods\BetterVehicleDynamics\B42.21_Manual_Install\[/code]
-[*]Copy the [b]zombie[/b] sub-folder from there into your Project Zomboid install directory (right-click Project Zomboid in Steam -> Manage -> Browse local files).
-[*]Restart Project Zomboid.
+[*]Subscribe to [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3619862853]ZombieBuddy[/url] and to this mod.
+[*]Enable both in the Mods list.
+[*]Start the game and approve BVD's Java when ZombieBuddy asks the first time.
 [/olist]
-When Project Zomboid itself updates, recopy the [b]zombie[/b] folder to refresh it.
+Nothing to copy and nothing to redo when Project Zomboid updates (BVD itself updates through the Workshop as usual). Without it BVD tells you with a short notice at the top right of the screen, and driving stays vanilla.
 
-Use one option, not both. If both are present the manual install wins and the ZombieBuddy part stays off. To switch from B to A, run Steam's [i]Verify integrity of game files[/i] to remove the copied classes.
+[b]Used the old manual install?[/b] Run Steam's [i]Verify integrity of game files[/i] to remove the copied zombie folder (on 42.22 the game will not start with it), then follow the steps above.
 
 [h2]Dedicated server hosts[/h2]
-[b]The server needs only the Workshop mod - no Java install.[/b] A dedicated server never simulates vehicle physics; each driver's own game does. So hosted servers without a [code]java/zombie[/code] folder (most rented-server panels) are fine: add the mod to the server's Workshop and mod lists as usual. Every [i]player[/i] sets up the Java part (option A or B above) on their own PC.
+[b]The server needs only the Workshop mod - no Java install.[/b] A dedicated server never simulates vehicle physics; each driver's own game does. So hosted servers without a [code]java/zombie[/code] folder (most rented-server panels) are fine: add the mod to the server's Workshop and mod lists as usual. Every [i]player[/i] sets up the Java part (ZombieBuddy, above) on their own PC.
 
 A zombie folder already copied onto a server is harmless; you can delete it.
-
-[h2]Updating from 0.1.15 or older[/h2]
-Easiest: switch to ZombieBuddy (option A) and run Steam's [i]Verify integrity of game files[/i] to remove the old copied classes. Staying on the manual install? Copy the new [b]zombie[/b] folder over the old one, then delete [code]zombie\iso\IsoChunkMap.class[/code] and [code]zombie\iso\sprite\IsoSprite.class[/code] (plus the two [code]IsoSprite$...class[/code] files next to it) from your Project Zomboid folder: they are no longer part of the mod.
 
 [h1]For modders[/h1]
 A public Lua API lets other mods register vehicle reference data, tyre-grip profiles and content packs without touching this mod's files. Full reference: [url=https://branched-almanac-460.notion.site/Better-Vehicle-Dynamics-Public-Lua-API-36542ef13d238106a7afda59a82181f6]Better Vehicle Dynamics - Public Lua API[/url]
 
 [h1]Compatibility[/h1]
-Works alongside vehicle-skin and content mods. Run only one vehicle-physics overhaul at a time. Build 42.21+.
+Works alongside vehicle-skin and content mods. Run only one vehicle-physics overhaul at a time. Build 42.21+ (42.22 verified).
 
 The mechanics-window info panel also works with CleanUI and Clean UI 2.0 (Rax's Reborn).
 
 [b]Maskarad's Summer Car:[/b] works from v0.1.17 (earlier versions crashed with it). Its engine adds about 150 kg, which BVD's load penalty counts as cargo, so those cars launch a little slower.
 
-Other manual-install Java mods clash only if they ship the same class files. BVD ships only [code]CarController[/code], [code]WorldSimulation[/code], [code]Texture[/code] and [code]IsoFloorBloodSplat[/code]; if another Java mod ships one of those, only one copy can be active. With ZombieBuddy (option A), BVD replaces no game files at all, so this clash goes away.
+With ZombieBuddy, BVD replaces no game files at all, so it does not clash with other Java mods.
 
 [h1]Translations[/h1]
 [list]

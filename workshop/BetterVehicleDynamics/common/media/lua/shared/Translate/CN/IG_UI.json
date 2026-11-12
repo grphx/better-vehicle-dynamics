@@ -26,6 +26,6 @@
     "IGUI_BVD_DriftKey_Tooltip": "高速过弯时按住此键进入漂移模式。",
     "IGUI_BVD_CustomizableSteering": "自定义转向",
     "IGUI_BVD_CustomizableSteering_Tooltip": "使用下方的转向响应滑块，而不是默认的转向手感。",
-    "IGUI_BVD_NotProperlyInstalled": "Better Vehicle Dynamics 缺少其 Java 组件，因此驾驶表现与原版相同。请从创意工坊安装 ZombieBuddy，或将模组 B42.21_Manual_Install 文件夹中的 'zombie' 文件夹复制到你的 Project Zomboid 安装文件夹中（参见创意工坊页面）。然后重启游戏。",
-    "IGUI_BVD_Outdated": "Better Vehicle Dynamics：你的 Java 组件已过期。请将模组最新的 _Manual_Install 文件夹中的 'zombie' 文件夹复制并覆盖旧的副本，然后重启游戏。"
+    "IGUI_BVD_NotProperlyInstalled": "Better Vehicle Dynamics 的 Java 组件需要 ZombieBuddy，因此驾驶表现与原版相同。请在 Steam 创意工坊订阅 ZombieBuddy（链接见 Better Vehicle Dynamics 页面），启用它，在其询问时批准 BVD 的 Java，然后重启游戏。",
+    "IGUI_BVD_Outdated": "Better Vehicle Dynamics：安装了旧版 Java 组件的副本。请在 Steam 中右键 Project Zomboid -> 属性 -> 已安装文件 -> 验证游戏文件的完整性 来删除它，并改用 ZombieBuddy。然后重启游戏。"
 }

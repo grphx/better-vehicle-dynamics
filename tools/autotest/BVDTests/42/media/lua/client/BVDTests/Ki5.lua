@@ -983,9 +983,14 @@ local function noinputBody(T)
     T.check("a heavy strong car with no input stays still", (peaks["3a"] or 99) < 3, string.format("%.1f km/h", peaks["3a"] or -1))
 end
 T.register("noinput", noinputBody, where)
--- Vanilla cruise control (Left Shift + forward) as BVD runs it: hold both for a few seconds, let go of everything, and
--- see whether the car carries on by itself; then brake and see it stop. Left Shift is also BVD's default drift key.
-local function cruiseBody(T)
+-- A user report: "with a trailer hitched the car runs up to its top speed by itself, and the brake does not stop it".
+-- A car with a trailer behind it: no input, a short tap of the gas, then a long drive, a lift-off and the brake.
+-- the trailer scripts to try; the ones whose mod is not in the list are skipped
+local TRAILERS = { "Base.Trailer", "Base.TrailerKI5cargoMedium", "Base.TrailerKI5utilityLarge",
+                   "Base.Trailer51chevy", "Base.Trailercamperscamp", "Base.Trailermovingbig", "Base.MulchWoodChipperTrailer", "Base.GensetTrailer" }
+local function trailerBody(T)
+    BetterVehicleDynamicsMod = BetterVehicleDynamicsMod or {}   -- BVD out of the mod list: the vanilla baseline
+    BVD = BVD or {}
     T.wait(4)
     local p = getPlayer()
     p:setGodMod(true); p:setGhostMode(true)
@@ -993,67 +998,124 @@ local function cruiseBody(T)
     local rx, ry = findLine("blends_street", ROAD.x, ROAD.y, nil, true, 90)
     if not rx then rx, ry = findLine("blends_street", ROAD.x, ROAD.y, nil, true, 60) end
     if not T.check("found a road", rx ~= nil) then return end
-    local res = {}
-    -- shared = the drift key IS the cruise key (the default, both Left Shift); not shared = the drift key was rebound
-    for _, shared in ipairs({ true, false }) do
-        local key = shared and "shared" or "rebound"
-        BVD.testSharedKey = shared
-        T.log("== drift key " .. (shared and "is the cruise key (default)" or "rebound to another key"))
-        local r = {}
-        local ok = withCar(p, rx, ry, function(v)
-            local function state(label, el)
-                local reg = "?"
-                pcall(function() reg = tostring(v:isRegulator()) .. "/" .. string.format("%.0f", v:getRegulatorSpeed()) end)
-                T.log(string.format("  %s %4.1fs: speed %6.1f km/h  rpm %4.0f  cruise %s  gasPedal=%s  pos %.0f,%.0f", label, el, v:getCurrentSpeedKmHour(), v:getEngineSpeed(), reg, tostring(v:isGasPedalPressed()), v:getX(), v:getY()))
-            end
-            local function watch(label, seconds)
-                local t0, lastLog, peak = getTimestampMs(), -1, 0
-                while getTimestampMs() - t0 < seconds * 1000 do
-                    local el = (getTimestampMs() - t0) / 1000
-                    peak = math.max(peak, v:getCurrentSpeedKmHour())
-                    if el - lastLog >= 1 then lastLog = el state(label, el) end
-                    coroutine.yield()
-                end
-                return peak
-            end
-            T.drive(false, false, 0)
-            T.wait(1)
-            -- an ordinary start: forward only, up to about 25 km/h
-            T.drive(true, true, 0)
-            T.waitFor(function() return v:getCurrentSpeedKmHour() >= 25 end, 12)
-            -- now Left Shift is held as well, forward still down, for 5 s
-            PZTestShift(true)
-            r.held = watch("Shift+W held", 5)
-            r.regWhileHeld = v:isRegulator()
-            -- let go of every key
-            T.drive(false, false, 0)
-            PZTestShift(false)
-            r.speedAtRelease = v:getCurrentSpeedKmHour()
-            r.after = watch("all keys released", 10)
-            r.speedLater = v:getCurrentSpeedKmHour()
-            r.regLater = v:isRegulator()
-            -- a tap on the brake
-            PZTestReverse(true, 0)
-            T.wait(1.0)
-            PZTestReverse(false, 0)
-            T.drive(false, false, 0)
-            r.regAfterBrake = v:isRegulator()
-            watch("after braking", 4)
-        end)
-        T.check("the test car moved on its own first (" .. key .. ")", ok)
-        res[key] = r
+    local function state(v, label, el)
+        T.log(string.format("  %s %4.1fs: speed %6.1f km/h  throttle %.2f  gear %s  rpm %4.0f  gasPedal=%s brake=%s", label, el, v:getCurrentSpeedKmHour(), v.throttle or -1, tostring(v:getTransmissionNumber()), v:getEngineSpeed(), tostring(v:isGasPedalPressed()), tostring(v:isBrakePedalPressed())))
     end
-    BVD.testSharedKey = nil
-    local s1, s2 = res.shared, res.rebound
-    if not s1 or not s2 then return end
-    T.log(string.format("RESULT shared key: cruise while held=%s; released at %.1f km/h, 10 s later %.1f km/h, cruise=%s", tostring(s1.regWhileHeld), s1.speedAtRelease or -1, s1.speedLater or -1, tostring(s1.regLater)))
-    T.log(string.format("RESULT rebound key: cruise while held=%s; released at %.1f km/h, 10 s later %.1f km/h, cruise=%s, after a brake tap cruise=%s", tostring(s2.regWhileHeld), s2.speedAtRelease or -1, s2.speedLater or -1, tostring(s2.regLater), tostring(s2.regAfterBrake)))
-    T.check("drift key = cruise key: holding it with forward does NOT switch the cruise control on", s1.regWhileHeld == false and s1.regLater == false)
-    T.check("drift key = cruise key: after the keys are released the car does not carry on by itself", (s1.speedLater or 99) < (s1.speedAtRelease or 0) - 3 or (s1.speedLater or 99) < 40, string.format("%.1f -> %.1f km/h", s1.speedAtRelease or -1, s1.speedLater or -1))
-    T.check("drift key rebound: the vanilla cruise control still works (switches on while Shift+forward is held)", s2.regWhileHeld == true)
-    T.check("drift key rebound: a tap on the brake switches the cruise control off", s2.regAfterBrake == false)
+    local function watch(v, label, seconds)
+        local t0, lastLog, peak = getTimestampMs(), -1, 0
+        while getTimestampMs() - t0 < seconds * 1000 do
+            local el = (getTimestampMs() - t0) / 1000
+            peak = math.max(peak, math.abs(v:getCurrentSpeedKmHour()))
+            if el - lastLog >= 2 then lastLog = el state(v, label, el) end
+            coroutine.yield()
+        end
+        return peak, math.abs(v:getCurrentSpeedKmHour())
+    end
+    local res = {}
+    for _, trScript in ipairs(TRAILERS) do
+        if getScriptManager():getVehicle(trScript) then
+            for caseIdx = 1, 2 do   -- a fresh car and road each: 1 = hitched from the driver's seat, 2 = from outside
+            T.log("== trailer " .. trScript .. (caseIdx == 2 and ", hitched from outside" or ", hitched from the seat"))
+            local ok = withCar(p, rx, ry, function(v)
+                local tr
+                for k = 1, 6 do
+                    tr = addVehicleDebug(trScript, IsoDirections.N, nil, getCell():getGridSquare(math.floor(v:getX()), math.floor(v:getY()) + 5, 0))
+                    if tr then break end
+                    T.wait(1.5)
+                end
+                if not T.check(trScript .. ": the trailer spawned", tr ~= nil) then return end
+                T.wait(1.5)
+                pcall(function() tr:setPhysicsActive(true, true) end)
+                do local cycle = caseIdx
+                    -- cycle 1: hitched from the driver's seat; cycle 2: hitched from outside, then the player gets in (the usual way)
+                    local outside = caseIdx == 2
+                    if outside then
+                        pcall(ISVehicleMenu.onExit, p)
+                        T.waitFor(function() return p:getVehicle() == nil end, 5)
+                        pcall(ISTimedActionQueue.clear, p)
+                        T.wait(1)
+                    end
+                    v:addPointConstraint(p, tr, "trailer", "trailer")
+                    T.wait(2)
+                    if outside then
+                        enter(p, v)
+                        if not v:isEngineRunning() then
+                            v:tryStartEngine(true)
+                            T.waitFor(function() return v:isEngineRunning() end, 8)
+                        end
+                        T.wait(1)
+                    end
+                    local hitched = v:getVehicleTowing() == tr
+                    T.log(outside and "  -- hitched from outside, then got in" or "  -- hitched from the driver's seat")
+                    T.check(trScript .. " cycle " .. cycle .. ": the trailer is hitched", hitched)
+                    if hitched then
+                        T.drive(false, false, 0)
+                        local pk = watch(v, "no input", 8)
+                        T.check(trScript .. " cycle " .. cycle .. ": no input, the car stays still", pk < 3, string.format("%.1f km/h", pk))
+                        T.drive(true, true, 0)
+                        T.wait(1.0)
+                        T.drive(false, false, 0)
+                        local pk2, last2 = watch(v, "after a 1 s tap", 10)
+                        T.log(string.format("  tap: peak %.1f, end %.1f", pk2, last2))
+                        -- a long drive, lift off, then watch whether it carries on
+                        T.drive(true, true, 0)
+                        local pk3 = watch(v, "gas held", 8)
+                        T.drive(false, false, 0)
+                        local atRelease = math.abs(v:getCurrentSpeedKmHour())
+                        local pk4, last4 = watch(v, "gas released", 10)
+                        T.check(trScript .. " cycle " .. cycle .. ": lifting off, the car does not keep accelerating", pk4 <= atRelease + 3, string.format("released at %.1f, peak after %.1f", atRelease, pk4))
+                        -- the back key while moving forward is the brake: it must slow the car down
+                        T.drive(true, true, 0)
+                        watch(v, "gas again", 6)
+                        local fast = v:getCurrentSpeedKmHour()
+                        PZTestReverse(true, 0)
+                        watch(v, "brake", 3)
+                        local slower = v:getCurrentSpeedKmHour()
+                        PZTestReverse(false, 0)
+                        T.drive(false, false, 0)
+                        T.check(trScript .. " cycle " .. cycle .. ": the brake slows the car", slower < fast * 0.6, string.format("%.1f -> %.1f km/h", fast, slower))
+                    end
+                    pcall(function() v:breakConstraint(true, false) end)
+                    T.wait(2)
+                end
+                tr:permanentlyRemove()
+            end)
+            if not ok then T.log("could not set up: " .. trScript) end
+            end
+        else
+            T.log("no script " .. trScript)
+        end
+    end
 end
-T.register("cruise", cruiseBody, where)
+T.register("trailer", trailerBody, where)
+T.register("trailer_more", trailerBody, where)   -- with the other trailer mods (RVs and Trailers, Mulch, Genset)
+T.register("trailer_more_vanilla", trailerBody, where)
+T.register("trailer_ki5", trailerBody, where)   -- with the KI5 trailers mod
+T.register("trailer_ki5_vanilla", trailerBody, where)
+T.register("trailer_vanilla", trailerBody, where)   -- the same, with BVD out of the mod list
+-- The notice for a copy of BVD with no working Java part: it must show, never take input or pause the game, fade out
+-- by itself and not come back.
+local function noticeBody(T)
+    T.wait(6)
+    local mod = BetterVehicleDynamicsMod
+    local saved = mod.javaVersion
+    local speedBefore = UIManager.getSpeedControls():getCurrentGameSpeed()
+    BVD.installNoticeLifeMs = 12000
+    mod.javaVersion = "not installed"
+    BetterVehicleDynamicsVersionCheck()
+    T.wait(1)
+    T.check("the notice is shown when the Java part is missing", BVD.installNoticeShown() == true)
+    T.log("[PZTEST] notice up")
+    T.wait(4)
+    T.check("the game keeps running (not paused)", UIManager.getSpeedControls():getCurrentGameSpeed() == speedBefore and speedBefore ~= 0, tostring(speedBefore) .. " -> " .. tostring(UIManager.getSpeedControls():getCurrentGameSpeed()))
+    T.check("the notice fades out by itself", T.waitFor(function() return BVD.installNoticeShown() == false end, 20))
+    BetterVehicleDynamicsVersionCheck()
+    T.wait(1)
+    T.check("it is shown once per session", BVD.installNoticeShown() == false)
+    mod.javaVersion = saved
+    BVD.installNoticeLifeMs = nil
+end
+T.register("notice", noticeBody, where)
 -- Heavy car on every kind of ground found near the start: which floor sprites exist, and how the car does on each.
 T.register("heavy_surf", function(T)
     T.wait(4)

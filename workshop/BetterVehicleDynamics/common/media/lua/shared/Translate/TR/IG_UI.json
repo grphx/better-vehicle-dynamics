@@ -26,6 +26,6 @@
     "IGUI_BVD_DriftKey_Tooltip": "Hızlıyken viraj alırken drift moduna girmek için bu tuşu basılı tutun.",
     "IGUI_BVD_CustomizableSteering": "Özelleştirilebilir direksiyon",
     "IGUI_BVD_CustomizableSteering_Tooltip": "Varsayılan direksiyon hissi yerine aşağıdaki direksiyon tepkisi kaydırıcılarını kullanın.",
-    "IGUI_BVD_NotProperlyInstalled": "Better Vehicle Dynamics'in Java bileşeni eksik, bu yüzden sürüş orijinal oyundaki gibi. Ya Workshop'tan ZombieBuddy'yi kurun ya da modun B42.21_Manual_Install klasöründeki 'zombie' klasörünü Project Zomboid kurulum klasörüne kopyalayın (Workshop sayfasına bakın). Ardından oyunu yeniden başlatın.",
-    "IGUI_BVD_Outdated": "Better Vehicle Dynamics: Java bileşeniniz güncel değil. Modun en yeni _Manual_Install klasöründeki 'zombie' klasörünü eski kopyanın üzerine kopyalayın, ardından oyunu yeniden başlatın."
+    "IGUI_BVD_NotProperlyInstalled": "Better Vehicle Dynamics'in Java bileşeni için ZombieBuddy gerekiyor, bu yüzden sürüş orijinal oyundaki gibi. Steam Atölyesi'nden ZombieBuddy'ye abone olun (Better Vehicle Dynamics sayfasında bağlantı var), etkinleştirin, BVD'nin Java'sını sorduğunda onaylayın ve oyunu yeniden başlatın.",
+    "IGUI_BVD_Outdated": "Better Vehicle Dynamics: Java bileşeninin eski bir kopyası kurulu. Steam'de Project Zomboid'e sağ tıklayın -> Özellikler -> Yüklü Dosyalar -> Oyun dosyalarının bütünlüğünü doğrula ile kaldırın ve bunun yerine ZombieBuddy kullanın. Ardından oyunu yeniden başlatın."
 }

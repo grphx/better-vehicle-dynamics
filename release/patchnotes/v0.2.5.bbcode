@@ -1,0 +1,21 @@
+[h1]v0.2.5 - Cars pull trailers again, and ZombieBuddy is now required[/h1]
+
+[h2]What you need to do[/h2]
+[list]
+[*]Project Zomboid 42.22 signs its game jar, and the game no longer starts with the old manual install (the copied [b]zombie[/b] folder: "signer information does not match"). That option is gone.
+[*]If you copied that folder: run Steam's [i]Verify integrity of game files[/i] to remove it.
+[*]Subscribe to [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3619862853]ZombieBuddy[/url], enable it with this mod and approve BVD's Java when it asks. Nothing else to copy, ever.
+[*]Dedicated servers: nothing changes, they need no Java and no ZombieBuddy.
+[/list]
+
+[h2]Changes[/h2]
+[list]
+[*][b]Fixed: a car could barely pull a trailer.[/b] With a trailer hitched, full throttle got a car to about 3 km/h. The game keeps a trailer from rolling by applying a stopping force whenever its engine force is exactly zero; vanilla gives a pulled trailer a tiny non-zero force so that does not happen, and BVD set it to zero. BVD now does what vanilla does: the same setup reaches about 41 km/h in 7 seconds. Checked with the vanilla trailer, the KI5 trailers, RVs and Trailers (51 Chevy, camper, moving trucks), the wood chipper and the generator trailer.
+[*][b]A clear notice when the Java part is missing.[/b] It was a dialog that paused the game and had to be clicked away. It is now a short note at the top right that never takes input and never pauses (nothing happens to you if you log in in the middle of a horde), fades after 30 seconds and shows once per session. It points to ZombieBuddy.
+[*]Checked on Project Zomboid 42.22 with ZombieBuddy.
+[/list]
+
+[h2]Good to know[/h2]
+[list]
+[*]I looked for a car that accelerates by itself with a trailer hitched (a report from a player using KI5 vehicles) and could not make it happen with any of the trailers above, hitched from the seat or from outside. If you see it, tell me which car and trailer, and whether unhitching stops it.
+[/list]
